@@ -1,0 +1,29 @@
+from django.contrib import admin
+from .models import *
+
+
+@admin.register(Client)
+class ClienteAdmin(admin.ModelAdmin):
+    list_display = ('cnpj', 'name', 'email','phone','insert_date')
+    search_fields = ('cnpj', 'name', 'email','phone','insert_date')
+    list_filter = ('insert_date',) 
+
+
+@admin.register(Worker)
+class WorkerAdmin(admin.ModelAdmin):
+    list_display = ('cpf', 'name', 'email','phone','position', 'insert_date')
+    search_fields = ('name', 'email')
+    list_filter = ('insert_date',)
+
+@admin.register(DataSheet)
+class DataSheetAdmin(admin.ModelAdmin):
+    list_display = ('code','operation_code', 'chassi', 'client','orimento','model','date_in','date_out','service','status','insert_date')
+    search_fields = ('code','operation_code', 'chassi','client')
+    list_filter = ('insert_date','client','chassi')
+
+@admin.register(checklist)
+class checklistAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'datasheet','worker','status','picture', 'insert_date')
+    search_fields = ('datasheet', 'worker',"status")
+    list_filter = ('insert_date','datasheet', 'worker',"status")
+

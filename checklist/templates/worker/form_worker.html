@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastrar Funcionário</title>
+</head>
+<body>
+
+    <h2>Cadastrar Funcionário</h2>
+
+    <!-- Exibe mensagens do Django (success, error, warning...) -->
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <!-- FORMULÁRIO -->
+    <form method="POST">
+        {% csrf_token %}
+        
+        <!-- Renderiza campo por campo -->
+        {{ form.non_field_errors }}
+
+        <p>
+            {{ form.name.label_tag }}
+            {{ form.name }}
+            {{ form.name.errors }}
+        </p>
+
+        <p>
+            {{ form.cpf.label_tag }}
+            {{ form.cpf }}
+            {{ form.cpf.errors }}
+        </p>
+
+        <p>
+            {{ form.phone.label_tag }}
+            {{ form.phone }}
+            {{ form.phone.errors }}
+        </p>
+
+        <p>
+            {{ form.email.label_tag }}
+            {{ form.email }}
+            {{ form.email.errors }}
+        </p>
+
+        <p>
+            {{ form.positions.label_tag }}
+            {{ form.positions }}
+            {{ form.positions.errors }}
+        </p>
+
+        <!-- Pode ter mais campos conforme seu Form -->
+        
+        <button type="submit">Salvar Funcionário</button>
+    </form>
+
+</body>
+</html>
