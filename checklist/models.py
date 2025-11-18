@@ -20,7 +20,7 @@ class Worker(AbstractUser):
     insert_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
+        return self.first_name
 
 class DataSheet(models.Model):
     code = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

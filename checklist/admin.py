@@ -11,8 +11,8 @@ class ClienteAdmin(admin.ModelAdmin):
 
 @admin.register(Worker)
 class WorkerAdmin(admin.ModelAdmin):
-    list_display = ('cpf', 'name', 'email','phone','position', 'insert_date')
-    search_fields = ('name', 'email')
+    list_display = ('first_name','last_name', 'cpf', 'phone','email','position','username','password')
+    search_fields = ('first_name', 'email')
     list_filter = ('insert_date',)
 
 @admin.register(DataSheet)

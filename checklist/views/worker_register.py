@@ -1,46 +1,26 @@
 
-from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
+from django.shortcuts import render, redirect
 from checklist.forms import WorkerForm
-from django.shortcuts import render
-import random
+from django.contrib.auth import login
+
+
+User = get_user_model()
 
 @login_required(login_url='gerenciador/login/')
 def worker_register(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = WorkerForm(request.POST)
 
         if form.is_valid():
-            # 1) Gera username baseado no email
-            email = form.cleaned_data['email']
-            username = email.split("@")[0]
+            user = form.save(commit=False)  # cria sem salvar ainda
+            user.set_password(form.cleaned_data["password"])  # hash da senha
+            user.save()
 
-            # Evitar duplicidade
-            if User.objects.filter(username=username).exists():
-                username = username + str(random.randint(1000, 9999))
-
-            # 2) Gera senha automática
-            senha = form["cpf"]
-
-            # 3) Cria o usuário na auth_user
-            user = User.objects.create(
-                username=username,
-                email=email,
-                password=make_password(senha)
-            )
-
-            # 4) Cria o funcionário vinculado ao user
-            funcionario = form.save(commit=False)
-            funcionario.user = user
-            funcionario.save()
-
-            return render(request, 'worker/sucesso.html', {
-                'username': username,
-                'senha': senha
-            })
-
+            login(request, user)
+            return redirect('home')
     else:
         form = WorkerForm()
 
-    return render(request, 'worker/form_worker.html', {'form': form})
+    return render(request, 'worker/form_worker.html', {"form": form})
