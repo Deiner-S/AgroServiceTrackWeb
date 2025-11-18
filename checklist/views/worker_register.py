@@ -12,14 +12,15 @@ User = get_user_model()
 def worker_register(request):
     if request.method == "POST":
         form = WorkerForm(request.POST)
-
+        
         if form.is_valid():
             user = form.save(commit=False)  # cria sem salvar ainda
             user.set_password(form.cleaned_data["password"])  # hash da senha
             user.save()
-
-            login(request, user)
-            return redirect('home')
+        else:
+            print("Form inválido!")
+            print(form.errors)        # mostra todos os erros do form
+            print(form.cleaned_data)  # mostra os dados limpos que passaram
     else:
         form = WorkerForm()
 

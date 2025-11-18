@@ -8,6 +8,7 @@ class ClienteForm(forms.ModelForm):
         fields = ['name', 'email']
 
 class WorkerForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
     class Meta:
         model = Worker
         fields = ['first_name',
