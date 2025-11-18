@@ -25,9 +25,15 @@
         {{ form.non_field_errors }}
 
         <p>
-            {{ form.name.label_tag }}
-            {{ form.name }}
-            {{ form.name.errors }}
+            {{ form.first_name.label_tag }}
+            {{ form.first_name }}
+            {{ form.first_name.errors }}
+        </p>
+
+        <p>
+            {{ form.last_name.label_tag }}
+            {{ form.last_name }}
+            {{ form.last_name.errors }}
         </p>
 
         <p>
@@ -52,6 +58,17 @@
             {{ form.positions.label_tag }}
             {{ form.positions }}
             {{ form.positions.errors }}
+        </p>
+
+        <p>
+            {{ form.positions.label_tag }}
+            {{ form.positions }}
+            {{ form.positions.errors }}
+        </p>
+         <p>
+            {{ form.password.label_tag }}
+            {{ form.password }}
+            {{ form.password.errors }}
         </p>
 
         <!-- Pode ter mais campos conforme seu Form -->

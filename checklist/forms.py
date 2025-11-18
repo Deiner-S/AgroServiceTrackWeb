@@ -10,4 +10,11 @@ class ClienteForm(forms.ModelForm):
 class WorkerForm(forms.ModelForm):
     class Meta:
         model = Worker
-        fields = ['name', 'cpf', 'phone','email', 'position']
+        fields = ['first_name',
+                  'last_name', 
+                  'cpf', 
+                  'phone',
+                  'email', 
+                  'position',
+                  'username',
+                  'password',]

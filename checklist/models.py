@@ -1,8 +1,7 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 import uuid
 
-user = get_user_model()
 
 class Client(models.Model):
     cnpj = models.CharField(max_length=30, primary_key=True)
@@ -14,12 +13,9 @@ class Client(models.Model):
     def __str__(self):
         return self.name
 
-class Worker(models.Model):
-    user = models.ForeignKey(user,on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
+class Worker(AbstractUser):
     cpf = models.CharField(max_length=30, primary_key=True)
     phone = models.CharField(max_length=20)
-    email = models.EmailField(unique=True)
     position = models.CharField(max_length=100)
     insert_date = models.DateTimeField(auto_now_add=True)
 
