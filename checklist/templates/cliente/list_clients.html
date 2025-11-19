@@ -1,0 +1,38 @@
+<div>
+    <h2>Clientes Cadastrados</h2>
+
+    {% if clients %}
+        <table class="client-table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Telefone</th>
+                    <th>Email</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for client in clients %}
+                <tr>
+                    <td>{{ client.first_name }} {{ client.last_name }}</td>
+                    <td>{{ client.phone }}</td>
+                    <td>{{ client.email }}</td>
+                    <td>
+                        <button 
+                            hx-get="{% url 'open_client_services' client.id %}"
+                            hx-target="#main-content"
+                            hx-swap="innerHTML"
+                        >
+                            Abrir Serviços
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    {% else %}
+        <p>Nenhum cliente cadastrado ainda.</p>
+    {% endif %}
+</div>

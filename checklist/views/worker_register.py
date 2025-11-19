@@ -1,15 +1,19 @@
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from checklist.forms import WorkerForm
-from django.contrib.auth import login
+from django.http import HttpResponseBadRequest
+
 
 
 User = get_user_model()
 
 @login_required(login_url='gerenciador/login/')
 def worker_register(request):
+    if not request.headers.get("HX-Request"):
+            return HttpResponseBadRequest("Acesso inválido")
+    
     if request.method == "POST":
         form = WorkerForm(request.POST)
         
@@ -21,6 +25,8 @@ def worker_register(request):
             print("Form inválido!")
             print(form.errors)        # mostra todos os erros do form
             print(form.cleaned_data)  # mostra os dados limpos que passaram
+
+        
     else:
         form = WorkerForm()
 

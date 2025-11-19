@@ -1,78 +1,53 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-
-    <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f3f4f6;
-            margin: 0;
-            padding: 0;
-        }
-
-        header {
-            background: #1f2937;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        main {
-            max-width: 800px;
-            margin: 40px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            margin-top: 0;
-        }
-
-        .links {
-            margin-top: 20px;
-        }
-
-        .links a {
-            display: inline-block;
-            margin-right: 15px;
-            background: #4b5563;
-            padding: 10px 18px;
-            border-radius: 6px;
-            color: white;
-            text-decoration: none;
-        }
-
-        .links a:hover {
-            background: #374151;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <script src="https://unpkg.com/htmx.org"></script>
+    
 </head>
 <body>
 
-    <header>
-        <h2>Meu Sistema Django</h2>
+    <header>        
+            <h2>Project AT</h2>   
+        
+    </header>
+    <nav class="links">       
+                   
+        
+        <button 
+            hx-get="{% url 'register_worker' %}" 
+            hx-target="#main-content"
+            hx-swap="innerHTML"
+        >
+        Cadastrar Funcionario
+        </button>
+        <button 
+            hx-get="{% url 'register_client' %}" 
+            hx-target="#main-content"
+            hx-swap="innerHTML"
+            >
+            Cadastrar Cliente
+        </button>
+        
+        <button 
+            hx-get="{% url 'client-list' %}" 
+            hx-target="#main-content"
+            hx-swap="innerHTML"
+            >
+            Listar Clientes
+        </button>  
+        
         <form method="POST" action="{% url 'logout' %}">
             {% csrf_token %}
             <button type="submit">Sair</button>
         </form>
-    </header>
-
-    <main>
-        <h1>Bem-vindo(a)!</h1>
-        <p>
-            Essa é a página inicial da sua aplicação.  
-            Fique à vontade para navegar pelas funcionalidades.
-        </p>
-
-        <div class="links">            
-            <a href="{% url 'register_client' %}">Cadastrar Cliente</a>
-            <a href="{% url 'register_worker' %}">Cadastrar Funcionario</a>
-        </div>
+    </nav>
+    <main  id="main-content">       
+        {% block content %}{% endblock %}        
     </main>
 
 </body>

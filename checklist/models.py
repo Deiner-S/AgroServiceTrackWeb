@@ -25,14 +25,15 @@ class Worker(AbstractUser):
 class DataSheet(models.Model):
     code = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     operation_code = models.CharField(max_length=20, unique=True, blank=True)
-    chassi = models.CharField(max_length=100)
+    symptoms = models.CharField(max_length=1000)
     client = models.ForeignKey(Client,on_delete=models.CASCADE)
-    orimento = models.CharField(max_length=100)
-    model = models.CharField(max_length=100) 
-    date_in = models.DateTimeField()
-    date_out = models.DateTimeField()
-    status = models.CharField(max_length=10)
-    service = models.CharField(max_length=2000)
+    chassi = models.CharField(max_length=100, null=True, blank=True)
+    orimento = models.CharField(max_length=100, null=True, blank=True)
+    model = models.CharField(max_length=100, null=True, blank=True) 
+    date_in = models.DateTimeField(null=True, blank=True)
+    date_out = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=10, null=True, blank=True)
+    service = models.CharField(max_length=2000, null=True, blank=True)
     insert_date = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
