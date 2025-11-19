@@ -3,6 +3,15 @@
     gap: 15px;
     justify-content: center;
 }
+.container {
+    background-color: #ffffff;      /* fundo branco */
+    border-radius: 10px;            /* bordas arredondadas */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* sombra leve */
+    padding: 20px;                  /* espaçamento interno */
+    max-width: 800px;               /* largura máxima opcional */
+    margin: 20px auto;              /* centraliza horizontalmente com margem superior/inferior */
+    overflow: hidden;               /* evita que conteúdos internos quebrem as bordas arredondadas */
+}
 body {
     font-family: Arial, Helvetica, sans-serif;
     background: #f3f4f6;
@@ -17,7 +26,8 @@ nav {
 }
 main {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #ffffff;
+    background: url('img/1.png') no-repeat center center;
+    background-size: cover;
     margin: 0;
     padding: 0;
     display: flex;
@@ -84,7 +94,20 @@ button:hover {
     font-weight: bold;
     color: #555;
 }
-
+.sigle_label{
+    
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+.sigle_input{
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s;
+}
 .form input, form select {
     padding: 10px;
     border-radius: 5px;

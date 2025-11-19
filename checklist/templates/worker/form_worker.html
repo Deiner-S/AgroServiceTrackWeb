@@ -1,67 +1,67 @@
-<div>
-    <form class ="form"method="POST">
-        <h1>Cadastrar Funcionário</h1>
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-        {% csrf_token %}
-        
-        <!-- Renderiza campo por campo -->
-        {{ form.non_field_errors }}
 
+<form class ="form"method="POST">
+    <h1>Cadastrar Funcionário</h1>
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    {% csrf_token %}
+    
+    <!-- Renderiza campo por campo -->
+    {{ form.non_field_errors }}
+
+    <p>
+        {{ form.first_name.label_tag }}
+        {{ form.first_name }}
+        {{ form.first_name.errors }}
+    </p>
+
+    <p>
+        {{ form.last_name.label_tag }}
+        {{ form.last_name }}
+        {{ form.last_name.errors }}
+    </p>
+
+    <p>
+        {{ form.cpf.label_tag }}
+        {{ form.cpf }}
+        {{ form.cpf.errors }}
+    </p>
+
+    <p>
+        {{ form.phone.label_tag }}
+        {{ form.phone }}
+        {{ form.phone.errors }}
+    </p>
+
+    <p>
+        {{ form.email.label_tag }}
+        {{ form.email }}
+        {{ form.email.errors }}
+    </p>
+
+    <p>
+        {{ form.position.label_tag }}
+        {{ form.position }}
+        {{ form.position.errors }}
+    </p>
+
+    <p>
+        {{ form.username.label_tag }}
+        {{ form.username }}
+        {{ form.username.errors }}
+    </p>
         <p>
-            {{ form.first_name.label_tag }}
-            {{ form.first_name }}
-            {{ form.first_name.errors }}
-        </p>
+        {{ form.password.label_tag }}
+        {{ form.password }}
+        {{ form.password.errors }}
+    </p>
 
-        <p>
-            {{ form.last_name.label_tag }}
-            {{ form.last_name }}
-            {{ form.last_name.errors }}
-        </p>
+    <!-- Pode ter mais campos conforme seu Form -->
+    
+    <button type="submit">Salvar Funcionário</button>
+</form>
 
-        <p>
-            {{ form.cpf.label_tag }}
-            {{ form.cpf }}
-            {{ form.cpf.errors }}
-        </p>
-
-        <p>
-            {{ form.phone.label_tag }}
-            {{ form.phone }}
-            {{ form.phone.errors }}
-        </p>
-
-        <p>
-            {{ form.email.label_tag }}
-            {{ form.email }}
-            {{ form.email.errors }}
-        </p>
-
-        <p>
-            {{ form.position.label_tag }}
-            {{ form.position }}
-            {{ form.position.errors }}
-        </p>
-
-        <p>
-            {{ form.username.label_tag }}
-            {{ form.username }}
-            {{ form.username.errors }}
-        </p>
-         <p>
-            {{ form.password.label_tag }}
-            {{ form.password }}
-            {{ form.password.errors }}
-        </p>
-
-        <!-- Pode ter mais campos conforme seu Form -->
-        
-        <button type="submit">Salvar Funcionário</button>
-    </form>
-</div>

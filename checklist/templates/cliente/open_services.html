@@ -1,0 +1,29 @@
+{% load static %}
+<div class="container">
+    <h2>Serviços de {{ client.name }}</h2>
+
+    {% if services %}
+        <table class="service-table">
+            <thead>
+                <tr>
+                    <th>Descrição</th>
+                    <th>Status</th>
+                    <th>Data de Criação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in services %}
+                <tr>
+                    <td>{{ service.description }}</td>
+                    <td>{{ service.status }}</td>
+                    <td>{{ service.insert_date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Este cliente ainda não possui serviços cadastrados.</p>
+    {% endif %}
+
+    <a href="{% url 'register_service' client.id %}">Adicionar novo serviço</a>
+</div>
