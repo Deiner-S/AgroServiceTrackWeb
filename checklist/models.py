@@ -4,7 +4,7 @@ import uuid
 
 
 class Client(models.Model):
-    cnpj = models.CharField(max_length=30, primary_key=True)
+    cnpj = models.CharField(max_length=30)
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=False)
     phone = models.CharField(max_length=20)

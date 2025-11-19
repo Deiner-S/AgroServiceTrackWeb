@@ -5,7 +5,7 @@ from .models import Worker
 class ClienteForm(forms.ModelForm):
     class Meta:
         model = Client
-        fields = ['name', 'email']
+        fields = ['cnpj','name', 'email','phone']
 
 class WorkerForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
