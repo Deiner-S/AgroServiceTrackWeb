@@ -43,3 +43,21 @@ class DataSheetCreateForm(forms.ModelForm):
             "operation_code": forms.TextInput(attrs={"readonly": "readonly"}),
             "symptoms": forms.Textarea(attrs={"rows": 4}),
         }
+
+class DataSheetUpdateForm(forms.ModelForm):
+    class Meta:
+        model = DataSheet
+        fields = [
+            "chassi",
+            "orimento",
+            "model",
+            "date_in",
+            "date_out",
+            "service",
+            "status",
+        ]
+        widgets = {
+            "date_in": forms.DateTimeInput(attrs={"type": "datetime-local"}),
+            "date_out": forms.DateTimeInput(attrs={"type": "datetime-local"}),
+            "status": forms.Select(),
+        }

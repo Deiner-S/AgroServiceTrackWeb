@@ -7,7 +7,7 @@ from django.http import HttpResponseBadRequest
 from checklist.templates.templates_paths import TemplatePaths
 from checklist.models import Client
 from django.db import models
-
+from django.core.paginator import Paginator
 
 
 
@@ -30,10 +30,17 @@ def add_cliente(request):
 
 @login_required(login_url='gerenciador/login/')
 def client_list(request):
+    clients = Client.objects.all().order_by("name")
     query = request.GET.get("search", "")
-    clients = Client.objects.all()
+    
+
     if query:
         clients = clients.filter(
             models.Q(name__icontains=query) | models.Q(email__icontains=query)
         )
-    return render(request, TemplatePaths.CLIENT_LIST, {"clients": clients})
+
+    page_number = request.GET.get("page")
+    paginator = Paginator(clients, 10)
+    page_client = paginator.get_page(page_number)
+    
+    return render(request, TemplatePaths.CLIENT_LIST, {"page_client": page_client})

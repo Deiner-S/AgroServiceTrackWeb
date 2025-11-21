@@ -9,45 +9,66 @@
             type="text" 
             name="search" 
             placeholder="Nome ou CNPJ" 
-            value="{{ request.GET.q|default:'' }}"
+            value="{{ request.GET.search|default:'' }}"
             hx-trigger="keyup changed delay:500ms"
         >
         <button type="submit">Buscar</button>
     </form>
-    {% if clients %}
-        <table class="client-table">
-            <thead>
-                <tr>
-                    <th>CNPJ</th>
-                    <th>Nome</th>
-                    <th>Phone</th>
-                    <th>Email</th>
-                    <th>-</th>
-                </tr>
-            </thead>
+    {% if page_client %}
+    <table class="client-table">
+        <thead>
+            <tr>
+                <th>CNPJ</th>
+                <th>Nome</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>-</th>
+            </tr>
+        </thead>
+        
+        <tbody>
+            {% for client in page_client %}
+            <tr>
+                <td>{{ client.cnpj }}</td>
+                <td>{{ client.name }}</td>
+                <td>{{ client.phone }}</td>
+                <td>{{ client.email }}</td>
+                <td>
+                    <button 
+                    hx-get="{% url 'open_client_services' client.id %}"
+                    hx-target="#main-content"
+                    hx-swap="innerHTML"
+                    >
+                    Verificar Serviços
+                </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="pagination">
+        {% if page_client.has_previous %}
+        <button  hx-get="{% url 'client-list' %}?page={{ page_client.previous_page_number }}"
+            hx-target="#main-content"
+            hx-swap="innerHTML">
+            Anterior
+        </button>
+    
+        {% endif %}
+        
+        <span>Página {{ page_client.number }} de {{ page_client.paginator.num_pages }}</span>
+        
+        {% if page_client.has_next %}
+        <button hx-get="{% url 'client-list' %}?page={{ page_client.next_page_number }}"
+            hx-target="#main-content"
+            hx-swap="innerHTML">
+            Próxima
+        </button>
 
-            <tbody>
-                {% for client in clients %}
-                <tr>
-                    <td>{{ client.cnpj }}</td>
-                    <td>{{ client.name }}</td>
-                    <td>{{ client.phone }}</td>
-                    <td>{{ client.email }}</td>
-                    <td>
-                        <button 
-                            hx-get="{% url 'open_client_services' client.id %}"
-                            hx-target="#main-content"
-                            hx-swap="innerHTML"
-                        >
-                            Verificar Serviços
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
+        {% endif %}
+    </div>
     {% else %}
-        <p>Nenhum cliente cadastrado ainda.</p>
+    <p>Nenhum cliente cadastrado ainda.</p>
     {% endif %}
 </div>

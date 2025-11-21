@@ -238,3 +238,76 @@ button:hover {
 .service_form button:hover {
     background: #374151;
 }
+
+.empty-grid {
+    padding: 40px;    
+    background: #fafafa;
+    border-radius: 12px;
+    margin: 20px auto;
+    width: 500px;
+    max-width: 750px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.empty-state h2 {
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+    color: #444;
+}
+
+.empty-state p {
+    color: #777;
+}
+
+.service-card {
+    background: #c1c1c1;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin: 15px 0;
+    border: 1px solid #e8e8e8;
+}
+
+.service-card:hover {
+    background: #d2d2d2;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+.service-card h3 {
+    margin: 0 0 10px;
+    font-size: 1.4rem;
+    color: #333;
+}
+
+.service-card p {
+    margin: 6px 0;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.service-card .status {
+    margin-top: 12px;
+    font-weight: bold;
+    padding: 6px 12px;
+    display: inline-block;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+/* Cores dos status */
+.status.aberta {
+    background: #e6f4ff;
+    color: #ff4646;
+}
+
+.status.em_andamento {
+    background: #fff4d6;
+    color: #c0cb30;
+}
+
+.status.finalizada {
+    background: #e7ffe7;
+    color: #1d8a1d;
+}

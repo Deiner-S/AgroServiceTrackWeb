@@ -1,22 +1,19 @@
-<div style="display: flex; gap: 20px; flex-wrap: wrap;">
-    {% for servico in servicos %}
-        <a href="{% url 'editar_servico' servico.id %}"
-           style="
-                width: 260px;
-                padding: 15px;
-                border-radius: 10px;
-                border: 1px solid #ccc;
-                background: #f6f6f6;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                text-decoration: none;
-                color: black;
-                display: block;
-            ">
-            
-            <h3>{{ servico.nome }}</h3>
-            <p>Status: <strong>{{ servico.status }}</strong></p>
-            <p><small>ID: {{ servico.id }}</small></p>
-
-        </a>
-    {% endfor %}
+<div class="empty-grid">
+    
+    {% if orders %}    
+        {% for s in orders %}
+           <div class="service-card">
+                <h3>OS {{ s.operation_code }}</h3>
+                <p><strong>Cliente:</strong> {{ s.client.name }}</p>
+                <p><strong>Problema:</strong> {{ s.symptoms }}</p>
+                <p class="status {{ s.status|lower }}">{{ s.get_status_display }}</p>
+            </div>  
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <h2>Nenhum serviço ativo</h2>
+            <p>Todas as ordens estão finalizadas.</p>
+        </div>
+    {% endif %}
+    
 </div>
