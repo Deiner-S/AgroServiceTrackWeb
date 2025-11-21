@@ -13,7 +13,7 @@ class Client(models.Model):
     def __str__(self):
         return self.name
 
-class Worker(AbstractUser):
+class Employee(AbstractUser):
     cpf = models.CharField(max_length=30, primary_key=True)
     phone = models.CharField(max_length=20)
     position = models.CharField(max_length=100)
@@ -49,10 +49,10 @@ class DataSheet(models.Model):
     
     
 
-class checklist(models.Model):
+class Checklist(models.Model):
     name = models.CharField(max_length=100)
     datasheet = models.ForeignKey(DataSheet,on_delete=models.CASCADE,related_name="checklists")    
-    worker = models.ForeignKey(Worker,on_delete=models.CASCADE,related_name="checklists")    
+    employee = models.ForeignKey(Employee,on_delete=models.CASCADE,related_name="checklists")    
     status = models.CharField(max_length=10)
     picture = models.ImageField(upload_to='funcionarios/', blank=True,null=True)
     insert_date = models.DateTimeField(auto_now_add=True)

@@ -1,4 +1,4 @@
-from checklist.models import Client, Worker, DataSheet, checklist
+from checklist.models import Client, Employee, DataSheet, Checklist
 from django.utils import timezone
 import uuid
  
@@ -24,7 +24,7 @@ c2 = Client.objects.create(
 # -------------------------
 # FUNCIONÁRIOS
 # -------------------------
-w1 = Worker.objects.create(
+w1 = Employee.objects.create(
     cpf="123.456.789-00",
     name="Carlos Mendes",
     phone="(11) 97777-1111",
@@ -32,7 +32,7 @@ w1 = Worker.objects.create(
     position="Mecânico"
 )
 
-w2 = Worker.objects.create(
+w2 = Employee.objects.create(
     cpf="987.654.321-00",
     name="Juliana Rocha",
     phone="(11) 96666-2222",
@@ -73,7 +73,7 @@ d2 = DataSheet.objects.create(
 # *Obs*: picture é obrigatório, então coloquei um caminho fictício.
 # Ele só precisa existir no sistema de arquivos.
 
-checklist.objects.create(
+Checklist.objects.create(
     name="Revisão Inicial - Motor",
     datasheet=d1,
     worker=w1,
@@ -81,7 +81,7 @@ checklist.objects.create(
     
 )
 
-checklist.objects.create(
+Checklist.objects.create(
     name="Avaliação Geral - Suspensão",
     datasheet=d1,
     worker=w2,
@@ -89,7 +89,7 @@ checklist.objects.create(
     
 )
 
-checklist.objects.create(
+Checklist.objects.create(
     name="Inspeção Elétrica",
     datasheet=d2,
     worker=w1,

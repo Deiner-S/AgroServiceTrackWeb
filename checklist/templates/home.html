@@ -12,21 +12,19 @@
 <body>
 
     <header>        
-            <h2>Project AT</h2>   
-        
-    </header>
-    <nav class="links">       
+            <h2>Prototipo Agro Terra</h2>   
+            <nav class="links">       
                    
         
         <button 
-            hx-get="{% url 'register_worker' %}" 
+            hx-get="{% url 'add_employee' %}" 
             hx-target="#main-content"
             hx-swap="innerHTML"
         >
         Cadastrar Funcionario
         </button>
         <button 
-            hx-get="{% url 'register_client' %}" 
+            hx-get="{% url 'add_client' %}" 
             hx-target="#main-content"
             hx-swap="innerHTML"
             >
@@ -41,11 +39,13 @@
             Listar Clientes
         </button>  
         
-        <form method="POST" action="{% url 'logout' %}">
+        <form  method="POST" action="{% url 'logout' %}">
             {% csrf_token %}
-            <button type="submit">Sair</button>
+            <button type="submit">logout</button>
         </form>
     </nav>
+    </header>
+
     <main  id="main-content">       
         {% block content %}{% endblock %}        
     </main>

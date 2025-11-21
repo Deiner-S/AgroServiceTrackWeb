@@ -1,26 +1,16 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+        <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
     <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f3f4f6;
-            margin: 0;
-            padding: 0;
-        }
+        
 
-        header {
-            background: #1f2937;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        main {
+       form {
             max-width: 400px;
             margin: 60px auto;
             background: white;
@@ -36,6 +26,7 @@
         }
 
         label {
+            
             font-weight: bold;
             display: block;
             margin-top: 15px;
@@ -43,8 +34,10 @@
         }
 
         input {
-            width: 100%;
-            padding: 12px;
+            
+            width: 97%;
+            padding-top: 10px;
+            padding-bottom: 10px;
             margin-top: 6px;
             border-radius: 6px;
             border: 1px solid #d1d5db;
@@ -85,18 +78,20 @@
         .extra-links a:hover {
             text-decoration: underline;
         }
+
+    
     </style>
 </head>
 <body>
 
     <header>
-        <h2>Meu Sistema Django</h2>
+        <h2>Prototipo Agro Terra</h2>
     </header>
 
     <main>
-        <h1>Login</h1>
-
+        
         <form action="{% url 'login' %}" method="post">
+            <h1>Login</h1>
             {% csrf_token %}
             {% if erro %}
             <div style="color: red; margin-bottom: 10px;">
@@ -112,9 +107,6 @@
             <button type="submit">Entrar</button>
         </form>
 
-        <div class="extra-links">
-            <a href="/">Voltar para a Home</a>
-        </div>
     </main>
 
 </body>

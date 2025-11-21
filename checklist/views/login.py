@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
-
+from checklist.templates.templates_paths import TemplatePaths
+from django.urls import reverse
 
 def login_view(request):
     if request.method == 'POST':
@@ -17,11 +18,11 @@ def login_view(request):
             return redirect('home')
 
         # 4) Se falhar, volta para o login com erro
-        return render(request, 'login.html', {'erro': 'Usuário ou senha inválidos.'})
+        return render(request, TemplatePaths.LOGIN, {'erro': 'Usuário ou senha inválidos.'})
 
     # GET → mostra tela de login
-    return render(request, 'login.html')
+    return render(request, TemplatePaths.LOGIN)
 
 def logout_view(request):
     logout(request)   # Encerra a sessão
-    return redirect('/gerenciador/login/')
+    return redirect(reverse("login"))

@@ -9,8 +9,8 @@ class ClienteAdmin(admin.ModelAdmin):
     list_filter = ('insert_date',) 
 
 
-@admin.register(Worker)
-class WorkerAdmin(admin.ModelAdmin):
+@admin.register(Employee)
+class EmployeeAdmin(admin.ModelAdmin):
     list_display = ('first_name','last_name', 'cpf', 'phone','email','position','username','password')
     search_fields = ('first_name', 'email')
     list_filter = ('insert_date',)
@@ -21,9 +21,9 @@ class DataSheetAdmin(admin.ModelAdmin):
     search_fields = ('code','operation_code', 'chassi','client')
     list_filter = ('insert_date','client','chassi')
 
-@admin.register(checklist)
-class checklistAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'datasheet','worker','status','picture', 'insert_date')
-    search_fields = ('datasheet', 'worker',"status")
-    list_filter = ('insert_date','datasheet', 'worker',"status")
+@admin.register(Checklist)
+class ChecklistAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'datasheet','employee','status','picture', 'insert_date')
+    search_fields = ('datasheet', 'employee',"status")
+    list_filter = ('insert_date','datasheet', 'employee',"status")
 

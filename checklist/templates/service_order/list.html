@@ -6,15 +6,15 @@
         <table class="service-table">
             <thead>
                 <tr>
-                    <th>Descrição</th>
+                    <th>Código operacional</th>
                     <th>Status</th>
-                    <th>Data de Criação</th>
+                    <th>Data da solicitação</th>
                 </tr>
             </thead>
             <tbody>
                 {% for service in services %}
                 <tr>
-                    <td>{{ service.description }}</td>
+                    <td>{{ service.operation_code }}</td>
                     <td>{{ service.status }}</td>
                     <td>{{ service.insert_date }}</td>
                 </tr>
@@ -25,5 +25,11 @@
         <p>Este cliente ainda não possui serviços cadastrados.</p>
     {% endif %}
 
-    <a href="{% url 'register_service' client.id %}">Adicionar novo serviço</a>
+    <button 
+        hx-get="{% url 'add_service' client.id %}"
+        hx-target="#main-content"
+        hx-swap="innerHTML"
+    >
+        Adicionar novo serviço
+    </button>
 </div>

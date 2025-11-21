@@ -2,20 +2,20 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.shortcuts import render
-from checklist.forms import WorkerForm
+from checklist.forms import EmployeeForm
 from django.http import HttpResponseBadRequest
-
+from checklist.templates.templates_paths import TemplatePaths
 
 
 User = get_user_model()
 
 @login_required(login_url='gerenciador/login/')
-def worker_register(request):
+def add_employee(request):
     if not request.headers.get("HX-Request"):
             return HttpResponseBadRequest("Acesso inválido")
     
     if request.method == "POST":
-        form = WorkerForm(request.POST)
+        form = EmployeeForm(request.POST)
         
         if form.is_valid():
             user = form.save(commit=False)  # cria sem salvar ainda
@@ -28,6 +28,6 @@ def worker_register(request):
 
         
     else:
-        form = WorkerForm()
+        form = EmployeeForm()
 
-    return render(request, 'worker/form_worker.html', {"form": form})
+    return render(request, TemplatePaths.EMPLOYEE_FORM, {"form": form})

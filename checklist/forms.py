@@ -1,16 +1,16 @@
 from django import forms
 from checklist.models import Client
-from .models import Worker
+from .models import Employee
 
-class ClienteForm(forms.ModelForm):
+class ClientForm(forms.ModelForm):
     class Meta:
         model = Client
         fields = ['cnpj','name', 'email','phone']
 
-class WorkerForm(forms.ModelForm):
+class EmployeeForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
     class Meta:
-        model = Worker
+        model = Employee
         fields = ['first_name',
                   'last_name', 
                   'cpf', 
