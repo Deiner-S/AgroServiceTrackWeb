@@ -1,6 +1,6 @@
 from django import forms
-from checklist.models import Client
-from .models import Employee
+from checklist.models import Client,Employee,DataSheet
+
 
 class ClientForm(forms.ModelForm):
     class Meta:
@@ -10,7 +10,7 @@ class ClientForm(forms.ModelForm):
 class EmployeeForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
     class Meta:
-        model = Employee
+        model = Employee        
         fields = ['first_name',
                   'last_name', 
                   'cpf', 
@@ -19,3 +19,27 @@ class EmployeeForm(forms.ModelForm):
                   'position',
                   'username',
                   'password',]
+        
+        labels = {'first_name':'Primeiro nome',
+                  'last_name':'Sobrenome', 
+                  'cpf':'CPF', 
+                  'phone':'Telefone/celular',
+                  'email':'Email', 
+                  'position':'Cargo',
+                  'username':'Usuário',
+                  'password':'Senha'}
+        
+class DataSheetCreateForm(forms.ModelForm):
+    class Meta:
+        model = DataSheet
+        fields = ["operation_code", "symptoms"]
+
+        labels = {
+            'operation_code': 'Ordem de serviço',
+            'symptoms': 'Descrição do problema'
+        }
+
+        widgets = {
+            "operation_code": forms.TextInput(attrs={"readonly": "readonly"}),
+            "symptoms": forms.Textarea(attrs={"rows": 4}),
+        }

@@ -68,7 +68,7 @@ header {
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     width: 100%;
     max-width: 450px;
-    margin-top: 50px;
+    margin-top: 20px;
     flex-direction: column;
 }
 
@@ -176,5 +176,65 @@ button:hover {
 }
 
 .client-table button:hover {
+    background: #374151;
+}
+
+
+.service_form{
+
+    margin-top: 20px;
+    max-width: 450px;
+    padding: 25px;
+    background: #f7f7f7;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    font-family: Arial, sans-serif;
+}
+
+.service_form h3 {
+    margin-bottom: 20px;
+    text-align: center;
+    color: #333;
+    font-weight: 600;
+}
+
+.service_form label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #444;
+}
+
+.service_form input[type="text"],
+
+.service_form textarea {
+    width: 97%;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.service_form input[readonly] {
+    background: #eee;
+    cursor: not-allowed;
+}
+
+.service_form button {
+    width: 100%;
+    padding: 12px;
+    background: #4b5563;
+    color: white;
+    border: none;
+    font-size: 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.25s;
+}
+
+.service_form button:hover {
     background: #374151;
 }

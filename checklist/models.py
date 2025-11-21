@@ -21,7 +21,13 @@ class Employee(AbstractUser):
 
     def __str__(self):
         return self.first_name
+    
 
+STATUS_CHOICES = [
+    ("ABERTA", "Aberta"),
+    ("EM_ANDAMENTO", "Em andamento"),
+    ("FINALIZADA", "Finalizada"),
+]
 class DataSheet(models.Model):
     code = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     operation_code = models.CharField(max_length=20, unique=True, blank=True)
@@ -32,16 +38,9 @@ class DataSheet(models.Model):
     model = models.CharField(max_length=100, null=True, blank=True) 
     date_in = models.DateTimeField(null=True, blank=True)
     date_out = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=10, null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="ABERTA")
     service = models.CharField(max_length=2000, null=True, blank=True)
     insert_date = models.DateTimeField(auto_now_add=True)
-
-    def save(self, *args, **kwargs):
-        if not self.operation_code:
-            ultimo = DataSheet.objects.order_by('insert_date').last()
-            proximo = 1 if not ultimo else int(ultimo.operation_code) + 1
-            self.operation_code = f"{proximo:06d}"  # 000001, 000002...
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return str(self.operation_code)

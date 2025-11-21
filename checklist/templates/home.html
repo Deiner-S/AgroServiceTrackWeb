@@ -37,7 +37,15 @@
             hx-swap="innerHTML"
             >
             Listar Clientes
-        </button>  
+        </button> 
+
+        <button 
+            hx-get="{% url 'service_panel' %}" 
+            hx-target="#main-content"
+            hx-swap="innerHTML"
+            >
+            Painel de Serviço
+        </button> 
         
         <form  method="POST" action="{% url 'logout' %}">
             {% csrf_token %}

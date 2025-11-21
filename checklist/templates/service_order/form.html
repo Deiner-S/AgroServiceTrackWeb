@@ -1,27 +1,30 @@
-<form class="form"method="POST">
-    <h1>Cadastrar Serviço</h1>
+<form class="service_form" method="POST"
+      hx-post="{% url 'add_service' client.id %}"
+      hx-target="#main-content"
+      hx-swap="innerHTML">
+    
+    <h3>Nova Ordem de Serviço</h3>
+
     {% csrf_token %}
+
     {{ form.non_field_errors }}
     
-    <p>
-        {{ form.cnpj.label_tag }}
-        {{ form.cnpj }}
-        {{ form.cnpj.errors }}
-    </p>
-    <p>
-        {{ form.name.label_tag }}
-        {{ form.name }}
-        {{ form.name.errors }}
-    </p>
-    <p>
-        {{ form.email.label_tag }}
-        {{ form.email }}
-        {{ form.email.errors }}
-    </p>
-    <p>
-        {{ form.phone.label_tag }}
-        {{ form.phone }}
-        {{ form.phone.errors }}
-    </p>
+    <div class="form-group">
+        <label>Cliente</label>
+        <input type="text" value="{{ client.name }}" disabled>
+    </div>
+
+    <div class="form-group">
+        {{ form.operation_code.label_tag }}
+        {{ form.operation_code }}
+        {{ form.operation_code.errors }}
+    </div>
+
+    <div class="form-group">
+        {{ form.symptoms.label_tag }}
+        {{ form.symptoms }}
+        {{ form.symptoms.errors }}
+    </div>
+
     <button type="submit">Salvar</button>
 </form>
