@@ -11,4 +11,5 @@ urlpatterns = [
     path("clients/<int:client_id>/services/", open_client_services, name="open_client_services"),
     path("clients/<int:client_id>/services/add_service", add_service, name="add_service"),
     path("panel/", service_panel, name="service_panel"),
+    path("api/", os_pending, name="os_pendentes"),
 ]

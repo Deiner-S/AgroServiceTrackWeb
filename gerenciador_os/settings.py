@@ -14,6 +14,7 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+SECURE_SSL_REDIRECT = False
 
 AUTH_USER_MODEL = 'checklist.Employee'
 
@@ -26,7 +27,8 @@ SECRET_KEY = 'django-insecure-r8)i2hz+6f5#*f@dc19n)hg-=(fpzc9_ryvlsp4esfk%mma=d0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'ringless-equivalently-alijah.ngrok-free.dev']
+
 
 
 # Application definition
@@ -38,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'checklist',
 ]
 
