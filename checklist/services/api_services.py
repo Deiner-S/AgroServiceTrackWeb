@@ -1,12 +1,8 @@
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-from checklist.models import WorkOrder, Client
+from models import WorkOrder
+from models import *
 
-@api_view(['GET'])
-def pending_work_order(request):
+def get_pending_work_order():
     items = WorkOrder.objects.all()
-
     for item in items:
         client = Client.objects.get(id=item.client.id)
         data = [
@@ -18,6 +14,15 @@ def pending_work_order(request):
             "insert_date" :item.insert_date,
             }            
         ]
-    
+    return data
 
-    return Response(data, status=status.HTTP_200_OK)
+def get_checklist_items():
+    items = ChecklistItem.objects.all()
+    data = [
+        {
+            "name": item.name,
+            "status": item.status,        
+        }
+        for item in items
+    ]
+    return data

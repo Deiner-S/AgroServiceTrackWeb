@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from checklist.templates.templates_paths import TemplatePaths
 from django.urls import reverse
 
-def login_view(request):
+def login(request):
     if request.method == 'POST':
         usuario = request.POST.get('usuario')
         senha = request.POST.get('senha')
