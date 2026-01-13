@@ -18,7 +18,7 @@
     <table class="client-table">
         <thead>
             <tr>
-                <th>CNPJ</th>
+                <th>CPF/CNPJ</th>
                 <th>Nome</th>
                 <th>Phone</th>
                 <th>Email</th>
@@ -29,13 +29,19 @@
         <tbody>
             {% for client in page_client %}
             <tr>
-                <td>{{ client.cnpj }}</td>
+                <td>
+                    {% if client.cnpj %}
+                        {{ client.cnpj }}
+                    {% else %}
+                        {{ client.cpf }}
+                    {% endif %}
+                </td>
                 <td>{{ client.name }}</td>
                 <td>{{ client.phone }}</td>
                 <td>{{ client.email }}</td>
                 <td>
                     <button 
-                    hx-get="{% url 'open_client_services' client.id %}"
+                    hx-get="{% url 'open_client_order' client.id %}"
                     hx-target="#main-content"
                     hx-swap="innerHTML"
                     >

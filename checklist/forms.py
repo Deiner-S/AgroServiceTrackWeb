@@ -1,5 +1,5 @@
 from django import forms
-from checklist.models import Client,Employee,DataSheet
+from checklist.models import Client,Employee,WorkOrder
 
 
 class ClientForm(forms.ModelForm):
@@ -31,7 +31,7 @@ class EmployeeForm(forms.ModelForm):
         
 class DataSheetCreateForm(forms.ModelForm):
     class Meta:
-        model = DataSheet
+        model = WorkOrder
         fields = ["operation_code", "symptoms"]
 
         labels = {
@@ -46,7 +46,7 @@ class DataSheetCreateForm(forms.ModelForm):
 
 class DataSheetUpdateForm(forms.ModelForm):
     class Meta:
-        model = DataSheet
+        model = WorkOrder
         fields = [
             "chassi",
             "orimento",
