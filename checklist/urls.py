@@ -11,6 +11,6 @@ urlpatterns = [
     path("clients/<uuid:client_id>/services/", open_client_order, name="open_client_order"),
     path("clients/<uuid:client_id>/services/add_service", add_order, name="add_service"),
     path("panel/", service_panel, name="service_panel"),
-    path("work_order_api/", send_pending_work_order, name="work_order"),
-    path("dowload_checklist_items_api/", send_checklist_items, name="dowload_checklist_items"),
+    path("send_work_orders_api/", send_pending_work_order, name="send_work_orders_api"),
+    path("send_checklist_items_api/", send_checklist_items, name="send_checklist_items_api"),
 ]
