@@ -1,5 +1,5 @@
-from models import WorkOrder
-from models import *
+from checklist.models import WorkOrder
+from checklist.models import *
 
 def get_pending_work_order():
     items = WorkOrder.objects.all()
