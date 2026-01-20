@@ -8,7 +8,7 @@ from checklist.templates.templates_paths import TemplatePaths
 def home(request):
     return render(request, TemplatePaths.HOME)
 
-def login(request):
+def auth_login(request):
     if request.method == 'POST':
         usuario = request.POST.get('usuario')
         senha = request.POST.get('senha')

@@ -16,15 +16,12 @@ def send_checklist_items(request):
 
 @api_view(['POST'])
 def receive_work_orders_api(request):
-    if request.method == "POST":
-        data = json.loads(request.body) 
-        print(data)
-    return Response(status=status.HTTP_200_OK)
+    data = request.data
+    print(data)
+    return Response({"ok": True}, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def receive_checkLists_filleds(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        print(data)
-
-    return Response(status=status.HTTP_200_OK)
+    data = request.data
+    print(data)
+    return Response({"ok": True}, status=status.HTTP_200_OK)
