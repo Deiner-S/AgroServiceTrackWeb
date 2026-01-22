@@ -1,6 +1,6 @@
 from django.urls import path
 from checklist.views import *
-
+from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView)
 
 urlpatterns = [
     path('client/', add_cliente, name='add_client'),
@@ -15,4 +15,6 @@ urlpatterns = [
     path("send_checklist_items_api/", send_checklist_items, name="send_checklist_items_api"),
     path("receive_work_orders_api/", receive_work_orders_api, name="receive_work_orders_api"),
     path("receive_checklist_api/", receive_checkLists_filleds, name="receive_checkLists_filleds"),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

@@ -59,7 +59,6 @@ STATUS_CHOICES_CHECKLIST= [
 ]
 class Checklist(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=100)
     work_order = models.ForeignKey(WorkOrder,on_delete=models.CASCADE,related_name="checklists")    
     employee = models.ForeignKey(Employee,on_delete=models.CASCADE,related_name="checklists")    
     status = models.CharField(max_length=20, choices=STATUS_CHOICES_CHECKLIST)

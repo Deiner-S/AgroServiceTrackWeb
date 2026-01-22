@@ -18,7 +18,8 @@ def send_checklist_items(request):
 def receive_work_orders_api(request):
     print("\n\n\n\n========================================================")
     data = request.data
-    print(data)
+    api_services.save_work_orders_filleds(data)
+    print("dados salvos")
     return Response({"ok": True}, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
