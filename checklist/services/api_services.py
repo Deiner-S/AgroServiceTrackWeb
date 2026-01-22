@@ -6,7 +6,6 @@ def get_pending_work_order():
     for item in items:
         client = Client.objects.get(id=item.client.id)
         if item.status !=  "4":
-            print(f"work_order : {item}")
             data.append(
                 {
                 "operation_code" : item.operation_code,
@@ -15,7 +14,7 @@ def get_pending_work_order():
                 "status" : item.status,
                 "insert_date" :item.insert_date,
                 })
-            print(f"Data : {data}")            
+                    
             
     return data
 
