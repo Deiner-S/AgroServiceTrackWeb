@@ -23,7 +23,7 @@ class WorkOrderAdmin(admin.ModelAdmin):
 
 @admin.register(Checklist)
 class ChecklistAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'work_order','employee','status','picture', 'insert_date')
+    list_display = ('id', 'work_order','employee','status','picture', 'insert_date')
     search_fields = ('work_order', 'employee',"status")
     list_filter = ('insert_date','work_order', 'employee',"status")
 
