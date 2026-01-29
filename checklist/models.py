@@ -50,25 +50,6 @@ class WorkOrder(models.Model):
     def __str__(self):
         return str(self.operation_code)
     
-    
-
-STATUS_CHOICES_CHECKLIST= [
-    ("1", "BOM"),
-    ("2", "RUIM"),
-    ("3", "Entrega"),
-]
-class Checklist(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    work_order = models.ForeignKey(WorkOrder,on_delete=models.CASCADE,related_name="checklists")    
-    employee = models.ForeignKey(Employee,on_delete=models.CASCADE,related_name="checklists")    
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES_CHECKLIST)
-    picture = models.ImageField(upload_to='imageFile/imgChecklist/', blank=True,null=True)
-    insert_date = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
-    
-    
 STATUS_CHOICES_CHECKLISTITEM = [
     (0, "False"),
     (1, "True"),
@@ -80,3 +61,22 @@ class ChecklistItem(models.Model):
     insert_date = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name
+    
+
+STATUS_CHOICES_CHECKLIST= [
+    ("1", "BOM"),
+    ("2", "Médio"),
+    ("3", "Ruim"),
+]
+class Checklist(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    work_order_fk = models.ForeignKey(WorkOrder,on_delete=models.CASCADE,related_name="checklists")    
+    checklist_item_fk = models.ForeignKey(ChecklistItem,on_delete=models.CASCADE,related_name="executions")
+    employee = models.ForeignKey(Employee,on_delete=models.CASCADE,related_name="checklists")    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES_CHECKLIST)
+    image = models.ImageField(upload_to='imageFile/imgChecklist/', blank=True,null=True)
+    insert_date = models.DateTimeField(auto_now_add=True)
+
+
+    
+    
