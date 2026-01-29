@@ -71,21 +71,20 @@ def save_checklists_filleds(checklists, employee_id):
 
     for data in checklists:
         data_img = data.get("img")
-        checklist_uuid_str = data.get("checklist_item_fk")
+        item_uuid_str = data.get("checklist_item_fk")
         operation_code = data.get("work_order_fk")
+        checklist_uuid_str = data.get("id")
 
-        # converter string em UUID
-        checklist_uuid = uuid.UUID(checklist_uuid_str)
-
-        # preparar imagem
         image_file = prepare_image(data_img, filename_prefix="checklist")
-
-        # buscar objetos do Django
-        checklist_item = ChecklistItem.objects.get(id=checklist_uuid)  # <--- corrigido
+         
+        checklist_uuid = uuid.UUID(checklist_uuid_str)
+        item_uuid = uuid.UUID(item_uuid_str)
+ 
+        checklist_item = ChecklistItem.objects.get(id=item_uuid)  
         work_order = WorkOrder.objects.get(operation_code=operation_code)
-
-        # criar registro
+ 
         Checklist.objects.create(
+            id=checklist_uuid,
             work_order_fk=work_order,
             checklist_item_fk=checklist_item,
             employee=employee,
