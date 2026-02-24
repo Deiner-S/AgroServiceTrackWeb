@@ -49,7 +49,7 @@ class DataSheetUpdateForm(forms.ModelForm):
         model = WorkOrder
         fields = [
             "chassi",
-            "orimento",
+            "horimetro",
             "model",
             "date_in",
             "date_out",

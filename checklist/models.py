@@ -38,7 +38,7 @@ class WorkOrder(models.Model):
     symptoms = models.CharField(max_length=1000)
     client = models.ForeignKey(Client,on_delete=models.CASCADE)
     chassi = models.CharField(max_length=100, null=True, blank=True)
-    orimento = models.CharField(max_length=100, null=True, blank=True)
+    horimetro = models.CharField(max_length=100, null=True, blank=True)
     model = models.CharField(max_length=100, null=True, blank=True) 
     date_in = models.DateTimeField(null=True, blank=True)
     date_out = models.DateTimeField(null=True, blank=True)

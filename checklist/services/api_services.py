@@ -51,7 +51,7 @@ def save_work_orders_filleds(work_orders):
             continue  # ou loga erro
 
         wo.chassi = work_order.get("chassi")
-        wo.orimento = work_order.get("orimento")
+        wo.horimetro = work_order.get("horimetro")
         wo.model = work_order.get("model")
         wo.date_in = work_order.get("date_in")
         wo.date_out = work_order.get("date_out")

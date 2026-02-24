@@ -17,7 +17,7 @@ class EmployeeAdmin(admin.ModelAdmin):
 
 @admin.register(WorkOrder)
 class WorkOrderAdmin(admin.ModelAdmin):
-    list_display = ('id','operation_code', 'chassi', 'client','orimento','model','date_in','date_out','service','status','signature','insert_date')
+    list_display = ('id','operation_code', 'chassi', 'client','horimetro','model','date_in','date_out','service','status','signature','insert_date')
     search_fields = ('id','operation_code', 'chassi','client')
     list_filter = ('insert_date','client','chassi')
 
