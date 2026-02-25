@@ -57,7 +57,7 @@ STATUS_CHOICES_CHECKLISTITEM = [
 class ChecklistItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
-    status = models.IntegerField(choices=STATUS_CHOICES_ORDER, default=1)
+    status = models.IntegerField(choices=STATUS_CHOICES_CHECKLISTITEM, default=1)
     insert_date = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name
