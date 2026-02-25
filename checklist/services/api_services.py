@@ -48,7 +48,9 @@ def save_work_orders_filleds(work_orders):
                 operation_code=work_order.get("operation_code")
             )
         except WorkOrder.DoesNotExist:
-            continue  # ou loga erro
+            print(f"WorkOrder not found for operation_code={work_order.get('operation_code')!r}")
+            # Propaga o erro para que a API retorne ok: false
+            raise
 
         wo.chassi = work_order.get("chassi")
         wo.horimetro = work_order.get("horimetro")
@@ -79,10 +81,21 @@ def save_checklists_filleds(checklists, employee_id):
          
         checklist_uuid = uuid.UUID(checklist_uuid_str)
         item_uuid = uuid.UUID(item_uuid_str)
- 
-        checklist_item = ChecklistItem.objects.get(id=item_uuid)  
-        work_order = WorkOrder.objects.get(operation_code=operation_code)
- 
+
+        try:
+            checklist_item = ChecklistItem.objects.get(id=item_uuid)
+        except ChecklistItem.DoesNotExist:
+            print(f"ChecklistItem not found for id={item_uuid_str!r}")
+            # Propaga o erro para que a API retorne ok: false
+            raise
+
+        try:
+            work_order = WorkOrder.objects.get(operation_code=operation_code)
+        except WorkOrder.DoesNotExist:
+            print(f"WorkOrder not found for operation_code={operation_code!r}")
+            # Propaga o erro para que a API retorne ok: false
+            raise
+
         Checklist.objects.create(
             id=checklist_uuid,
             work_order_fk=work_order,

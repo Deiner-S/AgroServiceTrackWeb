@@ -2,6 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from checklist.services import api_services
+import traceback
 
 
 @api_view(['GET'])
@@ -40,7 +41,8 @@ def receive_work_orders_api(request):
     except Exception as e:
         #need to implement save_log(e)
         response = False
-        print("\n\nFailed to save checklist")
+        print("\n\nFailed to save work_orders:", repr(e))
+        traceback.print_exc()
 
     return Response({"ok": response}, status=status.HTTP_200_OK)
 
@@ -59,6 +61,7 @@ def receive_checkLists_filleds(request):
     except Exception as e:
         #need to implement save_log(e)
         response = False
-        print("\n\nFailed to save checklist")
+        print("\n\nFailed to save checklist:", repr(e))
+        traceback.print_exc()
 
     return Response({"ok": response}, status=status.HTTP_200_OK)
