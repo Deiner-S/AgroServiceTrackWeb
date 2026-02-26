@@ -3,20 +3,24 @@ from checklist.utils.data_processing import prepare_image
 import uuid
 
 def get_pending_work_order():
-    items = WorkOrder.objects.all()
+    """Retorna ordens com status 1 (Pendente), 2 (Andamento) ou 3 (Entrega),
+    com todos os campos que o app precisa para salvar a OS localmente."""
+    items = WorkOrder.objects.filter(status__in=["1", "2", "3"]).select_related("client")
     data = []
     for item in items:
-        client = Client.objects.get(id=item.client.id)
-        if item.status !=  "4":
-            data.append(
-                {
-                "operation_code" : item.operation_code,
-                "symptoms" : item.symptoms,
-                "client" : client.name,
-                "status" : item.status,
-                "insert_date" :item.insert_date,
-                })
-        print(data)   
+        data.append({
+            "operation_code": item.operation_code,
+            "symptoms": item.symptoms,
+            "client": item.client.name,
+            "status": item.status,
+            "chassi": item.chassi,
+            "horimetro": item.horimetro,
+            "model": item.model,
+            "date_in": item.date_in.isoformat() if item.date_in else None,
+            "date_out": item.date_out.isoformat() if item.date_out else None,
+            "service": item.service,
+            "insertDate": item.insert_date.isoformat() if item.insert_date else None,
+        })
     return data
 
 
