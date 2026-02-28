@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import render
 from checklist.forms import EmployeeForm
 from django.http import HttpResponseBadRequest
-from checklist.templates.templates_paths import TemplatePaths
+from checklist.templates_paths import TemplatePaths
 
 
 User = get_user_model()

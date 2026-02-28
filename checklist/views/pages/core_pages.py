@@ -2,7 +2,7 @@ from django.urls import reverse
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from checklist.templates.templates_paths import TemplatePaths
+from checklist.templates_paths import TemplatePaths
 
 @login_required(login_url='gerenciador/login/')
 def home(request):

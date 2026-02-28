@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto">
+    <h1 class="text-2xl font-semibold mb-4">Clientes Cadastrados</h1>
+    <form id="search-form" class="flex gap-2 mb-4"
+            hx-get="{% url 'client-list' %}" 
+            hx-target="#main-content"
+            hx-swap="innerHTML">
+        <input
+            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-500" 
+            type="text" 
+            name="search" 
+            placeholder="Nome ou CNPJ" 
+            value="{{ request.GET.search|default:'' }}"
+            hx-trigger="keyup changed delay:500ms"
+        >
+        <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">Buscar</button>
+    </form>
+    {% if page_client %}
+    <table class="min-w-full bg-white shadow rounded-lg">
+        <thead>
+            <tr class="bg-gray-200">
+                <th class="py-2 px-4 text-left">CPF/CNPJ</th>
+                <th class="py-2 px-4 text-left">Nome</th>
+                <th class="py-2 px-4 text-left">Phone</th>
+                <th class="py-2 px-4 text-left">Email</th>
+                <th class="py-2 px-4 text-left">-</th>
+            </tr>
+        </thead>
+        
+        <tbody>
+            {% for client in page_client %}
+            <tr class="hover:bg-gray-100">
+                <td class="py-2 px-4">
+                    {% if client.cnpj %}
+                        {{ client.cnpj }}
+                    {% else %}
+                        {{ client.cpf }}
+                    {% endif %}
+                </td>
+                <td class="py-2 px-4">{{ client.name }}</td>
+                <td class="py-2 px-4">{{ client.phone }}</td>
+                <td class="py-2 px-4">{{ client.email }}</td>
+                <td class="py-2 px-4">
+                    <button class="bg-gray-600 hover:bg-gray-700 text-white py-1 px-3 rounded"
+                    hx-get="{% url 'open_client_order' client.id %}"
+                    hx-target="#main-content"
+                    hx-swap="innerHTML"
+                    >
+                    Verificar Serviços
+                </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="flex items-center justify-between mt-4">
+        {% if page_client.has_previous %}
+        <button class="bg-gray-600 hover:bg-gray-700 text-white py-1 px-3 rounded" hx-get="{% url 'client-list' %}?page={{ page_client.previous_page_number }}"
+            hx-target="#main-content"
+            hx-swap="innerHTML">
+            Anterior
+        </button>
+    
+        {% endif %}
+        
+        <span>Página {{ page_client.number }} de {{ page_client.paginator.num_pages }}</span>
+        
+        {% if page_client.has_next %}
+        <button class="bg-gray-600 hover:bg-gray-700 text-white py-1 px-3 rounded" hx-get="{% url 'client-list' %}?page={{ page_client.next_page_number }}"
+            hx-target="#main-content"
+            hx-swap="innerHTML">
+            Próxima
+        </button>
+
+        {% endif %}
+    </div>
+    {% else %}
+    <p class="text-gray-600">Nenhum cliente cadastrado ainda.</p>
+    {% endif %}
+</div>
+{% endblock %}

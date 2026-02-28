@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen">
+    <form action="{% url 'login' %}" method="post" class="bg-white rounded-lg shadow p-8 max-w-md w-full">
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Login</h1>
+        {% csrf_token %}
+        {% if erro %}
+        <div class="text-red-600 mb-2">
+            {{ erro }}
+        </div>
+        {% endif %}
+        <label for="usuario" class="block text-gray-700 font-medium mt-4">Usuário</label>
+        <input type="text" id="usuario" name="usuario" required class="mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500" />
+
+        <label for="senha" class="block text-gray-700 font-medium mt-4">Senha</label>
+        <input type="password" id="senha" name="senha" required class="mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500" />
+
+        <button type="submit" class="mt-6 w-full bg-gray-600 hover:bg-gray-700 text-white py-2 rounded-md">Entrar</button>
+    </form>
+</div>
+{% endblock %}

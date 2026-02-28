@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<header class="w-full bg-gradient-to-t from-black to-gray-800 text-white py-6 px-4">
+    <h2 class="text-xl font-semibold">Agro service track</h2>
+    <nav class="flex flex-wrap gap-4 justify-center mt-2">
+        <button class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded"
+            hx-get="{% url 'add_employee' %}"
+            hx-target="#main-content"
+            hx-swap="innerHTML"
+        >
+            Cadastrar Funcionario
+        </button>
+        <button class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded"
+            hx-get="{% url 'add_client' %}"
+            hx-target="#main-content"
+            hx-swap="innerHTML"
+        >
+            Cadastrar Cliente
+        </button>
+
+        <button class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded"
+            hx-get="{% url 'client-list' %}"
+            hx-target="#main-content"
+            hx-swap="innerHTML"
+        >
+            Listar Clientes
+        </button>
+
+        <button class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded"
+            hx-get="{% url 'service_panel' %}"
+            hx-target="#main-content"
+            hx-swap="innerHTML"
+        >
+            Painel de Serviço
+        </button>
+
+        <form method="POST" action="{% url 'logout' %}" class="inline">
+            {% csrf_token %}
+            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded">logout</button>
+        </form>
+    </nav>
+</header>
+
+<main id="main-content" class="p-4" style="padding:0 10%;">
+    {% block inner %}{% endblock %}
+</main>
+{% endblock %}

@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from checklist.models import Client, WorkOrder
 from django.contrib.auth.decorators import login_required
-from checklist.templates.templates_paths import TemplatePaths
+from checklist.templates_paths import TemplatePaths
 from checklist.forms import DataSheetCreateForm
 from django.db.models import Max
 

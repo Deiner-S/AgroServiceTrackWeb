@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from checklist.forms import ClientForm
 from django.http import HttpResponseBadRequest
-from checklist.templates.templates_paths import TemplatePaths
+from checklist.templates_paths import TemplatePaths
 from checklist.models import Client
 from django.db import models
 from django.core.paginator import Paginator

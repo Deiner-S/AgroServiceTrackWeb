@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div>
+    
+
+    <h2>Serviços de {{ client.name }}</h2>
+        
+    {% if services %}
+        <table>
+            <thead>
+                <tr>
+                    <th class="py-2 px-4 text-left">Código operacional</th>
+                    <th class="py-2 px-4 text-left">Status</th>
+                    <th class="py-2 px-4 text-left">Data da solicitação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in services %}
+                <tr>
+                    <td class="py-2 px-4">{{ service.operation_code }}</td>
+                    <td class="py-2 px-4">{{ service.status }}</td>
+                    <td class="py-2 px-4">{{ service.insert_date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Este cliente ainda não possui serviços cadastrados.</p>
+    {% endif %}
+
+    <button 
+        hx-get="{% url 'add_service' client.id %}"
+        hx-target="#main-content"
+        hx-swap="innerHTML"
+    >
+        Adicionar novo serviço
+    </button>
+</div>
+{% endblock %}
