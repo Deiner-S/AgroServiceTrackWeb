@@ -53,7 +53,7 @@ class EmployeeForm(forms.ModelForm):
             "cpf": forms.TextInput(attrs={"class": INPUT_TW_CLASS}),
             "phone": forms.TextInput(attrs={"class": INPUT_TW_CLASS}),
             "email": forms.EmailInput(attrs={"class": INPUT_TW_CLASS}),
-            "position": forms.TextInput(attrs={"class": INPUT_TW_CLASS}),
+            "position": forms.Select(attrs={"class": INPUT_TW_CLASS}),
             "username": forms.TextInput(attrs={"class": INPUT_TW_CLASS}),
             # password widget declared above, no need to repeat here
         }

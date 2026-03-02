@@ -14,12 +14,17 @@ class Client(models.Model):
 
     def __str__(self):
         return self.name
-
+    
+STATUS_CHOICES_POSITION = [
+    ("1", "Gerente"),
+    ("2", "Administrativo"),
+    ("3", "Tecnico"),
+]
 class Employee(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     cpf = models.CharField(max_length=30)
     phone = models.CharField(max_length=20)
-    position = models.CharField(max_length=100)
+    position = models.CharField(max_length=100, choices=STATUS_CHOICES_POSITION)
     insert_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

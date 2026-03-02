@@ -1,17 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
-<header class="w-full bg-gradient-to-t from-black to-gray-800 text-white py-6 px-4">
-    <h2 class="text-xl font-semibold">Agro service track</h2>
-    <nav class="flex flex-wrap gap-4 justify-center mt-2">
-        <button class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded"
+<header class="w-full bg-gradient-to-t from-black to-gray-800 text-white px-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between h-[72px]">
+        <h2 class="text-xl font-semibold">Agro service track</h2>
+        <nav class="flex flex-wrap gap-3 items-stretch h-full">
+        <button class="text-white px-3 py-0 h-full flex items-center justify-center border-b-4 border-transparent hover:border-white"
             hx-get="{% url 'add_employee' %}"
             hx-target="#main-content"
             hx-swap="innerHTML"
         >
             Cadastrar Funcionario
         </button>
-        <button class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded"
+        <button class="text-white px-3 py-0 h-full flex items-center justify-center border-b-4 border-transparent hover:border-white"
             hx-get="{% url 'add_client' %}"
             hx-target="#main-content"
             hx-swap="innerHTML"
@@ -19,7 +20,7 @@
             Cadastrar Cliente
         </button>
 
-        <button class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded"
+        <button class="text-white px-3 py-0 h-full flex items-center justify-center border-b-4 border-transparent hover:border-white"
             hx-get="{% url 'client-list' %}"
             hx-target="#main-content"
             hx-swap="innerHTML"
@@ -27,7 +28,7 @@
             Listar Clientes
         </button>
 
-        <button class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded"
+        <button class="text-white px-3 py-0 h-full flex items-center justify-center border-b-4 border-transparent hover:border-white"
             hx-get="{% url 'service_panel' %}"
             hx-target="#main-content"
             hx-swap="innerHTML"
@@ -35,11 +36,12 @@
             Painel de Serviço
         </button>
 
-        <form method="POST" action="{% url 'logout' %}" class="inline">
+        <form method="POST" action="{% url 'logout' %}" class="inline-flex h-full">
             {% csrf_token %}
-            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded">logout</button>
+            <button type="submit" class="text-red-300 px-3 py-0 h-full flex items-center justify-center border-b-4 border-transparent hover:border-red-300">logout</button>
         </form>
     </nav>
+    </div>
 </header>
 
 <main id="main-content" class="p-4" style="padding:0 10%;">

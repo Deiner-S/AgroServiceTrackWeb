@@ -20,6 +20,12 @@ def add_cliente(request):
         form = ClientForm(request.POST)
         if form.is_valid():
             form.save()
+            # after saving via HTMX, return the updated client list fragment
+            clients = Client.objects.all().order_by("name")
+            page_number = request.GET.get("page")
+            paginator = Paginator(clients, 10)
+            page_client = paginator.get_page(page_number)
+            return render(request, TemplatePaths.CLIENT_LIST, {"page_client": page_client})
     else:
         form = ClientForm()
     
@@ -32,11 +38,15 @@ def add_cliente(request):
 def client_list(request):
     clients = Client.objects.all().order_by("name")
     query = request.GET.get("search", "")
-    
+    query = (query or "").strip()
 
     if query:
         clients = clients.filter(
-            models.Q(name__icontains=query) | models.Q(email__icontains=query)
+            models.Q(name__icontains=query)
+            | models.Q(email__icontains=query)
+            | models.Q(cpf__icontains=query)
+            | models.Q(cnpj__icontains=query)
+            | models.Q(phone__icontains=query)
         )
 
     page_number = request.GET.get("page")
