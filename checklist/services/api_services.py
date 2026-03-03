@@ -106,6 +106,7 @@ def save_checklists_filleds(checklists, employee_id):
             checklist_item_fk=checklist_item,
             employee=employee,
             status=data.get("status"),
+            type=data.get("type"),
             image=image_file
         )
 
