@@ -44,7 +44,14 @@ def get_checklist_items():
 
 def save_work_orders_filleds(work_orders):
     for work_order in work_orders:
-        signature_processed = prepare_image(work_order.get("signature"),filename_prefix="signature")
+        signature_in_processed = prepare_image(
+            work_order.get("signature_in") or work_order.get("signature"),
+            filename_prefix="signature_in"
+        )
+        signature_out_processed = prepare_image(
+            work_order.get("signature_out"),
+            filename_prefix="signature_out"
+        )
             
 
         try:
@@ -64,8 +71,11 @@ def save_work_orders_filleds(work_orders):
         wo.status = work_order.get("status")
         wo.service = work_order.get("service")
 
-        if signature_processed:
-            wo.signature = signature_processed
+        if signature_in_processed:
+            wo.signature_in = signature_in_processed
+
+        if signature_out_processed:
+            wo.signature_out = signature_out_processed
 
         wo.save()
         print("save_work_orders_filleds [FINISHED]")

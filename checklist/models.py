@@ -49,7 +49,8 @@ class WorkOrder(models.Model):
     date_out = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES_ORDER, default="1")
     service = models.CharField(max_length=2000, null=True, blank=True)
-    signature = models.ImageField(upload_to='imageFile/imgSignature/', blank=True,null=True)
+    signature_in = models.ImageField(upload_to='imageFile/imgSignature/', blank=True, null=True)
+    signature_out = models.ImageField(upload_to='imageFile/imgSignature/', blank=True, null=True)
     insert_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

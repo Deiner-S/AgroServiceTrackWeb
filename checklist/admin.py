@@ -17,13 +17,13 @@ class EmployeeAdmin(admin.ModelAdmin):
 
 @admin.register(WorkOrder)
 class WorkOrderAdmin(admin.ModelAdmin):
-    list_display = ('id','operation_code', 'chassi', 'client','horimetro','model','date_in','date_out','service','status','signature','insert_date')
+    list_display = ('id','operation_code', 'chassi', 'client','horimetro','model','date_in','date_out','service','status','signature_in','signature_out','insert_date')
     search_fields = ('id','operation_code', 'chassi','client')
     list_filter = ('insert_date','client','chassi')
 
 @admin.register(Checklist)
 class ChecklistAdmin(admin.ModelAdmin):
-    list_display = ('id', 'work_order_fk',"checklist_item_fk",'employee','status','image', 'insert_date')
+    list_display = ('id', 'work_order_fk',"checklist_item_fk",'employee','status','type','image', 'insert_date')
     search_fields = ('work_order_fk',"checklist_item_fk", 'employee',"status")
     list_filter = ('insert_date','work_order_fk',"checklist_item_fk", 'employee',"status")
 
