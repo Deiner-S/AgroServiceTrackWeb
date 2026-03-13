@@ -4,7 +4,6 @@ from rest_framework import status
 from checklist.services import api_services
 import traceback
 
-
 @api_view(['GET'])
 def send_pending_work_order(request):
     try:
@@ -15,7 +14,6 @@ def send_pending_work_order(request):
         #need to implement save_log(e)
         data = None
     return Response(data, status=status.HTTP_200_OK)
-
 
 @api_view(['GET'])
 def send_checklist_items(request):
