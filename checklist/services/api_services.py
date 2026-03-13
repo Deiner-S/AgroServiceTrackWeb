@@ -86,14 +86,17 @@ def save_checklists_filleds(checklists, employee_id):
     employee = Employee.objects.get(id=employee_id)
 
     for data in checklists:
-        data_img = data.get("img")
+        data_img_in = data.get("img_in")
+        data_img_out = data.get("img_out")
+
         item_uuid_str = data.get("checklist_item_fk")
         operation_code = data.get("work_order_fk")
         checklist_uuid_str = data.get("id")
 
-        image_file = prepare_image(data_img, filename_prefix="checklist")
+        image_file_in = prepare_image(data_img_in, filename_prefix="checklist_in")
+        image_file_out = prepare_image(data_img_out, filename_prefix="checklist_out")
          
-        checklist_uuid = uuid.UUID(checklist_uuid_str)
+        checklist_uuid = uuid.UUID(checklist_uuid_str) if checklist_uuid_str else uuid.uuid4()
         item_uuid = uuid.UUID(item_uuid_str)
 
         try:
@@ -110,15 +113,31 @@ def save_checklists_filleds(checklists, employee_id):
             # Propaga o erro para que a API retorne ok: false
             raise
 
-        Checklist.objects.create(
-            id=checklist_uuid,
+        checklist_obj = Checklist.objects.filter(
             work_order_fk=work_order,
             checklist_item_fk=checklist_item,
-            employee=employee,
-            status=data.get("status"),
-            type=data.get("type"),
-            image=image_file
-        )
+        ).order_by("-insert_date").first()
+
+        if checklist_obj is None:
+            checklist_obj = Checklist(
+                id=checklist_uuid,
+                work_order_fk=work_order,
+                checklist_item_fk=checklist_item,
+            )
+
+        checklist_obj.employee = employee
+        checklist_obj.status = data.get("status") or checklist_obj.status
+
+        if not checklist_obj.status:
+            raise ValueError("Checklist status is required")
+
+        if image_file_in:
+            checklist_obj.image_in = image_file_in
+
+        if image_file_out:
+            checklist_obj.image_out = image_file_out
+
+        checklist_obj.save()
 
     print("save_checklists_filleds [FINISHED]")
 
