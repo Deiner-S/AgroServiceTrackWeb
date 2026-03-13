@@ -38,19 +38,19 @@ Agro Service Track is composed of two main applications:
 - Mobile application organization into responsibility layers
 - Commit standardization and repository organization
 
-### 🔄 Stage 2 – Offline Flow and Synchronization (in progress)
+### 🔄 Stage 2 – Offline Flow and Synchronization (completed)
 - Local data persistence on the mobile application
 - Checklist execution in offline environments
 - Data synchronization with the server when connectivity is available
 - Work order status management
 
-### 🛠️ Stage 3 – Service Execution and Delivery (planned)
+### 🛠️ Stage 3 – Service Execution and Delivery (completed)
 - Equipment maintenance workflow
 - Service execution report
 - Delivery checklist with final validation
 - Work order finalization
 
-### 🧪 Stage 4 – Stability and Reliability (planned)
+### 🧪 Stage 4 – Stability and Reliability (in progress)
 - Data validation
 - Exception handling
 - Basic logging and audit trail
