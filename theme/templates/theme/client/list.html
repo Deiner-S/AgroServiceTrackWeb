@@ -16,6 +16,15 @@
             hx-trigger="keyup changed delay:500ms"
         >
         <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">Buscar</button>
+        <button
+            type="button"
+            class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded whitespace-nowrap"
+            hx-get="{% url 'add_client' %}"
+            hx-target="#main-content"
+            hx-swap="innerHTML"
+        >
+            Cadastrar Cliente
+        </button>
     </form>
     {% if page_client %}
     <table class="min-w-full bg-white shadow rounded-lg text-black">
