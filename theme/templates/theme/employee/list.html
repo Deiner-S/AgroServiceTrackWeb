@@ -8,7 +8,7 @@
             hx-target="#main-content"
             hx-swap="innerHTML">
         <input
-            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-500 text-black" 
+            class="w-full border-white text-white px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-500 text-black" 
             type="text" 
             name="search" 
             placeholder="Nome, Email ou CPF" 
@@ -16,6 +16,15 @@
             hx-trigger="keyup changed delay:500ms"
         >
         <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">Buscar</button>
+        <button
+            type="button"
+            class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded whitespace-nowrap"
+            hx-get="{% url 'add_employee' %}"
+            hx-target="#main-content"
+            hx-swap="innerHTML"
+        >
+            Cadastrar Funcionário
+        </button>
     </form>
     {% if page_employees %}
     <table class="min-w-full bg-white shadow rounded-lg text-black">
@@ -36,7 +45,7 @@
                 <td class="py-2 px-4">{{ employee.email }}</td>
                 <td class="py-2 px-4">{{ employee.cpf }}</td>
                 <td class="py-2 px-4">{{ employee.phone }}</td>
-                <td class="py-2 px-4">{{ employee.position }}</td>
+                <td class="py-2 px-4">{{ employee.get_position_display }}</td>
             </tr>
             {% endfor %}
         </tbody>
