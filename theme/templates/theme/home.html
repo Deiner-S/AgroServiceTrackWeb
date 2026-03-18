@@ -21,6 +21,14 @@
         </button>
 
         <button class="text-white px-3 py-0 h-full flex items-center justify-center border-b-4 border-transparent hover:border-white"
+            hx-get="{% url 'checklist-item-list' %}"
+            hx-target="#main-content"
+            hx-swap="innerHTML"
+        >
+            Checklist Itens
+        </button>
+
+        <button class="text-white px-3 py-0 h-full flex items-center justify-center border-b-4 border-transparent hover:border-white"
             hx-get="{% url 'service_panel' %}"
             hx-target="#main-content"
             hx-swap="innerHTML"

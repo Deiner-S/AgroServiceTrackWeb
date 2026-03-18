@@ -1,51 +1,20 @@
-
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
-from django.shortcuts import render
-from checklist.forms import EmployeeForm
-from django.http import HttpResponseBadRequest
-from checklist.templates_paths import TemplatePaths
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import models
+from django.http import HttpResponseBadRequest
+from django.shortcuts import get_object_or_404, render
+
+from checklist.forms import EmployeeDetailForm, EmployeeForm
+from checklist.templates_paths import TemplatePaths
 
 
 User = get_user_model()
 
-@login_required(login_url='gerenciador/login/')
-def add_employee(request):
-    if not request.headers.get("HX-Request"):
-            return HttpResponseBadRequest("Acesso inválido")
-    
-    if request.method == "POST":
-        form = EmployeeForm(request.POST)
-        
-        if form.is_valid():
-            user = form.save(commit=False)  # cria sem salvar ainda
-            user.set_password(form.cleaned_data["password"])  # hash da senha
-            user.save()
-            # after saving via HTMX, return the updated employee list fragment
-            employees = User.objects.all().order_by("first_name")
-            page_number = request.GET.get("page")
-            paginator = Paginator(employees, 10)
-            page_employees = paginator.get_page(page_number)
-            return render(request, TemplatePaths.EMPLOYEE_LIST, {"page_employees": page_employees})
-        else:
-            print("Form inválido!")
-            print(form.errors)        # mostra todos os erros do form
-            print(form.cleaned_data)  # mostra os dados limpos que passaram
 
-        
-    else:
-        form = EmployeeForm()
-
-    return render(request, TemplatePaths.EMPLOYEE_FORM, {"form": form})
-
-
-@login_required(login_url='gerenciador/login/')
-def employee_list(request):
+def _render_employee_list(request):
     employees = User.objects.all().order_by("first_name")
-    query = request.GET.get("search", "")
-    query = (query or "").strip()
+    query = (request.GET.get("search") or "").strip()
 
     if query:
         employees = employees.filter(
@@ -55,8 +24,87 @@ def employee_list(request):
             | models.Q(cpf__icontains=query)
         )
 
-    page_number = request.GET.get("page")
     paginator = Paginator(employees, 10)
+    page_number = request.GET.get("page")
     page_employees = paginator.get_page(page_number)
-    
-    return render(request, TemplatePaths.EMPLOYEE_LIST, {"page_employees": page_employees})
+
+    return render(
+        request,
+        TemplatePaths.EMPLOYEE_LIST,
+        {
+            "page_employees": page_employees,
+            "current_search": query,
+        },
+    )
+
+
+@login_required(login_url="gerenciador/login/")
+def add_employee(request):
+    if not request.headers.get("HX-Request"):
+        return HttpResponseBadRequest("Acesso invalido")
+
+    if request.method == "POST":
+        form = EmployeeForm(request.POST)
+
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data["password"])
+            user.save()
+            return _render_employee_list(request)
+
+        print("Form invalido!")
+        print(form.errors)
+        print(form.cleaned_data)
+    else:
+        form = EmployeeForm()
+
+    return render(request, TemplatePaths.EMPLOYEE_FORM, {"form": form})
+
+
+@login_required(login_url="gerenciador/login/")
+def employee_detail(request, employee_id):
+    if not request.headers.get("HX-Request"):
+        return HttpResponseBadRequest("Acesso invalido")
+
+    employee = get_object_or_404(User, id=employee_id)
+
+    if request.method == "POST":
+        form = EmployeeDetailForm(request.POST, instance=employee)
+        if form.is_valid():
+            user = form.save(commit=False)
+            new_password = form.cleaned_data.get("password")
+            if new_password:
+                user.set_password(new_password)
+            user.save()
+            return _render_employee_list(request)
+    else:
+        form = EmployeeDetailForm(instance=employee)
+
+    return render(
+        request,
+        TemplatePaths.EMPLOYEE_DETAIL,
+        {
+            "form": form,
+            "employee": employee,
+            "current_search": (request.GET.get("search") or "").strip(),
+            "current_page": request.GET.get("page", ""),
+        },
+    )
+
+
+@login_required(login_url="gerenciador/login/")
+def delete_employee(request, employee_id):
+    if not request.headers.get("HX-Request"):
+        return HttpResponseBadRequest("Acesso invalido")
+
+    if request.method != "POST":
+        return HttpResponseBadRequest("Metodo invalido")
+
+    employee = get_object_or_404(User, id=employee_id)
+    employee.delete()
+    return _render_employee_list(request)
+
+
+@login_required(login_url="gerenciador/login/")
+def employee_list(request):
+    return _render_employee_list(request)

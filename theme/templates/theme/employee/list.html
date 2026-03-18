@@ -2,17 +2,17 @@
 
 {% block content %}
 <div class="container mx-auto bg-gradient-to-t from-black to-gray-800 mt-4 rounded-lg p-6 text-white">
-    <h1 class="text-2xl font-semibold mb-4">Lista de Funcionários</h1>
+    <h1 class="text-2xl font-semibold mb-4">Lista de Funcionarios</h1>
     <form id="search-form" class="flex gap-2 mb-4"
-            hx-get="{% url 'employee-list' %}" 
+            hx-get="{% url 'employee-list' %}"
             hx-target="#main-content"
             hx-swap="innerHTML">
         <input
-            class="w-full border-white text-white px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-500 text-black" 
-            type="text" 
-            name="search" 
-            placeholder="Nome, Email ou CPF" 
-            value="{{ request.GET.search|default:'' }}"
+            class="w-full border-white px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-500 text-black"
+            type="text"
+            name="search"
+            placeholder="Nome, Email ou CPF"
+            value="{{ current_search|default:'' }}"
             hx-trigger="keyup changed delay:500ms"
         >
         <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">Buscar</button>
@@ -23,7 +23,7 @@
             hx-target="#main-content"
             hx-swap="innerHTML"
         >
-            Cadastrar Funcionário
+            Cadastrar Funcionario
         </button>
     </form>
     {% if page_employees %}
@@ -37,10 +37,15 @@
                 <th class="py-2 px-4 text-left">Cargo</th>
             </tr>
         </thead>
-        
+
         <tbody>
             {% for employee in page_employees %}
-            <tr class="hover:bg-gray-100 text-black">
+            <tr
+                class="hover:bg-gray-100 text-black cursor-pointer"
+                hx-get="{% url 'employee-detail' employee.id %}?search={{ current_search|urlencode }}&page={{ page_employees.number }}"
+                hx-target="#main-content"
+                hx-swap="innerHTML"
+            >
                 <td class="py-2 px-4">{{ employee.first_name }} {{ employee.last_name }}</td>
                 <td class="py-2 px-4">{{ employee.email }}</td>
                 <td class="py-2 px-4">{{ employee.cpf }}</td>
@@ -50,30 +55,34 @@
             {% endfor %}
         </tbody>
     </table>
-    
+
     <div class="flex items-center justify-between mt-4 text-white">
         {% if page_employees.has_previous %}
-        <button class="bg-gray-600 hover:bg-gray-700 text-white py-1 px-3 rounded" hx-get="{% url 'employee-list' %}?page={{ page_employees.previous_page_number }}"
+        <button class="bg-gray-600 hover:bg-gray-700 text-white py-1 px-3 rounded"
+            hx-get="{% url 'employee-list' %}?page={{ page_employees.previous_page_number }}&search={{ current_search|urlencode }}"
             hx-target="#main-content"
             hx-swap="innerHTML">
             Anterior
         </button>
-    
+        {% else %}
+        <span></span>
         {% endif %}
-        
-        <span>Página {{ page_employees.number }} de {{ page_employees.paginator.num_pages }}</span>
-        
+
+        <span>Pagina {{ page_employees.number }} de {{ page_employees.paginator.num_pages }}</span>
+
         {% if page_employees.has_next %}
-        <button class="bg-gray-600 hover:bg-gray-700 text-white py-1 px-3 rounded" hx-get="{% url 'employee-list' %}?page={{ page_employees.next_page_number }}"
+        <button class="bg-gray-600 hover:bg-gray-700 text-white py-1 px-3 rounded"
+            hx-get="{% url 'employee-list' %}?page={{ page_employees.next_page_number }}&search={{ current_search|urlencode }}"
             hx-target="#main-content"
             hx-swap="innerHTML">
-            Próxima
+            Proxima
         </button>
-
+        {% else %}
+        <span></span>
         {% endif %}
     </div>
     {% else %}
-    <p class="text-white">Nenhum funcionário cadastrado ainda.</p>
+    <p class="text-white">Nenhum funcionario cadastrado ainda.</p>
     {% endif %}
 </div>
 {% endblock %}

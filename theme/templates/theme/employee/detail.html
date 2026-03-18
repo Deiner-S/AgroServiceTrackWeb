@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form class="mt-4 bg-white p-8 rounded-lg shadow-md w-full max-w-3xl mx-auto text-black"
+    method="POST"
+    hx-post="{% url 'employee-detail' employee.id %}?search={{ current_search|urlencode }}&page={{ current_page }}"
+    hx-target="#main-content"
+    hx-swap="innerHTML">
+    <h1 class="text-2xl font-bold text-center mb-6">Editar Funcionario</h1>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="mb-4">
+            {{ form.first_name.label_tag }}
+            {{ form.first_name }}
+            {{ form.first_name.errors }}
+        </div>
+        <div class="mb-4">
+            {{ form.last_name.label_tag }}
+            {{ form.last_name }}
+            {{ form.last_name.errors }}
+        </div>
+        <div class="mb-4">
+            {{ form.cpf.label_tag }}
+            {{ form.cpf }}
+            {{ form.cpf.errors }}
+        </div>
+        <div class="mb-4">
+            {{ form.phone.label_tag }}
+            {{ form.phone }}
+            {{ form.phone.errors }}
+        </div>
+        <div class="mb-4">
+            {{ form.email.label_tag }}
+            {{ form.email }}
+            {{ form.email.errors }}
+        </div>
+        <div class="mb-4">
+            {{ form.position.label_tag }}
+            {{ form.position }}
+            {{ form.position.errors }}
+        </div>
+        <div class="mb-4">
+            {{ form.username.label_tag }}
+            {{ form.username }}
+            {{ form.username.errors }}
+        </div>
+        <div class="mb-4">
+            {{ form.password.label_tag }}
+            {{ form.password }}
+            {{ form.password.errors }}
+        </div>
+    </div>
+
+    <div class="mt-4 flex gap-2 flex-wrap">
+        <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">Salvar</button>
+        <button
+            type="button"
+            class="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded"
+            hx-get="{% url 'employee-list' %}?search={{ current_search|urlencode }}&page={{ current_page }}"
+            hx-target="#main-content"
+            hx-swap="innerHTML">
+            Voltar
+        </button>
+    </div>
+</form>
+
+<form class="mt-4 w-full max-w-3xl mx-auto"
+    method="POST"
+    hx-post="{% url 'delete-employee' employee.id %}?search={{ current_search|urlencode }}&page={{ current_page }}"
+    hx-target="#main-content"
+    hx-swap="innerHTML"
+    onsubmit="return confirm('Tem certeza que deseja excluir este funcionario?');">
+    {% csrf_token %}
+    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded">Excluir Cadastro</button>
+</form>
+{% endblock %}

@@ -1,5 +1,5 @@
 from django import forms
-from checklist.models import Client,Employee,WorkOrder
+from checklist.models import ChecklistItem, Client,Employee,WorkOrder
 
 
 # Shared Tailwind input class used across forms
@@ -15,6 +15,26 @@ class ClientForm(forms.ModelForm):
         model = Client
         fields = ['cnpj','name', 'email','phone']
         widgets = {
+            'cnpj': forms.TextInput(attrs={'class': INPUT_TW_CLASS}),
+            'name': forms.TextInput(attrs={'class': INPUT_TW_CLASS}),
+            'email': forms.EmailInput(attrs={'class': INPUT_TW_CLASS}),
+            'phone': forms.TextInput(attrs={'class': INPUT_TW_CLASS}),
+        }
+
+
+class ClientDetailForm(forms.ModelForm):
+    class Meta:
+        model = Client
+        fields = ['cpf', 'cnpj', 'name', 'email', 'phone']
+        labels = {
+            'cpf': 'CPF',
+            'cnpj': 'CNPJ',
+            'name': 'Nome',
+            'email': 'Email',
+            'phone': 'Telefone/celular',
+        }
+        widgets = {
+            'cpf': forms.TextInput(attrs={'class': INPUT_TW_CLASS}),
             'cnpj': forms.TextInput(attrs={'class': INPUT_TW_CLASS}),
             'name': forms.TextInput(attrs={'class': INPUT_TW_CLASS}),
             'email': forms.EmailInput(attrs={'class': INPUT_TW_CLASS}),
@@ -57,6 +77,50 @@ class EmployeeForm(forms.ModelForm):
             "username": forms.TextInput(attrs={"class": INPUT_TW_CLASS}),
             # password widget declared above, no need to repeat here
         }
+
+
+class EmployeeDetailForm(forms.ModelForm):
+    password = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(
+            attrs={
+                "class": INPUT_TW_CLASS,
+                "placeholder": "Preencha apenas se quiser alterar a senha",
+            }
+        ),
+    )
+
+    class Meta:
+        model = Employee
+        fields = [
+            'first_name',
+            'last_name',
+            'cpf',
+            'phone',
+            'email',
+            'position',
+            'username',
+            'password',
+        ]
+        labels = {
+            'first_name': 'Primeiro nome',
+            'last_name': 'Sobrenome',
+            'cpf': 'CPF',
+            'phone': 'Telefone/celular',
+            'email': 'Email',
+            'position': 'Cargo',
+            'username': 'Usuario',
+            'password': 'Nova senha',
+        }
+        widgets = {
+            "first_name": forms.TextInput(attrs={"class": INPUT_TW_CLASS}),
+            "last_name": forms.TextInput(attrs={"class": INPUT_TW_CLASS}),
+            "cpf": forms.TextInput(attrs={"class": INPUT_TW_CLASS}),
+            "phone": forms.TextInput(attrs={"class": INPUT_TW_CLASS}),
+            "email": forms.EmailInput(attrs={"class": INPUT_TW_CLASS}),
+            "position": forms.Select(attrs={"class": INPUT_TW_CLASS}),
+            "username": forms.TextInput(attrs={"class": INPUT_TW_CLASS}),
+        }
         
 
 class DataSheetCreateForm(forms.ModelForm):
@@ -95,4 +159,21 @@ class DataSheetUpdateForm(forms.ModelForm):
             "date_out": forms.DateTimeInput(attrs={"type": "datetime-local", 'class': INPUT_TW_CLASS}),
             "service": forms.Textarea(attrs={'class': INPUT_TW_CLASS, 'rows': 3}),
             "status": forms.Select(attrs={'class': INPUT_TW_CLASS}),
+        }
+
+
+class ChecklistItemForm(forms.ModelForm):
+    class Meta:
+        model = ChecklistItem
+        fields = ["name"]
+        labels = {
+            "name": "Nome do item",
+        }
+        widgets = {
+            "name": forms.TextInput(
+                attrs={
+                    "class": INPUT_TW_CLASS,
+                    "placeholder": "Ex.: Verificar pneus, luzes, oleo...",
+                }
+            ),
         }
