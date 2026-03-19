@@ -1,33 +1,47 @@
-from django.urls import reverse
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, render
+from django.urls import reverse
+
 from checklist.templates_paths import TemplatePaths
 
-@login_required(login_url='gerenciador/login/')
+
+User = get_user_model()
+
+
+@login_required(login_url="gerenciador/login/")
 def home(request):
     return render(request, TemplatePaths.HOME)
 
-def auth_login(request):
-    if request.method == 'POST':
-        usuario = request.POST.get('usuario')
-        senha = request.POST.get('senha')
 
-        # 1) Autentica usuário
+def auth_login(request):
+    if request.method == "POST":
+        usuario = request.POST.get("usuario")
+        senha = request.POST.get("senha")
+
         user = authenticate(request, username=usuario, password=senha)
 
-        # 2) Se autenticou com sucesso
         if user is not None:
-            # 3) Gera a sessão de login
             login(request, user)
-            return redirect('home')
+            return redirect("home")
 
-        # 4) Se falhar, volta para o login com erro
-        return render(request, TemplatePaths.LOGIN, {'erro': 'Usuário ou senha inválidos.'})
+        inactive_user = User.objects.filter(username=usuario, is_active=False).first()
+        if inactive_user is not None and inactive_user.check_password(senha):
+            return render(
+                request,
+                TemplatePaths.LOGIN,
+                {"erro": "Funcionario inativo. Procure um administrador."},
+            )
 
-    # GET → mostra tela de login
+        return render(
+            request,
+            TemplatePaths.LOGIN,
+            {"erro": "Usuario ou senha invalidos."},
+        )
+
     return render(request, TemplatePaths.LOGIN)
 
+
 def logout_view(request):
-    logout(request)   # Encerra a sessão
+    logout(request)
     return redirect(reverse("login"))

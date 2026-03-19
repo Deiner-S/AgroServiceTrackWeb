@@ -3,6 +3,23 @@ from django.contrib.auth.models import AbstractUser
 import uuid
 
 
+class Address(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    street = models.CharField(max_length=255)
+    number = models.CharField(max_length=20)
+    city = models.CharField(max_length=120)
+    state = models.CharField(max_length=120)
+    zip_code = models.CharField(max_length=20)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "addresses"
+
+    def __str__(self):
+        return f"{self.street}, {self.number} - {self.city}/{self.state}"
+
+
 class Client(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     cpf = models.CharField(max_length=30,null=True)
@@ -10,6 +27,12 @@ class Client(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=False)
     phone = models.CharField(max_length=20)
+    addresses = models.ManyToManyField(
+        Address,
+        through="ClientAddress",
+        related_name="clients",
+        blank=True,
+    )
     insert_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -25,12 +48,60 @@ class Employee(AbstractUser):
     cpf = models.CharField(max_length=30)
     phone = models.CharField(max_length=20)
     position = models.CharField(max_length=100, choices=STATUS_CHOICES_POSITION)
+    addresses = models.ManyToManyField(
+        Address,
+        through="EmployeeAddress",
+        related_name="employees",
+        blank=True,
+    )
     insert_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.first_name
-    
 
+
+class ClientAddress(models.Model):
+    pk = models.CompositePrimaryKey("client", "address")
+    client = models.ForeignKey(
+        Client,
+        on_delete=models.CASCADE,
+        related_name="client_addresses",
+    )
+    address = models.ForeignKey(
+        Address,
+        on_delete=models.CASCADE,
+        related_name="client_addresses",
+    )
+
+    class Meta:
+        db_table = "client_addresses"
+        indexes = [
+            models.Index(fields=["client"], name="client_addr_client_idx"),
+            models.Index(fields=["address"], name="client_addr_address_idx"),
+        ]
+
+
+class EmployeeAddress(models.Model):
+    pk = models.CompositePrimaryKey("employee", "address")
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        related_name="employee_addresses",
+    )
+    address = models.ForeignKey(
+        Address,
+        on_delete=models.CASCADE,
+        related_name="employee_addresses",
+    )
+
+    class Meta:
+        db_table = "employee_addresses"
+        indexes = [
+            models.Index(fields=["employee"], name="employee_addr_emp_idx"),
+            models.Index(fields=["address"], name="employee_addr_address_idx"),
+        ]
+
+    
 STATUS_CHOICES_ORDER = [
     ("1", "Pendente"),
     ("2", "Andamento"),

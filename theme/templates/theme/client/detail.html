@@ -6,7 +6,7 @@
     hx-post="{% url 'client-detail' client.id %}?search={{ current_search|urlencode }}&page={{ current_page }}"
     hx-target="#main-content"
     hx-swap="innerHTML">
-    <h1 class="text-2xl font-bold text-center mb-6">Editar Cliente</h1>
+    <h1 class="text-2xl font-bold text-center mb-6">Informacoes do Cliente</h1>
     {% csrf_token %}
     {{ form.non_field_errors }}
 
@@ -51,13 +51,42 @@
     </div>
 </form>
 
-<form class="mt-4 w-full max-w-3xl mx-auto"
-    method="POST"
-    hx-post="{% url 'delete-client' client.id %}?search={{ current_search|urlencode }}&page={{ current_page }}"
-    hx-target="#main-content"
-    hx-swap="innerHTML"
-    onsubmit="return confirm('Tem certeza que deseja excluir este cliente?');">
-    {% csrf_token %}
-    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded">Excluir Cadastro</button>
-</form>
+{% include "theme/address/cards.html" %}
+
+<div class="mt-4 bg-gradient-to-t from-black to-gray-800 p-6 rounded-lg shadow-md w-full max-w-3xl mx-auto text-white">
+    <div class="flex items-center justify-between gap-3 mb-4">
+        <h2 class="text-xl font-semibold">Servicos do Cliente</h2>
+        <button
+            type="button"
+            class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded whitespace-nowrap"
+            hx-get="{% url 'add_service' client.id %}?search={{ current_search|urlencode }}&page={{ current_page }}"
+            hx-target="#main-content"
+            hx-swap="innerHTML">
+            Abrir Novo Servico
+        </button>
+    </div>
+
+    {% if services %}
+    <table class="min-w-full bg-white shadow rounded-lg text-black">
+        <thead>
+            <tr class="bg-gray-200">
+                <th class="py-2 px-4 text-left">Codigo operacional</th>
+                <th class="py-2 px-4 text-left">Status</th>
+                <th class="py-2 px-4 text-left">Data da solicitacao</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for service in services %}
+            <tr class="hover:bg-gray-100 text-black">
+                <td class="py-2 px-4">{{ service.operation_code }}</td>
+                <td class="py-2 px-4">{{ service.get_status_display }}</td>
+                <td class="py-2 px-4">{{ service.insert_date|date:'d/m/Y H:i' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Este cliente ainda nao possui servicos cadastrados.</p>
+    {% endif %}
+</div>
 {% endblock %}

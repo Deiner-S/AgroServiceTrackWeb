@@ -1,0 +1,50 @@
+<form
+    class="mb-4 bg-white text-black rounded-xl p-5 shadow"
+    method="POST"
+    hx-post="{% url address_add_url_name entity.id %}"
+    hx-target="#{{ address_section_id }}"
+    hx-swap="outerHTML">
+    {% csrf_token %}
+    {{ address_form.non_field_errors }}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            {{ address_form.street.label_tag }}
+            {{ address_form.street }}
+            {{ address_form.street.errors }}
+        </div>
+        <div>
+            {{ address_form.number.label_tag }}
+            {{ address_form.number }}
+            {{ address_form.number.errors }}
+        </div>
+        <div>
+            {{ address_form.city.label_tag }}
+            {{ address_form.city }}
+            {{ address_form.city.errors }}
+        </div>
+        <div>
+            {{ address_form.state.label_tag }}
+            {{ address_form.state }}
+            {{ address_form.state.errors }}
+        </div>
+        <div class="md:col-span-2">
+            {{ address_form.zip_code.label_tag }}
+            {{ address_form.zip_code }}
+            {{ address_form.zip_code.errors }}
+        </div>
+    </div>
+
+    <div class="mt-4 flex gap-2">
+        <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">Salvar Endereco</button>
+        <button
+            type="button"
+            class="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded"
+            hx-get="{% url address_add_url_name entity.id %}"
+            hx-target="#{{ address_section_id }}"
+            hx-swap="outerHTML"
+            hx-vals='{"cancel":"true"}'>
+            Cancelar
+        </button>
+    </div>
+</form>

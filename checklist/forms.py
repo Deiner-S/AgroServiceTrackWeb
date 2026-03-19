@@ -1,5 +1,5 @@
 from django import forms
-from checklist.models import ChecklistItem, Client,Employee,WorkOrder
+from checklist.models import Address, ChecklistItem, Client,Employee,WorkOrder
 
 
 # Shared Tailwind input class used across forms
@@ -7,6 +7,12 @@ INPUT_TW_CLASS = (
     "w-full px-4 py-3 bg-white border border-gray-300 rounded-xl shadow-sm "
     "focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 "
     "transition-all duration-200"
+)
+
+LOCKED_INPUT_TW_CLASS = (
+    "w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl shadow-sm "
+    "text-gray-500 cursor-not-allowed select-none opacity-100 "
+    "focus:outline-none focus:ring-0 focus:border-gray-200"
 )
 
 
@@ -23,6 +29,25 @@ class ClientForm(forms.ModelForm):
 
 
 class ClientDetailForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["cpf"].disabled = True
+        self.fields["cnpj"].disabled = True
+        self.fields["cpf"].widget.attrs.update(
+            {
+                "class": LOCKED_INPUT_TW_CLASS,
+                "title": "Campo bloqueado",
+                "aria-disabled": "true",
+            }
+        )
+        self.fields["cnpj"].widget.attrs.update(
+            {
+                "class": LOCKED_INPUT_TW_CLASS,
+                "title": "Campo bloqueado",
+                "aria-disabled": "true",
+            }
+        )
+
     class Meta:
         model = Client
         fields = ['cpf', 'cnpj', 'name', 'email', 'phone']
@@ -39,6 +64,26 @@ class ClientDetailForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': INPUT_TW_CLASS}),
             'email': forms.EmailInput(attrs={'class': INPUT_TW_CLASS}),
             'phone': forms.TextInput(attrs={'class': INPUT_TW_CLASS}),
+        }
+
+
+class AddressForm(forms.ModelForm):
+    class Meta:
+        model = Address
+        fields = ["street", "number", "city", "state", "zip_code"]
+        labels = {
+            "street": "Rua",
+            "number": "Numero",
+            "city": "Cidade",
+            "state": "Estado",
+            "zip_code": "CEP",
+        }
+        widgets = {
+            "street": forms.TextInput(attrs={"class": INPUT_TW_CLASS}),
+            "number": forms.TextInput(attrs={"class": INPUT_TW_CLASS}),
+            "city": forms.TextInput(attrs={"class": INPUT_TW_CLASS}),
+            "state": forms.TextInput(attrs={"class": INPUT_TW_CLASS}),
+            "zip_code": forms.TextInput(attrs={"class": INPUT_TW_CLASS}),
         }
 
 

@@ -1,0 +1,49 @@
+<div
+    id="{{ address_section_id }}"
+    class="mt-4 bg-gradient-to-t from-black to-gray-800 p-6 rounded-lg shadow-md w-full max-w-3xl mx-auto text-white"
+    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    <div class="flex items-center justify-between gap-3 mb-4">
+        <h2 class="text-xl font-semibold">Enderecos</h2>
+        <button
+            type="button"
+            class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded whitespace-nowrap"
+            hx-get="{% url address_add_url_name entity.id %}"
+            hx-target="#{{ address_section_id }}"
+            hx-swap="outerHTML">
+            Adicionar Endereco
+        </button>
+    </div>
+
+    {% if show_address_form %}
+        {% include "theme/address/form.html" %}
+    {% endif %}
+
+    {% if addresses %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for address in addresses %}
+        <div class="relative bg-white text-black rounded-xl p-5 shadow">
+            <button
+                type="button"
+                class="absolute top-3 left-3 text-red-600 hover:text-red-700"
+                title="Excluir endereco"
+                hx-post="{% url address_delete_url_name entity.id address.id %}"
+                hx-target="#{{ address_section_id }}"
+                hx-swap="outerHTML"
+                hx-confirm="Tem certeza que deseja excluir este endereco?">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M9 3a1 1 0 0 0-1 1v1H5a1 1 0 1 0 0 2h1v11a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V7h1a1 1 0 1 0 0-2h-3V4a1 1 0 0 0-1-1H9Zm5 2h-4v0h4v0ZM8 7h8v11a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V7Zm2 3a1 1 0 0 0-1 1v5a1 1 0 1 0 2 0v-5a1 1 0 0 0-1-1Zm4 0a1 1 0 0 0-1 1v5a1 1 0 1 0 2 0v-5a1 1 0 0 0-1-1Z"/>
+                </svg>
+            </button>
+
+            <div class="pt-7 space-y-2">
+                <p class="font-semibold text-lg">{{ address.street }}, {{ address.number }}</p>
+                <p>{{ address.city }} - {{ address.state }}</p>
+                <p>CEP: {{ address.zip_code }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>Nenhum endereco cadastrado ainda.</p>
+    {% endif %}
+</div>

@@ -5,8 +5,9 @@ from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render
 
 from checklist.forms import ClientDetailForm, ClientForm
-from checklist.models import Client
+from checklist.models import Client, WorkOrder
 from checklist.templates_paths import TemplatePaths
+from checklist.views.pages.address_pages import get_address_section_context
 
 
 def _render_client_list(request):
@@ -32,6 +33,24 @@ def _render_client_list(request):
         {
             "page_client": page_client,
             "current_search": query,
+        },
+    )
+
+
+def _render_client_detail(request, client, form):
+    services = WorkOrder.objects.filter(client=client).order_by("-insert_date")
+    address_context = get_address_section_context(client, "client")
+
+    return render(
+        request,
+        TemplatePaths.CLIENT_DETAIL,
+        {
+            "form": form,
+            "client": client,
+            "services": services,
+            "current_search": (request.GET.get("search") or "").strip(),
+            "current_page": request.GET.get("page", ""),
+            **address_context,
         },
     )
 
@@ -67,16 +86,7 @@ def client_detail(request, client_id):
     else:
         form = ClientDetailForm(instance=client)
 
-    return render(
-        request,
-        TemplatePaths.CLIENT_DETAIL,
-        {
-            "form": form,
-            "client": client,
-            "current_search": (request.GET.get("search") or "").strip(),
-            "current_page": request.GET.get("page", ""),
-        },
-    )
+    return _render_client_detail(request, client, form)
 
 
 @login_required(login_url="gerenciador/login/")

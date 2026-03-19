@@ -34,7 +34,6 @@
                 <th class="py-2 px-4 text-left">Nome</th>
                 <th class="py-2 px-4 text-left">Phone</th>
                 <th class="py-2 px-4 text-left">Email</th>
-                <th class="py-2 px-4 text-left">Acoes</th>
             </tr>
         </thead>
 
@@ -56,16 +55,6 @@
                 <td class="py-2 px-4">{{ client.name }}</td>
                 <td class="py-2 px-4">{{ client.phone }}</td>
                 <td class="py-2 px-4">{{ client.email }}</td>
-                <td class="py-2 px-4">
-                    <div class="flex gap-2 flex-wrap" onclick="event.stopPropagation();">
-                        <button class="bg-gray-600 hover:bg-gray-700 text-white py-1 px-3 rounded"
-                            hx-get="{% url 'open_client_order' client.id %}"
-                            hx-target="#main-content"
-                            hx-swap="innerHTML">
-                            Verificar Servicos
-                        </button>
-                    </div>
-                </td>
             </tr>
             {% endfor %}
         </tbody>
