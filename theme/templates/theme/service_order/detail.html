@@ -95,5 +95,49 @@
         <p>Nenhum checklist vinculado a esta ordem.</p>
         {% endif %}
     </div>
+
+    <div class="bg-gradient-to-t from-black to-gray-800 rounded-lg p-6 shadow-md">
+        <h2 class="text-xl font-semibold mb-4">Assinaturas da Ordem</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white rounded-lg p-4 text-black">
+                <h3 class="text-lg font-semibold mb-3">Assinatura de Entrada</h3>
+                {% if order.signature_in %}
+                <img
+                    src="{{ order.signature_in.url }}"
+                    alt="Assinatura de entrada"
+                    class="w-full max-h-72 object-contain rounded border border-gray-300 bg-gray-100" />
+                <a
+                    href="{{ order.signature_in.url }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-block mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">
+                    Visualizar assinatura
+                </a>
+                {% else %}
+                <p class="text-gray-500">Sem assinatura de entrada.</p>
+                {% endif %}
+            </div>
+
+            <div class="bg-white rounded-lg p-4 text-black">
+                <h3 class="text-lg font-semibold mb-3">Assinatura de Saida</h3>
+                {% if order.signature_out %}
+                <img
+                    src="{{ order.signature_out.url }}"
+                    alt="Assinatura de saida"
+                    class="w-full max-h-72 object-contain rounded border border-gray-300 bg-gray-100" />
+                <a
+                    href="{{ order.signature_out.url }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-block mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">
+                    Visualizar assinatura
+                </a>
+                {% else %}
+                <p class="text-gray-500">Sem assinatura de saida.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
