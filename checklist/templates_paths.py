@@ -15,6 +15,7 @@ class TemplatePaths:
     SERVICE_ORDER_FORM = "theme/service_order/form.html"
     SERVICE_ORDER_LIST = "theme/service_order/list.html"
     SERVICE_ORDER_PANEL = "theme/service_order/panel.html"
+    SERVICE_ORDER_DETAIL = "theme/service_order/detail.html"
 
     HOME = "theme/home.html"
     LOGIN = "theme/login.html"

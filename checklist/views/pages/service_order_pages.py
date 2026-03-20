@@ -95,3 +95,27 @@ def service_panel(request):
             "status_options": status_options,
         },
     )
+
+
+@login_required(login_url="gerenciador/login/")
+def service_order_detail(request, order_id):
+    if not request.headers.get("HX-Request"):
+        return HttpResponseBadRequest("Acesso invalido")
+
+    order = get_object_or_404(
+        WorkOrder.objects.select_related("client").prefetch_related(
+            "checklists__employee",
+            "checklists__checklist_item_fk",
+        ),
+        id=order_id,
+    )
+
+    return render(
+        request,
+        TemplatePaths.SERVICE_ORDER_DETAIL,
+        {
+            "order": order,
+            "current_search": (request.GET.get("search") or "").strip(),
+            "selected_status": (request.GET.get("status") or "all").strip(),
+        },
+    )

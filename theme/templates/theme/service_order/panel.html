@@ -36,7 +36,11 @@
     
     {% if orders %}    
         {% for s in orders %}
-           <div class="bg-white rounded-lg shadow p-4 space-y-2 text-black">
+           <div
+                class="bg-white rounded-lg shadow p-4 space-y-2 text-black cursor-pointer hover:shadow-lg transition-shadow duration-200"
+                hx-get="{% url 'service_order_detail' s.id %}?status={{ selected_status }}&search={{ current_search|urlencode }}"
+                hx-target="#main-content"
+                hx-swap="innerHTML">
                 <h3 class="text-lg font-semibold">OS {{ s.operation_code }}</h3>
                 <p><strong>Cliente:</strong> {{ s.client.name }}</p>
                 <p><strong>Problema:</strong> {{ s.symptoms }}</p>

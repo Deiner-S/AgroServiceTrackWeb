@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto mt-4 space-y-4 text-white">
+    <div class="bg-gradient-to-t from-black to-gray-800 rounded-lg p-6 shadow-md">
+        <div class="flex items-center justify-between gap-3 mb-4">
+            <h1 class="text-2xl font-semibold">Detalhes da Ordem de Servico</h1>
+            <button
+                type="button"
+                class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded"
+                hx-get="{% url 'service_panel' %}?status={{ selected_status }}&search={{ current_search|urlencode }}"
+                hx-target="#main-content"
+                hx-swap="innerHTML">
+                Voltar para o Painel
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white rounded-lg p-4 text-black">
+                <p><strong>OS:</strong> {{ order.operation_code }}</p>
+                <p><strong>Cliente:</strong> {{ order.client.name }}</p>
+                <p><strong>Status:</strong> {{ order.get_status_display }}</p>
+                <p><strong>Solicitada em:</strong> {{ order.insert_date|date:'d/m/Y H:i' }}</p>
+            </div>
+            <div class="bg-white rounded-lg p-4 text-black">
+                <p><strong>Modelo:</strong> {{ order.model|default:'-' }}</p>
+                <p><strong>Chassi:</strong> {{ order.chassi|default:'-' }}</p>
+                <p><strong>Horimetro:</strong> {{ order.horimetro|default:'-' }}</p>
+                <p><strong>Entrada:</strong> {{ order.date_in|date:'d/m/Y H:i'|default:'-' }}</p>
+                <p><strong>Saida:</strong> {{ order.date_out|date:'d/m/Y H:i'|default:'-' }}</p>
+            </div>
+        </div>
+
+        <div class="mt-4 bg-white rounded-lg p-4 text-black">
+            <p class="mb-3"><strong>Problema:</strong></p>
+            <p>{{ order.symptoms|default:'-' }}</p>
+            <p class="mt-4 mb-3"><strong>Servico executado:</strong></p>
+            <p>{{ order.service|default:'-' }}</p>
+        </div>
+    </div>
+
+    <div class="bg-gradient-to-t from-black to-gray-800 rounded-lg p-6 shadow-md">
+        <h2 class="text-xl font-semibold mb-4">Checklists da Ordem</h2>
+
+        {% if order.checklists.all %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white shadow rounded-lg text-black">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="py-2 px-4 text-left">Item</th>
+                        <th class="py-2 px-4 text-left">Funcionario</th>
+                        <th class="py-2 px-4 text-left">Status</th>
+                        <th class="py-2 px-4 text-left">Data</th>
+                        <th class="py-2 px-4 text-left">Foto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for checklist in order.checklists.all %}
+                    <tr class="border-t">
+                        <td class="py-2 px-4">{{ checklist.checklist_item_fk.name }}</td>
+                        <td class="py-2 px-4">{{ checklist.employee.first_name }} {{ checklist.employee.last_name }}</td>
+                        <td class="py-2 px-4">{{ checklist.get_status_display }}</td>
+                        <td class="py-2 px-4">{{ checklist.insert_date|date:'d/m/Y H:i' }}</td>
+                        <td class="py-2 px-4">
+                            <div class="flex gap-2 flex-wrap">
+                                {% if checklist.image_in %}
+                                <a
+                                    href="{{ checklist.image_in.url }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded">
+                                    Ver Entrada
+                                </a>
+                                {% endif %}
+                                {% if checklist.image_out %}
+                                <a
+                                    href="{{ checklist.image_out.url }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded">
+                                    Ver Saida
+                                </a>
+                                {% endif %}
+                                {% if not checklist.image_in and not checklist.image_out %}
+                                <span class="text-gray-500">Sem foto</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>Nenhum checklist vinculado a esta ordem.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
