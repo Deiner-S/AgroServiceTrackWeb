@@ -1,29 +1,17 @@
-from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db import models
 from django.http import HttpResponseBadRequest
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
 
 from checklist.forms import EmployeeDetailForm, EmployeeForm
+from checklist.repository import employee_repository
 from checklist.templates_paths import TemplatePaths
 from checklist.views.pages.address_pages import get_address_section_context
 
 
-User = get_user_model()
-
-
 def _render_employee_list(request):
-    employees = User.objects.all().order_by("first_name")
     query = (request.GET.get("search") or "").strip()
-
-    if query:
-        employees = employees.filter(
-            models.Q(first_name__icontains=query)
-            | models.Q(last_name__icontains=query)
-            | models.Q(email__icontains=query)
-            | models.Q(cpf__icontains=query)
-        )
+    employees = employee_repository.list_for_management(query)
 
     paginator = Paginator(employees, 10)
     page_number = request.GET.get("page")
@@ -66,7 +54,7 @@ def add_employee(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.set_password(form.cleaned_data["password"])
-            user.save()
+            employee_repository.save(user)
             return _render_employee_list(request)
 
         print("Form invalido!")
@@ -83,7 +71,7 @@ def employee_detail(request, employee_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso invalido")
 
-    employee = get_object_or_404(User, id=employee_id)
+    employee = employee_repository.get_or_404(id=employee_id)
 
     if request.method == "POST":
         form = EmployeeDetailForm(request.POST, instance=employee)
@@ -92,7 +80,7 @@ def employee_detail(request, employee_id):
             new_password = form.cleaned_data.get("password")
             if new_password:
                 user.set_password(new_password)
-            user.save()
+            employee_repository.save(user)
             return _render_employee_list(request)
     else:
         form = EmployeeDetailForm(instance=employee)
@@ -108,8 +96,8 @@ def delete_employee(request, employee_id):
     if request.method != "POST":
         return HttpResponseBadRequest("Metodo invalido")
 
-    employee = get_object_or_404(User, id=employee_id)
-    employee.delete()
+    employee = employee_repository.get_or_404(id=employee_id)
+    employee_repository.delete(employee)
     return _render_employee_list(request)
 
 
@@ -121,9 +109,8 @@ def toggle_employee_status(request, employee_id):
     if request.method != "POST":
         return HttpResponseBadRequest("Metodo invalido")
 
-    employee = get_object_or_404(User, id=employee_id)
-    employee.is_active = not employee.is_active
-    employee.save(update_fields=["is_active"])
+    employee = employee_repository.get_or_404(id=employee_id)
+    employee_repository.toggle_active_status(employee)
 
     form = EmployeeDetailForm(instance=employee)
     return _render_employee_detail(request, employee, form)

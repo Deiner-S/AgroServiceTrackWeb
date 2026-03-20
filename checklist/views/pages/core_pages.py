@@ -1,13 +1,10 @@
-from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
+from checklist.repository import employee_repository
 from checklist.templates_paths import TemplatePaths
-
-
-User = get_user_model()
-
 
 @login_required(login_url="gerenciador/login/")
 def home(request):
@@ -25,7 +22,7 @@ def auth_login(request):
             login(request, user)
             return redirect("home")
 
-        inactive_user = User.objects.filter(username=usuario, is_active=False).first()
+        inactive_user = employee_repository.find_inactive_by_username(usuario)
         if inactive_user is not None and inactive_user.check_password(senha):
             return render(
                 request,

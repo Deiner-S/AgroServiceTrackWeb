@@ -1,19 +1,15 @@
-from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseBadRequest
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
 
 from checklist.forms import AddressForm
-from checklist.models import Address, Client
-
-
-User = get_user_model()
+from checklist.repository import address_repository, client_repository, employee_repository
 
 ADDRESS_SECTION_TEMPLATE = "theme/address/cards.html"
 
 
 def _address_section_context(entity, entity_kind, *, form=None, show_form=False):
-    addresses = entity.addresses.all().order_by("-created_at")
+    addresses = address_repository.list_for_entity(entity)
 
     if entity_kind == "client":
         add_url_name = "add-client-address"
@@ -55,17 +51,12 @@ def _render_address_section_response(request, entity, entity_kind, *, form=None,
     return render(request, ADDRESS_SECTION_TEMPLATE, context)
 
 
-def _delete_orphan_address(address):
-    if not address.clients.exists() and not address.employees.exists():
-        address.delete()
-
-
 @login_required(login_url="gerenciador/login/")
 def add_client_address(request, client_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso invalido")
 
-    client = get_object_or_404(Client, id=client_id)
+    client = client_repository.get_or_404(id=client_id)
 
     if request.method == "GET":
         return _render_address_section_response(
@@ -80,8 +71,8 @@ def add_client_address(request, client_id):
 
     form = AddressForm(request.POST)
     if form.is_valid():
-        address = form.save()
-        client.addresses.add(address)
+        address = address_repository.save(form.save(commit=False))
+        address_repository.add_to_client(client, address)
         return _render_address_section_response(request, client, "client")
 
     return _render_address_section_response(
@@ -101,10 +92,10 @@ def delete_client_address(request, client_id, address_id):
     if request.method != "POST":
         return HttpResponseBadRequest("Metodo invalido")
 
-    client = get_object_or_404(Client, id=client_id)
-    address = get_object_or_404(Address, id=address_id)
-    client.addresses.remove(address)
-    _delete_orphan_address(address)
+    client = client_repository.get_or_404(id=client_id)
+    address = address_repository.get_or_404(id=address_id)
+    address_repository.remove_from_client(client, address)
+    address_repository.delete_if_orphan(address)
     return _render_address_section_response(request, client, "client")
 
 
@@ -113,7 +104,7 @@ def add_employee_address(request, employee_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso invalido")
 
-    employee = get_object_or_404(User, id=employee_id)
+    employee = employee_repository.get_or_404(id=employee_id)
 
     if request.method == "GET":
         return _render_address_section_response(
@@ -128,8 +119,8 @@ def add_employee_address(request, employee_id):
 
     form = AddressForm(request.POST)
     if form.is_valid():
-        address = form.save()
-        employee.addresses.add(address)
+        address = address_repository.save(form.save(commit=False))
+        address_repository.add_to_employee(employee, address)
         return _render_address_section_response(request, employee, "employee")
 
     return _render_address_section_response(
@@ -149,8 +140,8 @@ def delete_employee_address(request, employee_id, address_id):
     if request.method != "POST":
         return HttpResponseBadRequest("Metodo invalido")
 
-    employee = get_object_or_404(User, id=employee_id)
-    address = get_object_or_404(Address, id=address_id)
-    employee.addresses.remove(address)
-    _delete_orphan_address(address)
+    employee = employee_repository.get_or_404(id=employee_id)
+    address = address_repository.get_or_404(id=address_id)
+    address_repository.remove_from_employee(employee, address)
+    address_repository.delete_if_orphan(address)
     return _render_address_section_response(request, employee, "employee")

@@ -1,20 +1,16 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db import models
 from django.http import HttpResponseBadRequest
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
 
 from checklist.forms import ChecklistItemForm
-from checklist.models import ChecklistItem
+from checklist.repository import checklist_item_repository
 from checklist.templates_paths import TemplatePaths
 
 
 def _render_checklist_item_list(request):
-    checklist_items = ChecklistItem.objects.all().order_by("name")
     query = (request.GET.get("search") or "").strip()
-
-    if query:
-        checklist_items = checklist_items.filter(models.Q(name__icontains=query))
+    checklist_items = checklist_item_repository.list_for_management(query)
 
     paginator = Paginator(checklist_items, 10)
     page_number = request.GET.get("page")
@@ -56,7 +52,7 @@ def add_checklist_item(request):
     if request.method == "POST":
         form = ChecklistItemForm(request.POST)
         if form.is_valid():
-            form.save()
+            checklist_item_repository.save(form.save(commit=False))
             return _render_checklist_item_list(request)
     else:
         form = ChecklistItemForm()
@@ -69,12 +65,12 @@ def checklist_item_detail(request, item_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso invalido")
 
-    checklist_item = get_object_or_404(ChecklistItem, id=item_id)
+    checklist_item = checklist_item_repository.get_or_404(id=item_id)
 
     if request.method == "POST":
         form = ChecklistItemForm(request.POST, instance=checklist_item)
         if form.is_valid():
-            form.save()
+            checklist_item_repository.save(form.save(commit=False))
             return _render_checklist_item_list(request)
     else:
         form = ChecklistItemForm(instance=checklist_item)
@@ -90,8 +86,7 @@ def toggle_checklist_item_status(request, item_id):
     if request.method != "POST":
         return HttpResponseBadRequest("Metodo invalido")
 
-    checklist_item = get_object_or_404(ChecklistItem, id=item_id)
-    checklist_item.status = 0 if checklist_item.status == 1 else 1
-    checklist_item.save(update_fields=["status"])
+    checklist_item = checklist_item_repository.get_or_404(id=item_id)
+    checklist_item_repository.toggle_status(checklist_item)
     form = ChecklistItemForm(instance=checklist_item)
     return _render_checklist_item_detail(request, checklist_item, form)
