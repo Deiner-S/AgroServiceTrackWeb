@@ -4,14 +4,15 @@ from checklist.models import Address, ChecklistItem, Client,Employee,WorkOrder
 
 # Shared Tailwind input class used across forms
 INPUT_TW_CLASS = (
-    "w-full px-4 py-3 bg-white border border-gray-300 rounded-xl shadow-sm "
-    "focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 "
+    "w-full px-4 py-3 bg-gray-700 border border-gray-500 rounded-xl shadow-sm "
+    "text-white placeholder-gray-300 "
+    "focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 "
     "transition-all duration-200"
 )
 
 LOCKED_INPUT_TW_CLASS = (
-    "w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl shadow-sm "
-    "text-gray-500 cursor-not-allowed select-none opacity-100 "
+    "w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl shadow-sm "
+    "text-gray-300 cursor-not-allowed select-none opacity-100 "
     "focus:outline-none focus:ring-0 focus:border-gray-200"
 )
 
@@ -179,7 +180,14 @@ class DataSheetCreateForm(forms.ModelForm):
         }
 
         widgets = {
-            "operation_code": forms.TextInput(attrs={"readonly": "readonly", 'class': INPUT_TW_CLASS}),
+            "operation_code": forms.TextInput(
+                attrs={
+                    "readonly": "readonly",
+                    "class": LOCKED_INPUT_TW_CLASS,
+                    "title": "Campo bloqueado",
+                    "aria-disabled": "true",
+                }
+            ),
             "symptoms": forms.Textarea(attrs={"rows": 4, 'class': INPUT_TW_CLASS}),
         }
 

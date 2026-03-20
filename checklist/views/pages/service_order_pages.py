@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.db import models
 from django.db.models import Max
 from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render
@@ -55,6 +56,7 @@ def service_panel(request):
         return HttpResponseBadRequest("Acesso invalido")
 
     status_filter = (request.GET.get("status") or "all").strip()
+    search_query = (request.GET.get("search") or "").strip()
     status_options = [
         ("all", "Todos"),
         ("1", "Pendente"),
@@ -72,12 +74,24 @@ def service_panel(request):
     if status_filter != "all":
         orders = orders.filter(status=status_filter)
 
+    if search_query:
+        orders = orders.filter(
+            models.Q(operation_code__icontains=search_query)
+            | models.Q(client__name__icontains=search_query)
+            | models.Q(symptoms__icontains=search_query)
+            | models.Q(service__icontains=search_query)
+            | models.Q(chassi__icontains=search_query)
+            | models.Q(model__icontains=search_query)
+            | models.Q(horimetro__icontains=search_query)
+        )
+
     return render(
         request,
         TemplatePaths.SERVICE_ORDER_PANEL,
         {
             "orders": orders,
             "selected_status": status_filter,
+            "current_search": search_query,
             "status_options": status_options,
         },
     )

@@ -13,6 +13,7 @@ urlpatterns = [
     path('clients/<uuid:client_id>/addresses/<uuid:address_id>/delete/', delete_client_address, name='delete-client-address'),
     path('checklist-item/', add_checklist_item, name='add_checklist_item'),
     path('checklist-items/', checklist_item_list, name='checklist-item-list'),
+    path('checklist-items/<uuid:item_id>/detail/', checklist_item_detail, name='checklist-item-detail'),
     path('checklist-items/<uuid:item_id>/toggle-status/', toggle_checklist_item_status, name='toggle_checklist_item_status'),
     path('employee/', add_employee, name='add_employee'),
     path('employees/', employee_list, name='employee-list'),

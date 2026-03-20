@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mt-4 bg-white p-8 rounded-lg shadow-md w-full max-w-2xl mx-auto text-black">
+    <form
+        id="checklist-item-status-form"
+        method="POST"
+        hx-post="{% url 'toggle_checklist_item_status' checklist_item.id %}?search={{ current_search|urlencode }}&page={{ current_page }}"
+        hx-target="#main-content"
+        hx-swap="innerHTML"
+        onsubmit="return confirm('Tem certeza que deseja alterar o status deste item?');">
+        {% csrf_token %}
+    </form>
+
+    <form
+        id="checklist-item-detail-form"
+        method="POST"
+        hx-post="{% url 'checklist-item-detail' checklist_item.id %}?search={{ current_search|urlencode }}&page={{ current_page }}"
+        hx-target="#main-content"
+        hx-swap="innerHTML">
+        {% csrf_token %}
+        <h1 class="text-2xl font-bold text-center mb-6">Detalhes do Item do Checklist</h1>
+        {{ form.non_field_errors }}
+
+        <div class="grid grid-cols-1 gap-4">
+            <div class="mb-4">
+                {{ form.name.label_tag }}
+                {{ form.name }}
+                {{ form.name.errors }}
+            </div>
+        </div>
+
+        <div class="mt-4 flex gap-2 flex-wrap">
+            <button type="submit" form="checklist-item-detail-form" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">Salvar</button>
+            <button
+                type="submit"
+                form="checklist-item-status-form"
+                class="{% if checklist_item.status == 1 %}bg-red-600 hover:bg-red-700{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white py-2 px-4 rounded whitespace-nowrap shadow-sm transition-colors duration-200">
+                {% if checklist_item.status == 1 %}Desativar{% else %}Ativar{% endif %}
+            </button>
+            <button
+                type="button"
+                class="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded"
+                hx-get="{% url 'checklist-item-list' %}?search={{ current_search|urlencode }}&page={{ current_page }}"
+                hx-target="#main-content"
+                hx-swap="innerHTML">
+                Voltar
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

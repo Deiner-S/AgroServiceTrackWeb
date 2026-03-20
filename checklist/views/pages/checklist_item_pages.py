@@ -30,6 +30,19 @@ def _render_checklist_item_list(request):
     )
 
 
+def _render_checklist_item_detail(request, checklist_item, form):
+    return render(
+        request,
+        TemplatePaths.CHECKLIST_ITEM_DETAIL,
+        {
+            "form": form,
+            "checklist_item": checklist_item,
+            "current_search": (request.GET.get("search") or "").strip(),
+            "current_page": request.GET.get("page", ""),
+        },
+    )
+
+
 @login_required(login_url="gerenciador/login/")
 def checklist_item_list(request):
     return _render_checklist_item_list(request)
@@ -52,6 +65,24 @@ def add_checklist_item(request):
 
 
 @login_required(login_url="gerenciador/login/")
+def checklist_item_detail(request, item_id):
+    if not request.headers.get("HX-Request"):
+        return HttpResponseBadRequest("Acesso invalido")
+
+    checklist_item = get_object_or_404(ChecklistItem, id=item_id)
+
+    if request.method == "POST":
+        form = ChecklistItemForm(request.POST, instance=checklist_item)
+        if form.is_valid():
+            form.save()
+            return _render_checklist_item_list(request)
+    else:
+        form = ChecklistItemForm(instance=checklist_item)
+
+    return _render_checklist_item_detail(request, checklist_item, form)
+
+
+@login_required(login_url="gerenciador/login/")
 def toggle_checklist_item_status(request, item_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso invalido")
@@ -62,5 +93,5 @@ def toggle_checklist_item_status(request, item_id):
     checklist_item = get_object_or_404(ChecklistItem, id=item_id)
     checklist_item.status = 0 if checklist_item.status == 1 else 1
     checklist_item.save(update_fields=["status"])
-
-    return _render_checklist_item_list(request)
+    form = ChecklistItemForm(instance=checklist_item)
+    return _render_checklist_item_detail(request, checklist_item, form)
