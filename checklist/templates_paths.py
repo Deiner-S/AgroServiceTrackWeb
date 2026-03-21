@@ -19,3 +19,4 @@ class TemplatePaths:
 
     HOME = "theme/home.html"
     LOGIN = "theme/login.html"
+    ERROR = "theme/error.html"

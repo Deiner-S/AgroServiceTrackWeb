@@ -4,12 +4,15 @@ from django.shortcuts import render
 
 from checklist.forms import AddressForm
 from checklist.repository import address_repository, client_repository, employee_repository
+from checklist.views.pages.view_utils import resolve_repository_result
 
 ADDRESS_SECTION_TEMPLATE = "theme/address/cards.html"
 
 
-def _address_section_context(entity, entity_kind, *, form=None, show_form=False):
-    addresses = address_repository.list_for_entity(entity)
+def _address_section_context(request, entity, entity_kind, *, form=None, show_form=False):
+    addresses, error_response = resolve_repository_result(request, address_repository.list_for_entity(entity))
+    if error_response:
+        return None, error_response
 
     if entity_kind == "client":
         add_url_name = "add-client-address"
@@ -32,8 +35,9 @@ def _address_section_context(entity, entity_kind, *, form=None, show_form=False)
     }
 
 
-def get_address_section_context(entity, entity_kind, *, form=None, show_form=False):
+def get_address_section_context(request, entity, entity_kind, *, form=None, show_form=False):
     return _address_section_context(
+        request,
         entity,
         entity_kind,
         form=form,
@@ -43,11 +47,14 @@ def get_address_section_context(entity, entity_kind, *, form=None, show_form=Fal
 
 def _render_address_section_response(request, entity, entity_kind, *, form=None, show_form=False):
     context = _address_section_context(
+        request,
         entity,
         entity_kind,
         form=form,
         show_form=show_form,
     )
+    if isinstance(context, tuple):
+        return context[1]
     return render(request, ADDRESS_SECTION_TEMPLATE, context)
 
 
@@ -56,7 +63,9 @@ def add_client_address(request, client_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso invalido")
 
-    client = client_repository.get_or_404(id=client_id)
+    client, error_response = resolve_repository_result(request, client_repository.get_by_id(client_id))
+    if error_response:
+        return error_response
 
     if request.method == "GET":
         return _render_address_section_response(
@@ -71,8 +80,14 @@ def add_client_address(request, client_id):
 
     form = AddressForm(request.POST)
     if form.is_valid():
-        address = address_repository.save(form.save(commit=False))
-        address_repository.add_to_client(client, address)
+        address, error_response = resolve_repository_result(request, address_repository.save(form.save(commit=False)))
+        if error_response:
+            return error_response
+
+        _, error_response = resolve_repository_result(request, address_repository.add_to_client(client, address))
+        if error_response:
+            return error_response
+
         return _render_address_section_response(request, client, "client")
 
     return _render_address_section_response(
@@ -92,10 +107,22 @@ def delete_client_address(request, client_id, address_id):
     if request.method != "POST":
         return HttpResponseBadRequest("Metodo invalido")
 
-    client = client_repository.get_or_404(id=client_id)
-    address = address_repository.get_or_404(id=address_id)
-    address_repository.remove_from_client(client, address)
-    address_repository.delete_if_orphan(address)
+    client, error_response = resolve_repository_result(request, client_repository.get_by_id(client_id))
+    if error_response:
+        return error_response
+
+    address, error_response = resolve_repository_result(request, address_repository.get_by_id(address_id))
+    if error_response:
+        return error_response
+
+    _, error_response = resolve_repository_result(request, address_repository.remove_from_client(client, address))
+    if error_response:
+        return error_response
+
+    _, error_response = resolve_repository_result(request, address_repository.delete_if_orphan(address))
+    if error_response:
+        return error_response
+
     return _render_address_section_response(request, client, "client")
 
 
@@ -104,7 +131,9 @@ def add_employee_address(request, employee_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso invalido")
 
-    employee = employee_repository.get_or_404(id=employee_id)
+    employee, error_response = resolve_repository_result(request, employee_repository.get_by_id(employee_id))
+    if error_response:
+        return error_response
 
     if request.method == "GET":
         return _render_address_section_response(
@@ -119,8 +148,14 @@ def add_employee_address(request, employee_id):
 
     form = AddressForm(request.POST)
     if form.is_valid():
-        address = address_repository.save(form.save(commit=False))
-        address_repository.add_to_employee(employee, address)
+        address, error_response = resolve_repository_result(request, address_repository.save(form.save(commit=False)))
+        if error_response:
+            return error_response
+
+        _, error_response = resolve_repository_result(request, address_repository.add_to_employee(employee, address))
+        if error_response:
+            return error_response
+
         return _render_address_section_response(request, employee, "employee")
 
     return _render_address_section_response(
@@ -140,8 +175,20 @@ def delete_employee_address(request, employee_id, address_id):
     if request.method != "POST":
         return HttpResponseBadRequest("Metodo invalido")
 
-    employee = employee_repository.get_or_404(id=employee_id)
-    address = address_repository.get_or_404(id=address_id)
-    address_repository.remove_from_employee(employee, address)
-    address_repository.delete_if_orphan(address)
+    employee, error_response = resolve_repository_result(request, employee_repository.get_by_id(employee_id))
+    if error_response:
+        return error_response
+
+    address, error_response = resolve_repository_result(request, address_repository.get_by_id(address_id))
+    if error_response:
+        return error_response
+
+    _, error_response = resolve_repository_result(request, address_repository.remove_from_employee(employee, address))
+    if error_response:
+        return error_response
+
+    _, error_response = resolve_repository_result(request, address_repository.delete_if_orphan(address))
+    if error_response:
+        return error_response
+
     return _render_address_section_response(request, employee, "employee")

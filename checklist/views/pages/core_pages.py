@@ -5,6 +5,7 @@ from django.urls import reverse
 
 from checklist.repository import employee_repository
 from checklist.templates_paths import TemplatePaths
+from checklist.views.pages.view_utils import resolve_repository_result
 
 @login_required(login_url="gerenciador/login/")
 def home(request):
@@ -22,7 +23,13 @@ def auth_login(request):
             login(request, user)
             return redirect("home")
 
-        inactive_user = employee_repository.find_inactive_by_username(usuario)
+        inactive_user, error_response = resolve_repository_result(
+            request,
+            employee_repository.find_inactive_by_username(usuario),
+        )
+        if error_response:
+            return error_response
+
         if inactive_user is not None and inactive_user.check_password(senha):
             return render(
                 request,

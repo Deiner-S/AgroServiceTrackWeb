@@ -7,11 +7,14 @@ from checklist.forms import ClientDetailForm, ClientForm
 from checklist.repository import client_repository, work_order_repository
 from checklist.templates_paths import TemplatePaths
 from checklist.views.pages.address_pages import get_address_section_context
+from checklist.views.pages.view_utils import resolve_repository_result
 
 
 def _render_client_list(request):
     query = (request.GET.get("search") or "").strip()
-    clients = client_repository.list_for_management(query)
+    clients, error_response = resolve_repository_result(request, client_repository.list_for_management(query))
+    if error_response:
+        return error_response
 
     paginator = Paginator(clients, 10)
     page_number = request.GET.get("page")
@@ -28,8 +31,13 @@ def _render_client_list(request):
 
 
 def _render_client_detail(request, client, form):
-    services = work_order_repository.list_by_client(client)
-    address_context = get_address_section_context(client, "client")
+    services, error_response = resolve_repository_result(request, work_order_repository.list_by_client(client))
+    if error_response:
+        return error_response
+
+    address_context, error_response = get_address_section_context(request, client, "client")
+    if error_response:
+        return error_response
 
     return render(
         request,
@@ -53,7 +61,9 @@ def add_cliente(request):
     if request.method == "POST":
         form = ClientForm(request.POST)
         if form.is_valid():
-            client_repository.save(form.save(commit=False))
+            _, error_response = resolve_repository_result(request, client_repository.save(form.save(commit=False)))
+            if error_response:
+                return error_response
             return _render_client_list(request)
     else:
         form = ClientForm()
@@ -66,12 +76,16 @@ def client_detail(request, client_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso invalido")
 
-    client = client_repository.get_or_404(id=client_id)
+    client, error_response = resolve_repository_result(request, client_repository.get_by_id(client_id))
+    if error_response:
+        return error_response
 
     if request.method == "POST":
         form = ClientDetailForm(request.POST, instance=client)
         if form.is_valid():
-            client_repository.save(form.save(commit=False))
+            _, error_response = resolve_repository_result(request, client_repository.save(form.save(commit=False)))
+            if error_response:
+                return error_response
             return _render_client_list(request)
     else:
         form = ClientDetailForm(instance=client)
@@ -87,8 +101,14 @@ def delete_client(request, client_id):
     if request.method != "POST":
         return HttpResponseBadRequest("Metodo invalido")
 
-    client = client_repository.get_or_404(id=client_id)
-    client_repository.delete(client)
+    client, error_response = resolve_repository_result(request, client_repository.get_by_id(client_id))
+    if error_response:
+        return error_response
+
+    _, error_response = resolve_repository_result(request, client_repository.delete(client))
+    if error_response:
+        return error_response
+
     return _render_client_list(request)
 
 

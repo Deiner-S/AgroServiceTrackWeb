@@ -6,6 +6,7 @@ from checklist.forms import ClientDetailForm, DataSheetCreateForm
 from checklist.repository import client_repository, work_order_repository
 from checklist.templates_paths import TemplatePaths
 from checklist.views.pages.client_pages import _render_client_detail
+from checklist.views.pages.view_utils import resolve_repository_result
 
 
 @login_required(login_url="gerenciador/login/")
@@ -13,7 +14,10 @@ def open_client_order(request, client_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso invalido")
 
-    client = client_repository.get_or_404(id=client_id)
+    client, error_response = resolve_repository_result(request, client_repository.get_by_id(client_id))
+    if error_response:
+        return error_response
+
     form = ClientDetailForm(instance=client)
     return _render_client_detail(request, client, form)
 
@@ -23,18 +27,27 @@ def add_order(request, client_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso invalido")
 
-    client = client_repository.get_or_404(id=client_id)
+    client, error_response = resolve_repository_result(request, client_repository.get_by_id(client_id))
+    if error_response:
+        return error_response
 
     if request.method == "POST":
         form = DataSheetCreateForm(request.POST)
         if form.is_valid():
             work_order = form.save(commit=False)
             work_order.client = client
-            work_order_repository.save(work_order)
+            _, error_response = resolve_repository_result(request, work_order_repository.save(work_order))
+            if error_response:
+                return error_response
             client_form = ClientDetailForm(instance=client)
             return _render_client_detail(request, client, client_form)
     else:
-        next_code = work_order_repository.get_next_operation_code()
+        next_code, error_response = resolve_repository_result(
+            request,
+            work_order_repository.get_next_operation_code(),
+        )
+        if error_response:
+            return error_response
         form = DataSheetCreateForm(initial={"operation_code": next_code})
 
     return render(
@@ -66,10 +79,15 @@ def service_panel(request):
     if status_filter not in allowed_status:
         status_filter = "all"
 
-    orders = work_order_repository.list_for_panel(
-        status_filter=status_filter,
-        search_query=search_query,
+    orders, error_response = resolve_repository_result(
+        request,
+        work_order_repository.list_for_panel(
+            status_filter=status_filter,
+            search_query=search_query,
+        ),
     )
+    if error_response:
+        return error_response
 
     return render(
         request,
@@ -88,7 +106,9 @@ def service_order_detail(request, order_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso invalido")
 
-    order = work_order_repository.get_detail_or_404(order_id)
+    order, error_response = resolve_repository_result(request, work_order_repository.get_detail_by_id(order_id))
+    if error_response:
+        return error_response
 
     return render(
         request,

@@ -1,17 +1,9 @@
 from django.contrib.auth import get_user_model
-from django.http import Http404
 from django.db.models import Max, Q
 
-from checklist.models import (
-    Address,
-    Checklist,
-    ChecklistItem,
-    Client,
-    ClientAddress,
-    EmployeeAddress,
-    WorkOrder,
-)
+from checklist.models import *
 from checklist.repository.base_repository import BaseRepository
+from checklist.repository.exception_handler import handle_repository_exceptions
 
 
 Employee = get_user_model()
@@ -20,31 +12,38 @@ Employee = get_user_model()
 class AddressRepository(BaseRepository):
     model = Address
 
+    @handle_repository_exceptions
     def list_for_entity(self, entity):
         return entity.addresses.all().order_by("-created_at")
 
+    @handle_repository_exceptions
     def add_to_client(self, client, address):
         client.addresses.add(address)
 
+    @handle_repository_exceptions
     def remove_from_client(self, client, address):
         client.addresses.remove(address)
 
+    @handle_repository_exceptions
     def add_to_employee(self, employee, address):
         employee.addresses.add(address)
 
+    @handle_repository_exceptions
     def remove_from_employee(self, employee, address):
         employee.addresses.remove(address)
 
+    @handle_repository_exceptions
     def delete_if_orphan(self, address):
         if not address.clients.exists() and not address.employees.exists():
-            self.delete(address)
+            address.delete()
 
 
 class ClientRepository(BaseRepository):
     model = Client
 
+    @handle_repository_exceptions
     def list_for_management(self, query=""):
-        queryset = self.list_all(order_by=("name",))
+        queryset = self.get_queryset().order_by("name")
         if query:
             queryset = queryset.filter(
                 Q(name__icontains=query)
@@ -59,8 +58,9 @@ class ClientRepository(BaseRepository):
 class EmployeeRepository(BaseRepository):
     model = Employee
 
+    @handle_repository_exceptions
     def list_for_management(self, query=""):
-        queryset = self.list_all(order_by=("first_name",))
+        queryset = self.get_queryset().order_by("first_name")
         if query:
             queryset = queryset.filter(
                 Q(first_name__icontains=query)
@@ -70,12 +70,15 @@ class EmployeeRepository(BaseRepository):
             )
         return queryset
 
+    @handle_repository_exceptions
     def find_inactive_by_username(self, username):
-        return self.first(username=username, is_active=False)
+        return self.get_queryset().filter(username=username, is_active=False).first()
 
+    @handle_repository_exceptions
     def toggle_active_status(self, employee):
         employee.is_active = not employee.is_active
-        return self.save(employee, update_fields=["is_active"])
+        employee.save(update_fields=["is_active"])
+        return employee
 
 
 class ClientAddressRepository(BaseRepository):
@@ -89,13 +92,16 @@ class EmployeeAddressRepository(BaseRepository):
 class WorkOrderRepository(BaseRepository):
     model = WorkOrder
 
+    @handle_repository_exceptions
     def list_by_client(self, client):
-        return self.filter(client=client).order_by("-insert_date")
+        return self.get_queryset().filter(client=client).order_by("-insert_date")
 
+    @handle_repository_exceptions
     def get_next_operation_code(self):
         last_code = self.model.objects.aggregate(Max("operation_code"))["operation_code__max"]
         return "000001" if not last_code else f"{int(last_code) + 1:06d}"
 
+    @handle_repository_exceptions
     def list_for_panel(self, *, status_filter="all", search_query=""):
         queryset = self.get_queryset().select_related("client").order_by("-insert_date")
 
@@ -115,29 +121,30 @@ class WorkOrderRepository(BaseRepository):
 
         return queryset
 
-    def get_detail_or_404(self, order_id):
+    @handle_repository_exceptions
+    def get_detail_by_id(self, order_id):
         queryset = self.get_queryset().select_related("client").prefetch_related(
             "checklists__employee",
             "checklists__checklist_item_fk",
         )
-        try:
-            return queryset.get(id=order_id)
-        except self.model.DoesNotExist as exc:
-            raise Http404(f"{self.model.__name__} not found.") from exc
+        return queryset.get(id=order_id)
 
 
 class ChecklistItemRepository(BaseRepository):
     model = ChecklistItem
 
+    @handle_repository_exceptions
     def list_for_management(self, query=""):
-        queryset = self.list_all(order_by=("name",))
+        queryset = self.get_queryset().order_by("name")
         if query:
             queryset = queryset.filter(Q(name__icontains=query))
         return queryset
 
+    @handle_repository_exceptions
     def toggle_status(self, checklist_item):
         checklist_item.status = 0 if checklist_item.status == 1 else 1
-        return self.save(checklist_item, update_fields=["status"])
+        checklist_item.save(update_fields=["status"])
+        return checklist_item
 
 
 class ChecklistRepository(BaseRepository):

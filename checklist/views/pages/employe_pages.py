@@ -7,11 +7,14 @@ from checklist.forms import EmployeeDetailForm, EmployeeForm
 from checklist.repository import employee_repository
 from checklist.templates_paths import TemplatePaths
 from checklist.views.pages.address_pages import get_address_section_context
+from checklist.views.pages.view_utils import resolve_repository_result
 
 
 def _render_employee_list(request):
     query = (request.GET.get("search") or "").strip()
-    employees = employee_repository.list_for_management(query)
+    employees, error_response = resolve_repository_result(request, employee_repository.list_for_management(query))
+    if error_response:
+        return error_response
 
     paginator = Paginator(employees, 10)
     page_number = request.GET.get("page")
@@ -28,7 +31,9 @@ def _render_employee_list(request):
 
 
 def _render_employee_detail(request, employee, form):
-    address_context = get_address_section_context(employee, "employee")
+    address_context, error_response = get_address_section_context(request, employee, "employee")
+    if error_response:
+        return error_response
 
     return render(
         request,
@@ -54,7 +59,9 @@ def add_employee(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.set_password(form.cleaned_data["password"])
-            employee_repository.save(user)
+            _, error_response = resolve_repository_result(request, employee_repository.save(user))
+            if error_response:
+                return error_response
             return _render_employee_list(request)
 
         print("Form invalido!")
@@ -71,7 +78,9 @@ def employee_detail(request, employee_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso invalido")
 
-    employee = employee_repository.get_or_404(id=employee_id)
+    employee, error_response = resolve_repository_result(request, employee_repository.get_by_id(employee_id))
+    if error_response:
+        return error_response
 
     if request.method == "POST":
         form = EmployeeDetailForm(request.POST, instance=employee)
@@ -80,7 +89,9 @@ def employee_detail(request, employee_id):
             new_password = form.cleaned_data.get("password")
             if new_password:
                 user.set_password(new_password)
-            employee_repository.save(user)
+            _, error_response = resolve_repository_result(request, employee_repository.save(user))
+            if error_response:
+                return error_response
             return _render_employee_list(request)
     else:
         form = EmployeeDetailForm(instance=employee)
@@ -96,8 +107,14 @@ def delete_employee(request, employee_id):
     if request.method != "POST":
         return HttpResponseBadRequest("Metodo invalido")
 
-    employee = employee_repository.get_or_404(id=employee_id)
-    employee_repository.delete(employee)
+    employee, error_response = resolve_repository_result(request, employee_repository.get_by_id(employee_id))
+    if error_response:
+        return error_response
+
+    _, error_response = resolve_repository_result(request, employee_repository.delete(employee))
+    if error_response:
+        return error_response
+
     return _render_employee_list(request)
 
 
@@ -109,8 +126,16 @@ def toggle_employee_status(request, employee_id):
     if request.method != "POST":
         return HttpResponseBadRequest("Metodo invalido")
 
-    employee = employee_repository.get_or_404(id=employee_id)
-    employee_repository.toggle_active_status(employee)
+    employee, error_response = resolve_repository_result(request, employee_repository.get_by_id(employee_id))
+    if error_response:
+        return error_response
+
+    employee, error_response = resolve_repository_result(
+        request,
+        employee_repository.toggle_active_status(employee),
+    )
+    if error_response:
+        return error_response
 
     form = EmployeeDetailForm(instance=employee)
     return _render_employee_detail(request, employee, form)
