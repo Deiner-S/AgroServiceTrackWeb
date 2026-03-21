@@ -1,15 +1,7 @@
 from django.shortcuts import render
 
+from checklist.repository.exception_handler import is_repository_error
 from checklist.templates_paths import TemplatePaths
-
-
-def is_repository_error(result):
-    return (
-        isinstance(result, tuple)
-        and len(result) == 2
-        and isinstance(result[0], dict)
-        and "error" in result[0]
-    )
 
 
 def resolve_repository_result(request, result):

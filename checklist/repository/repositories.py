@@ -80,6 +80,10 @@ class EmployeeRepository(BaseRepository):
         employee.save(update_fields=["is_active"])
         return employee
 
+    @handle_repository_exceptions
+    def get_by_identifier(self, employee_id):
+        return self.get_queryset().get(id=employee_id)
+
 
 class ClientAddressRepository(BaseRepository):
     model = ClientAddress
@@ -91,6 +95,14 @@ class EmployeeAddressRepository(BaseRepository):
 
 class WorkOrderRepository(BaseRepository):
     model = WorkOrder
+
+    @handle_repository_exceptions
+    def list_pending_for_api_sync(self):
+        return (
+            self.get_queryset()
+            .filter(status__in=["1", "2", "3"])
+            .select_related("client")
+        )
 
     @handle_repository_exceptions
     def list_by_client(self, client):
@@ -129,9 +141,17 @@ class WorkOrderRepository(BaseRepository):
         )
         return queryset.get(id=order_id)
 
+    @handle_repository_exceptions
+    def get_by_operation_code(self, operation_code):
+        return self.get_queryset().get(operation_code=operation_code)
+
 
 class ChecklistItemRepository(BaseRepository):
     model = ChecklistItem
+
+    @handle_repository_exceptions
+    def list_for_api_sync(self):
+        return self.get_queryset().all()
 
     @handle_repository_exceptions
     def list_for_management(self, query=""):
@@ -149,6 +169,15 @@ class ChecklistItemRepository(BaseRepository):
 
 class ChecklistRepository(BaseRepository):
     model = Checklist
+
+    @handle_repository_exceptions
+    def find_latest_by_work_order_and_item(self, work_order, checklist_item):
+        return (
+            self.get_queryset()
+            .filter(work_order_fk=work_order, checklist_item_fk=checklist_item)
+            .order_by("-insert_date")
+            .first()
+        )
 
 
 address_repository = AddressRepository()
