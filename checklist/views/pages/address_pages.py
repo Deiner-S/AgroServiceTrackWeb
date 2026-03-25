@@ -36,16 +36,6 @@ def _address_section_context(request, entity, entity_kind, *, form=None, show_fo
 
 
 def get_address_section_context(request, entity, entity_kind, *, form=None, show_form=False):
-    return _address_section_context(
-        request,
-        entity,
-        entity_kind,
-        form=form,
-        show_form=show_form,
-    )
-
-
-def _render_address_section_response(request, entity, entity_kind, *, form=None, show_form=False):
     context = _address_section_context(
         request,
         entity,
@@ -54,7 +44,20 @@ def _render_address_section_response(request, entity, entity_kind, *, form=None,
         show_form=show_form,
     )
     if isinstance(context, tuple):
-        return context[1]
+        return context
+    return context, None
+
+
+def _render_address_section_response(request, entity, entity_kind, *, form=None, show_form=False):
+    context, error_response = get_address_section_context(
+        request,
+        entity,
+        entity_kind,
+        form=form,
+        show_form=show_form,
+    )
+    if error_response:
+        return error_response
     return render(request, ADDRESS_SECTION_TEMPLATE, context)
 
 
