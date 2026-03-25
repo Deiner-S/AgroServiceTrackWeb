@@ -1,7 +1,18 @@
+import uuid
+
 from django.core.exceptions import ValidationError
 from django.test import SimpleTestCase, TestCase
 
+from checklist.api_payload_validation import (
+    validate_checklist_entries,
+    validate_work_order_entries,
+)
 from checklist.forms import AddressForm, ClientForm, EmployeeForm
+from checklist.models import ChecklistItem, Client, WorkOrder
+from checklist.exception_handler import (
+    get_validation_error_message,
+    handle_validation_exceptions,
+)
 from checklist.utils.validation_utils import (
     validate_cnpj_format,
     validate_cpf_format,
@@ -143,3 +154,105 @@ class FormValidationTests(TestCase):
         self.assertIn("number", form.errors)
         self.assertIn("city", form.errors)
         self.assertIn("zip_code", form.errors)
+
+
+class ValidationExceptionHandlerTests(SimpleTestCase):
+    def test_get_validation_error_message_from_messages(self):
+        exc = ValidationError(["Erro um", "Erro dois"])
+        self.assertEqual(get_validation_error_message(exc), "Erro um Erro dois")
+
+    def test_get_validation_error_message_from_message_dict(self):
+        exc = ValidationError({"cpf": ["CPF invalido"], "email": ["Email invalido"]})
+        self.assertEqual(get_validation_error_message(exc), "CPF invalido Email invalido")
+
+    def test_handle_validation_exceptions_returns_error_payload(self):
+        @handle_validation_exceptions
+        def run_validation():
+            raise ValidationError("CPF invalido")
+
+        self.assertEqual(run_validation(), ({"error": "CPF invalido"}, 400))
+
+
+class ApiPayloadValidationTests(TestCase):
+    def setUp(self):
+        self.client_obj = Client.objects.create(
+            name="Cliente Teste",
+            email="cliente@empresa.com",
+            phone="(11) 98765-4321",
+        )
+        self.work_order = WorkOrder.objects.create(
+            operation_code="000001",
+            symptoms="Falha no motor",
+            client=self.client_obj,
+        )
+        self.checklist_item = ChecklistItem.objects.create(name="Verificar painel", status=1)
+
+    def test_validate_work_order_entries_returns_normalized_payload(self):
+        payload = [
+            {
+                "operation_code": "000001",
+                "chassi": "1HGCM82633A123456",
+                "horimetro": "12345",
+                "model": "Trator2025",
+                "date_in": "2026-03-25T10:00:00",
+                "date_out": "2026-03-25T11:00:00",
+                "status": "2",
+                "service": "Troca completa",
+            }
+        ]
+
+        validated = validate_work_order_entries(payload)
+
+        self.assertEqual(validated[0]["work_order"].id, self.work_order.id)
+        self.assertEqual(validated[0]["chassi"], "1HGCM82633A123456")
+        self.assertEqual(validated[0]["status"], "2")
+
+    def test_validate_work_order_entries_rejects_invalid_chassi(self):
+        payload = [
+            {
+                "operation_code": "000001",
+                "chassi": "ABC-123",
+                "horimetro": "12345",
+                "model": "Trator2025",
+                "date_in": "2026-03-25T10:00:00",
+                "date_out": "2026-03-25T11:00:00",
+                "status": "2",
+                "service": "Troca completa",
+            }
+        ]
+
+        with self.assertRaises(ValidationError):
+            validate_work_order_entries(payload)
+
+    def test_validate_checklist_entries_returns_normalized_payload(self):
+        payload = [
+            {
+                "id": str(uuid.uuid4()),
+                "checklist_item_fk": str(self.checklist_item.id),
+                "work_order_fk": str(self.work_order.id),
+                "status": "1",
+                "img_in": None,
+                "img_out": None,
+            }
+        ]
+
+        validated = validate_checklist_entries(payload)
+
+        self.assertEqual(validated[0]["checklist_item"].id, self.checklist_item.id)
+        self.assertEqual(validated[0]["work_order"].id, self.work_order.id)
+        self.assertEqual(validated[0]["status"], "1")
+
+    def test_validate_checklist_entries_rejects_invalid_image(self):
+        payload = [
+            {
+                "id": str(uuid.uuid4()),
+                "checklist_item_fk": str(self.checklist_item.id),
+                "work_order_fk": str(self.work_order.id),
+                "status": "1",
+                "img_in": b"not-an-image",
+                "img_out": None,
+            }
+        ]
+
+        with self.assertRaises(ValidationError):
+            validate_checklist_entries(payload)

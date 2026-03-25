@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from checklist.repository.exception_handler import is_repository_error
+from checklist.exception_handler import is_repository_error
 from checklist.templates_paths import TemplatePaths
 
 

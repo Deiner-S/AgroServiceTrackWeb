@@ -1,6 +1,13 @@
+from django.core.exceptions import ValidationError
 from rest_framework.decorators import api_view
-from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.response import Response
+
+from checklist.api_payload_validation import (
+    validate_checklist_entries,
+    validate_work_order_entries,
+)
+from checklist.exception_handler import get_validation_error_message
 from checklist.services import api_services
 from checklist.utils.logging_utils import save_log
 import traceback
@@ -31,12 +38,18 @@ def send_checklist_items(request):
 
 @api_view(['POST'])
 def receive_work_orders_api(request):
-    work_order_list = request.data
-     
     try:
         print("\n\nTry save work_orders")
-        api_services.save_work_orders_filleds(work_order_list)        
+        validated_work_orders = validate_work_order_entries(request.data)
+        api_services.save_work_orders_filleds(validated_work_orders)        
         response = True
+    except ValidationError as e:
+        save_log(e, request)
+        response = False
+        return Response(
+            {"ok": response, "error": get_validation_error_message(e)},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
     except Exception as e:
         save_log(e, request)
         response = False
@@ -50,13 +63,20 @@ def receive_work_orders_api(request):
 
 @api_view(['POST'])
 def receive_checkLists_filleds(request):
-    checklists = request.data
     user = request.user.id
     
     try:
         print("\n\nTry save checklists")
-        api_services.save_checklists_filleds(checklists,user)
+        validated_checklists = validate_checklist_entries(request.data)
+        api_services.save_checklists_filleds(validated_checklists, user)
         response = True
+    except ValidationError as e:
+        save_log(e, request)
+        response = False
+        return Response(
+            {"ok": response, "error": get_validation_error_message(e)},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
     except Exception as e:
         save_log(e, request)
         response = False

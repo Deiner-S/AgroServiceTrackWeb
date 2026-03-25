@@ -2,7 +2,7 @@ from django.db.models import Q
 
 from checklist.models import ChecklistItem
 from checklist.repository.base_repository import BaseRepository
-from checklist.repository.exception_handler import handle_repository_exceptions
+from checklist.exception_handler import handle_repository_exceptions
 
 
 class ChecklistItemRepository(BaseRepository):

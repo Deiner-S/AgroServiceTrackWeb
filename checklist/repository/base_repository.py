@@ -1,4 +1,4 @@
-from checklist.repository.exception_handler import handle_repository_exceptions
+from checklist.exception_handler import handle_repository_exceptions
 
 
 class BaseRepository:
