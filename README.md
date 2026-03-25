@@ -101,3 +101,19 @@ client–server macro architecture:
 ## 🚀 Possible Evolution Horizons
 
 - Project structuring for a future SaaS model
+
+## Docker
+
+The `AgroServiceTrackWeb` repository is an independent project and can be started in Docker on its own.
+
+1. Create your local environment file:
+   `copy .env.example .env`
+2. Start the container:
+   `docker compose up --build`
+3. Access the application:
+   `http://localhost:8000`
+
+Notes:
+- The container runs Django migrations automatically on startup.
+- The current setup keeps SQLite and uploaded files in the Web repository directory through the mounted volume.
+- If you need to expose the app through another host, adjust `DJANGO_ALLOWED_HOSTS` in `.env`.

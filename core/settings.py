@@ -10,7 +10,22 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+
+def get_bool_env(name: str, default: bool) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def get_list_env(name: str, default: list[str]) -> list[str]:
+    value = os.getenv(name)
+    if not value:
+        return default
+    return [item.strip() for item in value.split(",") if item.strip()]
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,12 +37,18 @@ AUTH_USER_MODEL = 'checklist.Employee'
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-r8)i2hz+6f5#*f@dc19n)hg-=(fpzc9_ryvlsp4esfk%mma=d0'
+SECRET_KEY = os.getenv(
+    'DJANGO_SECRET_KEY',
+    'django-insecure-r8)i2hz+6f5#*f@dc19n)hg-=(fpzc9_ryvlsp4esfk%mma=d0',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = get_bool_env('DJANGO_DEBUG', True)
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'ringless-equivalently-alijah.ngrok-free.dev']
+ALLOWED_HOSTS = get_list_env(
+    'DJANGO_ALLOWED_HOSTS',
+    ['127.0.0.1', 'localhost', 'ringless-equivalently-alijah.ngrok-free.dev'],
+)
 
 
 
