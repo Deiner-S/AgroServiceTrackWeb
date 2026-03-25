@@ -6,9 +6,9 @@ from checklist.utils.validation_utils import (
     validate_cnpj_format,
     validate_cpf_format,
     validate_email_format,
-    validate_only_letters,
     validate_only_letters_and_numbers,
     validate_only_letters_and_spaces,
+    validate_only_lowercase_letters,
     validate_only_letters_numbers_and_spaces,
     validate_only_numbers,
     validate_phone_format,
@@ -24,18 +24,20 @@ class ValidationUtilsTests(SimpleTestCase):
         with self.assertRaises(ValidationError):
             validate_only_numbers("123 456")
 
-    def test_validate_only_letters(self):
-        self.assertEqual(validate_only_letters("Agro"), "Agro")
-        self.assertEqual(validate_only_letters("João"), "João")
-        with self.assertRaises(ValidationError):
-            validate_only_letters("Agro1")
-        with self.assertRaises(ValidationError):
-            validate_only_letters("Agro Service")
-
     def test_validate_only_letters_and_spaces(self):
         self.assertEqual(validate_only_letters_and_spaces("Belo Horizonte"), "Belo Horizonte")
+        self.assertEqual(validate_only_letters_and_spaces("Maria Clara"), "Maria Clara")
         with self.assertRaises(ValidationError):
             validate_only_letters_and_spaces("Cidade 2")
+
+    def test_validate_only_lowercase_letters(self):
+        self.assertEqual(validate_only_lowercase_letters("joaosilva"), "joaosilva")
+        with self.assertRaises(ValidationError):
+            validate_only_lowercase_letters("joao silva")
+        with self.assertRaises(ValidationError):
+            validate_only_lowercase_letters("Joao")
+        with self.assertRaises(ValidationError):
+            validate_only_lowercase_letters("joao123")
 
     def test_validate_only_letters_and_numbers(self):
         self.assertEqual(validate_only_letters_and_numbers("Agro123"), "Agro123")
@@ -99,7 +101,7 @@ class FormValidationTests(TestCase):
                 "phone": "11999999999",
                 "email": "joao@empresa.org",
                 "position": "1",
-                "username": "joaosilva",
+                "username": "JoaoSilva",
                 "password": "senha123",
             }
         )
@@ -109,12 +111,13 @@ class FormValidationTests(TestCase):
         self.assertIn("cpf", form.errors)
         self.assertIn("phone", form.errors)
         self.assertIn("email", form.errors)
+        self.assertIn("username", form.errors)
 
     def test_client_form_rejects_invalid_cnpj(self):
         form = ClientForm(
             data={
                 "cnpj": "12345678000190",
-                "name": "Cliente Teste",
+                "name": "Cliente 1",
                 "email": "cliente@empresa.com",
                 "phone": "(11) 98765-4321",
             }
@@ -122,12 +125,13 @@ class FormValidationTests(TestCase):
 
         self.assertFalse(form.is_valid())
         self.assertIn("cnpj", form.errors)
+        self.assertIn("name", form.errors)
 
     def test_address_form_rejects_invalid_street_city_and_zip_code(self):
         form = AddressForm(
             data={
                 "street": "Rua das Flores, 10",
-                "number": "10",
+                "number": "10A",
                 "city": "Sao Paulo 2",
                 "state": "SP",
                 "zip_code": "12345678",
@@ -136,5 +140,6 @@ class FormValidationTests(TestCase):
 
         self.assertFalse(form.is_valid())
         self.assertIn("street", form.errors)
+        self.assertIn("number", form.errors)
         self.assertIn("city", form.errors)
         self.assertIn("zip_code", form.errors)

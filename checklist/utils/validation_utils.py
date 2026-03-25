@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 ONLY_NUMBERS_PATTERN = re.compile(r"^\d+$")
 ONLY_LETTERS_PATTERN = re.compile(r"^[A-Za-zÀ-ÿ]+$")
 ONLY_LETTERS_AND_SPACES_PATTERN = re.compile(r"^[A-Za-zÀ-ÿ\s]+$")
+ONLY_LOWERCASE_LETTERS_PATTERN = re.compile(r"^[a-z]+$")
 LETTERS_AND_NUMBERS_PATTERN = re.compile(r"^[A-Za-zÀ-ÿ0-9]+$")
 LETTERS_NUMBERS_AND_SPACES_PATTERN = re.compile(r"^[A-Za-zÀ-ÿ0-9\s]+$")
 CPF_FORMAT_PATTERN = re.compile(r"^\d{3}\.\d{3}\.\d{3}-\d{2}$")
@@ -36,6 +37,14 @@ def validate_only_letters_and_spaces(value):
         value,
         ONLY_LETTERS_AND_SPACES_PATTERN,
         "O valor deve conter somente letras e espacos.",
+    )
+
+
+def validate_only_lowercase_letters(value):
+    return _validate_by_pattern(
+        value,
+        ONLY_LOWERCASE_LETTERS_PATTERN,
+        "O valor deve conter somente letras minusculas, sem espacos.",
     )
 
 
