@@ -2,8 +2,10 @@ from functools import wraps
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import IntegrityError
+from rest_framework.exceptions import Throttled
+from rest_framework.views import exception_handler as drf_exception_handler
 
-from checklist.utils.logging_utils import save_log
+from checklist.utils.logging_utils import save_log, save_security_log
 
 
 class RepositoryOperationError(Exception):
@@ -74,3 +76,22 @@ def handle_repository_exceptions(func):
             return {"error": "Erro interno"}, 500
 
     return wrapper
+
+
+def api_exception_handler(exc, context):
+    response = drf_exception_handler(exc, context)
+
+    if isinstance(exc, Throttled):
+        request = context.get("request") if context else None
+        wait_time = int(exc.wait) if exc.wait is not None else None
+        view = context.get("view") if context else None
+
+        save_security_log(
+            "api_rate_limit_exceeded",
+            request=request,
+            wait_seconds=wait_time,
+            view_name=view.__class__.__name__ if view is not None else None,
+            throttle_detail=str(exc.detail),
+        )
+
+    return response

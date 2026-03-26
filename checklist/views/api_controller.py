@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, throttle_classes
 from rest_framework import status
 from rest_framework.response import Response
 
@@ -8,12 +8,14 @@ from checklist.api_payload_validation import (
     validate_work_order_entries,
 )
 from checklist.exception_handler import get_validation_error_message
+from checklist.throttling import SyncReadRateThrottle, SyncWriteRateThrottle
 from checklist.services import api_services
 from checklist.utils.logging_utils import save_log
 import traceback
 
 
 @api_view(['GET'])
+@throttle_classes([SyncReadRateThrottle])
 def send_pending_work_order(request):
     try:
         print("\n\nTry get pending_work_order")
@@ -25,6 +27,7 @@ def send_pending_work_order(request):
     return Response(data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
+@throttle_classes([SyncReadRateThrottle])
 def send_checklist_items(request):
     try:
         print("\n\nTry get checklist_items")
@@ -37,6 +40,7 @@ def send_checklist_items(request):
 
 
 @api_view(['POST'])
+@throttle_classes([SyncWriteRateThrottle])
 def receive_work_orders_api(request):
     try:
         print("\n\nTry save work_orders")
@@ -62,6 +66,7 @@ def receive_work_orders_api(request):
 
 
 @api_view(['POST'])
+@throttle_classes([SyncWriteRateThrottle])
 def receive_checkLists_filleds(request):
     user = request.user.id
     

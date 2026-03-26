@@ -74,6 +74,19 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': os.getenv('DRF_THROTTLE_ANON', '30/min'),
+        'user': os.getenv('DRF_THROTTLE_USER', '120/min'),
+        'login': os.getenv('DRF_THROTTLE_LOGIN', '5/min'),
+        'token_refresh': os.getenv('DRF_THROTTLE_TOKEN_REFRESH', '20/min'),
+        'sync_read': os.getenv('DRF_THROTTLE_SYNC_READ', '30/min'),
+        'sync_write': os.getenv('DRF_THROTTLE_SYNC_WRITE', '15/min'),
+    },
+    'EXCEPTION_HANDLER': 'checklist.exception_handler.api_exception_handler',
 }
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
