@@ -3,10 +3,11 @@ from django.http import HttpResponseBadRequest
 from django.shortcuts import render
 
 from checklist.forms import ClientDetailForm, DataSheetCreateForm
-from checklist.repository import client_repository, work_order_repository
+from checklist.exception_handler import RepositoryOperationError
+from checklist.services import client_page_services, service_order_page_services
 from checklist.templates_paths import TemplatePaths
 from checklist.views.pages.client_pages import _render_client_detail
-from checklist.views.pages.view_utils import resolve_repository_result
+from checklist.views.pages.view_utils import render_repository_error
 
 
 @login_required(login_url="gerenciador/login/")
@@ -14,12 +15,12 @@ def open_client_order(request, client_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso invalido")
 
-    client, error_response = resolve_repository_result(request, client_repository.get_by_id(client_id))
-    if error_response:
-        return error_response
-
-    form = ClientDetailForm(instance=client)
-    return _render_client_detail(request, client, form)
+    try:
+        client = client_page_services.get_client(client_id)
+        form = ClientDetailForm(instance=client)
+        return _render_client_detail(request, client, form)
+    except RepositoryOperationError as exc:
+        return render_repository_error(request, exc)
 
 
 @login_required(login_url="gerenciador/login/")
@@ -27,37 +28,32 @@ def add_order(request, client_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso invalido")
 
-    client, error_response = resolve_repository_result(request, client_repository.get_by_id(client_id))
-    if error_response:
-        return error_response
+    try:
+        client = client_page_services.get_client(client_id)
 
-    if request.method == "POST":
-        form = DataSheetCreateForm(request.POST)
-        if form.is_valid():
-            work_order = form.save(commit=False)
-            work_order.client = client
-            _, error_response = resolve_repository_result(request, work_order_repository.save(work_order))
-            if error_response:
-                return error_response
-            client_form = ClientDetailForm(instance=client)
-            return _render_client_detail(request, client, client_form)
-    else:
-        next_code, error_response = resolve_repository_result(
+        if request.method == "POST":
+            form = DataSheetCreateForm(request.POST)
+            if form.is_valid():
+                service_order_page_services.create_order_for_client(
+                    client,
+                    form.save(commit=False),
+                )
+                client_form = ClientDetailForm(instance=client)
+                return _render_client_detail(request, client, client_form)
+        else:
+            next_code = service_order_page_services.get_next_operation_code()
+            form = DataSheetCreateForm(initial={"operation_code": next_code})
+
+        return render(
             request,
-            work_order_repository.get_next_operation_code(),
+            TemplatePaths.SERVICE_ORDER_FORM,
+            {
+                "form": form,
+                "client": client,
+            },
         )
-        if error_response:
-            return error_response
-        form = DataSheetCreateForm(initial={"operation_code": next_code})
-
-    return render(
-        request,
-        TemplatePaths.SERVICE_ORDER_FORM,
-        {
-            "form": form,
-            "client": client,
-        },
-    )
+    except RepositoryOperationError as exc:
+        return render_repository_error(request, exc)
 
 
 @login_required(login_url="gerenciador/login/")
@@ -67,38 +63,14 @@ def service_panel(request):
 
     status_filter = (request.GET.get("status") or "all").strip()
     search_query = (request.GET.get("search") or "").strip()
-    status_options = [
-        ("all", "Todos"),
-        ("1", "Pendente"),
-        ("2", "Andamento"),
-        ("3", "Entrega"),
-        ("4", "Finalizada"),
-    ]
-    allowed_status = {value for value, _ in status_options}
-
-    if status_filter not in allowed_status:
-        status_filter = "all"
-
-    orders, error_response = resolve_repository_result(
-        request,
-        work_order_repository.list_for_panel(
+    try:
+        context = service_order_page_services.get_service_panel_context(
             status_filter=status_filter,
             search_query=search_query,
-        ),
-    )
-    if error_response:
-        return error_response
-
-    return render(
-        request,
-        TemplatePaths.SERVICE_ORDER_PANEL,
-        {
-            "orders": orders,
-            "selected_status": status_filter,
-            "current_search": search_query,
-            "status_options": status_options,
-        },
-    )
+        )
+        return render(request, TemplatePaths.SERVICE_ORDER_PANEL, context)
+    except RepositoryOperationError as exc:
+        return render_repository_error(request, exc)
 
 
 @login_required(login_url="gerenciador/login/")
@@ -106,16 +78,12 @@ def service_order_detail(request, order_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso invalido")
 
-    order, error_response = resolve_repository_result(request, work_order_repository.get_detail_by_id(order_id))
-    if error_response:
-        return error_response
-
-    return render(
-        request,
-        TemplatePaths.SERVICE_ORDER_DETAIL,
-        {
-            "order": order,
-            "current_search": (request.GET.get("search") or "").strip(),
-            "selected_status": (request.GET.get("status") or "all").strip(),
-        },
-    )
+    try:
+        context = service_order_page_services.get_service_order_detail_context(
+            order_id=order_id,
+            search_query=(request.GET.get("search") or "").strip(),
+            status_filter=(request.GET.get("status") or "all").strip(),
+        )
+        return render(request, TemplatePaths.SERVICE_ORDER_DETAIL, context)
+    except RepositoryOperationError as exc:
+        return render_repository_error(request, exc)

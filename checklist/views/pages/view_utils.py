@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from checklist.exception_handler import is_repository_error
+from checklist.exception_handler import RepositoryOperationError, is_repository_error
 from checklist.templates_paths import TemplatePaths
 
 
@@ -19,3 +19,18 @@ def resolve_repository_result(request, result):
         status=status_code,
     )
     return None, response
+
+
+def render_repository_error(request, exc):
+    if not isinstance(exc, RepositoryOperationError):
+        raise exc
+
+    return render(
+        request,
+        TemplatePaths.ERROR,
+        {
+            "error_message": str(exc),
+            "status_code": exc.status_code,
+        },
+        status=exc.status_code,
+    )

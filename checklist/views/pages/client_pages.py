@@ -1,55 +1,34 @@
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
 from django.http import HttpResponseBadRequest
 from django.shortcuts import render
 
 from checklist.forms import ClientDetailForm, ClientForm
-from checklist.repository import client_repository, work_order_repository
+from checklist.exception_handler import RepositoryOperationError
+from checklist.services import client_page_services
 from checklist.templates_paths import TemplatePaths
-from checklist.views.pages.address_pages import get_address_section_context
-from checklist.views.pages.view_utils import resolve_repository_result
+from checklist.views.pages.view_utils import render_repository_error
 
 
 def _render_client_list(request):
     query = (request.GET.get("search") or "").strip()
-    clients, error_response = resolve_repository_result(request, client_repository.list_for_management(query))
-    if error_response:
-        return error_response
-
-    paginator = Paginator(clients, 10)
-    page_number = request.GET.get("page")
-    page_client = paginator.get_page(page_number)
-
-    return render(
-        request,
-        TemplatePaths.CLIENT_LIST,
-        {
-            "page_client": page_client,
-            "current_search": query,
-        },
+    context = client_page_services.get_client_list_context(
+        search_query=query,
+        page_number=request.GET.get("page"),
     )
+    return render(request, TemplatePaths.CLIENT_LIST, context)
 
 
 def _render_client_detail(request, client, form):
-    services, error_response = resolve_repository_result(request, work_order_repository.list_by_client(client))
-    if error_response:
-        return error_response
-
-    address_context, error_response = get_address_section_context(request, client, "client")
-    if error_response:
-        return error_response
-
+    context = client_page_services.get_client_detail_context(
+        client=client,
+        form=form,
+        search_query=(request.GET.get("search") or "").strip(),
+        page_number=request.GET.get("page", ""),
+    )
     return render(
         request,
         TemplatePaths.CLIENT_DETAIL,
-        {
-            "form": form,
-            "client": client,
-            "services": services,
-            "current_search": (request.GET.get("search") or "").strip(),
-            "current_page": request.GET.get("page", ""),
-            **address_context,
-        },
+        context,
     )
 
 
@@ -58,17 +37,18 @@ def add_cliente(request):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso invalido")
 
-    if request.method == "POST":
-        form = ClientForm(request.POST)
-        if form.is_valid():
-            _, error_response = resolve_repository_result(request, client_repository.save(form.save(commit=False)))
-            if error_response:
-                return error_response
-            return _render_client_list(request)
-    else:
-        form = ClientForm()
+    try:
+        if request.method == "POST":
+            form = ClientForm(request.POST)
+            if form.is_valid():
+                client_page_services.save_client(form.save(commit=False))
+                return _render_client_list(request)
+        else:
+            form = ClientForm()
 
-    return render(request, TemplatePaths.CLIENT_FORM, {"form": form})
+        return render(request, TemplatePaths.CLIENT_FORM, {"form": form})
+    except RepositoryOperationError as exc:
+        return render_repository_error(request, exc)
 
 
 @login_required(login_url="gerenciador/login/")
@@ -76,21 +56,20 @@ def client_detail(request, client_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso invalido")
 
-    client, error_response = resolve_repository_result(request, client_repository.get_by_id(client_id))
-    if error_response:
-        return error_response
+    try:
+        client = client_page_services.get_client(client_id)
 
-    if request.method == "POST":
-        form = ClientDetailForm(request.POST, instance=client)
-        if form.is_valid():
-            _, error_response = resolve_repository_result(request, client_repository.save(form.save(commit=False)))
-            if error_response:
-                return error_response
-            return _render_client_list(request)
-    else:
-        form = ClientDetailForm(instance=client)
+        if request.method == "POST":
+            form = ClientDetailForm(request.POST, instance=client)
+            if form.is_valid():
+                client_page_services.save_client(form.save(commit=False))
+                return _render_client_list(request)
+        else:
+            form = ClientDetailForm(instance=client)
 
-    return _render_client_detail(request, client, form)
+        return _render_client_detail(request, client, form)
+    except RepositoryOperationError as exc:
+        return render_repository_error(request, exc)
 
 
 @login_required(login_url="gerenciador/login/")
@@ -101,17 +80,16 @@ def delete_client(request, client_id):
     if request.method != "POST":
         return HttpResponseBadRequest("Metodo invalido")
 
-    client, error_response = resolve_repository_result(request, client_repository.get_by_id(client_id))
-    if error_response:
-        return error_response
-
-    _, error_response = resolve_repository_result(request, client_repository.delete(client))
-    if error_response:
-        return error_response
-
-    return _render_client_list(request)
+    try:
+        client_page_services.delete_client(client_id)
+        return _render_client_list(request)
+    except RepositoryOperationError as exc:
+        return render_repository_error(request, exc)
 
 
 @login_required(login_url="gerenciador/login/")
 def client_list(request):
-    return _render_client_list(request)
+    try:
+        return _render_client_list(request)
+    except RepositoryOperationError as exc:
+        return render_repository_error(request, exc)
