@@ -43,7 +43,7 @@ def checklist_item_list(request):
 @login_required(login_url="gerenciador/login/")
 def add_checklist_item(request):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso invalido")
+        return HttpResponseBadRequest("Acesso inválido")
 
     try:
         if request.method == "POST":
@@ -62,7 +62,7 @@ def add_checklist_item(request):
 @login_required(login_url="gerenciador/login/")
 def checklist_item_detail(request, item_id):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso invalido")
+        return HttpResponseBadRequest("Acesso inválido")
 
     try:
         checklist_item = checklist_item_page_services.get_checklist_item(item_id)
@@ -83,10 +83,10 @@ def checklist_item_detail(request, item_id):
 @login_required(login_url="gerenciador/login/")
 def toggle_checklist_item_status(request, item_id):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso invalido")
+        return HttpResponseBadRequest("Acesso inválido")
 
     if request.method != "POST":
-        return HttpResponseBadRequest("Metodo invalido")
+        return HttpResponseBadRequest("Método inválido")
 
     try:
         checklist_item = checklist_item_page_services.toggle_checklist_item_status(item_id)

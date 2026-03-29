@@ -53,7 +53,7 @@ class EmployeeForm(forms.ModelForm):
             "phone": "Telefone/celular",
             "email": "Email",
             "position": "Cargo",
-            "username": "Usuario",
+            "username": "Usuário",
             "password": "Senha",
         }
         widgets = {
@@ -115,7 +115,7 @@ class EmployeeDetailForm(forms.ModelForm):
             "phone": "Telefone/celular",
             "email": "Email",
             "position": "Cargo",
-            "username": "Usuario",
+            "username": "Usuário",
             "password": "Nova senha",
         }
         widgets = {

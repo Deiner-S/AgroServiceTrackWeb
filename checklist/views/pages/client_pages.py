@@ -35,7 +35,7 @@ def _render_client_detail(request, client, form):
 @login_required(login_url="gerenciador/login/")
 def add_cliente(request):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso invalido")
+        return HttpResponseBadRequest("Acesso inválido")
 
     try:
         if request.method == "POST":
@@ -54,7 +54,7 @@ def add_cliente(request):
 @login_required(login_url="gerenciador/login/")
 def client_detail(request, client_id):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso invalido")
+        return HttpResponseBadRequest("Acesso inválido")
 
     try:
         client = client_page_services.get_client(client_id)
@@ -75,10 +75,10 @@ def client_detail(request, client_id):
 @login_required(login_url="gerenciador/login/")
 def delete_client(request, client_id):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso invalido")
+        return HttpResponseBadRequest("Acesso inválido")
 
     if request.method != "POST":
-        return HttpResponseBadRequest("Metodo invalido")
+        return HttpResponseBadRequest("Método inválido")
 
     try:
         client_page_services.delete_client(client_id)

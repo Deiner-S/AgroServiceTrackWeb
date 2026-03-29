@@ -51,22 +51,22 @@ def _ensure_dict(payload, label):
 def _require_keys(payload, required_keys, label):
     missing_keys = sorted(required_keys - payload.keys())
     if missing_keys:
-        raise ValidationError(f"{label} sem chaves obrigatorias: {', '.join(missing_keys)}.")
+        raise ValidationError(f"{label} sem chaves obrigatórias: {', '.join(missing_keys)}.")
 
 
 def _parse_uuid(value, field_name):
     if not value:
-        raise ValidationError(f"{field_name} e obrigatorio.")
+        raise ValidationError(f"{field_name} é obrigatório.")
 
     try:
         return uuid.UUID(str(value))
     except (ValueError, TypeError):
-        raise ValidationError(f"{field_name} deve ser um UUID valido.")
+        raise ValidationError(f"{field_name} deve ser um UUID válido.")
 
 
 def _parse_datetime(value, field_name):
     if not value:
-        raise ValidationError(f"{field_name} e obrigatorio.")
+        raise ValidationError(f"{field_name} é obrigatório.")
 
     parsed = parse_datetime(str(value))
     if parsed is not None:
@@ -80,14 +80,14 @@ def _parse_datetime(value, field_name):
 
 def _require_repository_object(result, field_name):
     if is_repository_error(result):
-        raise ValidationError(f"{field_name} informado nao existe.")
+        raise ValidationError(f"{field_name} informado não existe.")
     return result
 
 
 def _validate_status(value, allowed_values, field_name):
     if value not in allowed_values:
         raise ValidationError(
-            f"{field_name} invalido. Valores permitidos: {', '.join(sorted(allowed_values))}."
+            f"{field_name} inválido. Valores permitidos: {', '.join(sorted(allowed_values))}."
         )
     return value
 
@@ -95,14 +95,14 @@ def _validate_status(value, allowed_values, field_name):
 def _validate_chassi(value):
     if not isinstance(value, str) or len(value) != 17 or not value.isalnum():
         raise ValidationError(
-            "chassi invalido. Ele deve conter 17 caracteres, sem espacos e sem tracos."
+            "chassi inválido. Ele deve conter 17 caracteres, sem espaços e sem traços."
         )
     return value
 
 
 def _validate_model(value):
     if not isinstance(value, str):
-        raise ValidationError("model invalido. Ele deve conter somente letras e numeros.")
+        raise ValidationError("model inválido. Ele deve conter somente letras e números.")
     return validate_only_letters_and_numbers(value)
 
 
@@ -115,7 +115,7 @@ def validate_work_order_entries(payload):
 
         operation_code = entry.get("operation_code")
         if not operation_code:
-            raise ValidationError("operation_code e obrigatorio.")
+            raise ValidationError("operation_code é obrigatório.")
 
         work_order = _require_repository_object(
             work_order_repository.get_by_operation_code(operation_code),

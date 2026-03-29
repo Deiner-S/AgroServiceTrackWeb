@@ -35,7 +35,7 @@ def _render_employee_detail(request, employee, form):
 @login_required(login_url="gerenciador/login/")
 def add_employee(request):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso invalido")
+        return HttpResponseBadRequest("Acesso inválido")
 
     try:
         if request.method == "POST":
@@ -49,7 +49,7 @@ def add_employee(request):
                 employee_page_services.save_employee(user)
                 return _render_employee_list(request)
 
-            print("Form invalido!")
+            print("Form inválido!")
             print(form.errors)
             print(form.cleaned_data)
         else:
@@ -63,7 +63,7 @@ def add_employee(request):
 @login_required(login_url="gerenciador/login/")
 def employee_detail(request, employee_id):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso invalido")
+        return HttpResponseBadRequest("Acesso inválido")
 
     try:
         employee = employee_page_services.get_employee(employee_id)
@@ -88,10 +88,10 @@ def employee_detail(request, employee_id):
 @login_required(login_url="gerenciador/login/")
 def delete_employee(request, employee_id):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso invalido")
+        return HttpResponseBadRequest("Acesso inválido")
 
     if request.method != "POST":
-        return HttpResponseBadRequest("Metodo invalido")
+        return HttpResponseBadRequest("Método inválido")
 
     try:
         employee_page_services.delete_employee(employee_id)
@@ -103,10 +103,10 @@ def delete_employee(request, employee_id):
 @login_required(login_url="gerenciador/login/")
 def toggle_employee_status(request, employee_id):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso invalido")
+        return HttpResponseBadRequest("Acesso inválido")
 
     if request.method != "POST":
-        return HttpResponseBadRequest("Metodo invalido")
+        return HttpResponseBadRequest("Método inválido")
 
     try:
         employee = employee_page_services.toggle_employee_status(employee_id)

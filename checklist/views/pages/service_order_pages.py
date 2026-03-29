@@ -13,7 +13,7 @@ from checklist.views.pages.view_utils import render_repository_error
 @login_required(login_url="gerenciador/login/")
 def open_client_order(request, client_id):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso invalido")
+        return HttpResponseBadRequest("Acesso inválido")
 
     try:
         client = client_page_services.get_client(client_id)
@@ -26,7 +26,7 @@ def open_client_order(request, client_id):
 @login_required(login_url="gerenciador/login/")
 def add_order(request, client_id):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso invalido")
+        return HttpResponseBadRequest("Acesso inválido")
 
     try:
         client = client_page_services.get_client(client_id)
@@ -59,7 +59,7 @@ def add_order(request, client_id):
 @login_required(login_url="gerenciador/login/")
 def service_panel(request):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso invalido")
+        return HttpResponseBadRequest("Acesso inválido")
 
     status_filter = (request.GET.get("status") or "all").strip()
     search_query = (request.GET.get("search") or "").strip()
@@ -76,7 +76,7 @@ def service_panel(request):
 @login_required(login_url="gerenciador/login/")
 def service_order_detail(request, order_id):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso invalido")
+        return HttpResponseBadRequest("Acesso inválido")
 
     try:
         context = service_order_page_services.get_service_order_detail_context(

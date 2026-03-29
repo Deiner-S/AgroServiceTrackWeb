@@ -28,7 +28,7 @@ class AddressForm(forms.ModelForm):
         fields = ["street", "number", "city", "state", "zip_code"]
         labels = {
             "street": "Rua",
-            "number": "Numero",
+            "number": "Número",
             "city": "Cidade",
             "state": "Estado",
             "zip_code": "CEP",

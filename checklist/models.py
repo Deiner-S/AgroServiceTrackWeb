@@ -41,7 +41,7 @@ class Client(models.Model):
 STATUS_CHOICES_POSITION = [
     ("1", "Gerente"),
     ("2", "Administrativo"),
-    ("3", "Tecnico"),
+    ("3", "Técnico"),
 ]
 class Employee(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

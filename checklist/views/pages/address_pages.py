@@ -32,7 +32,7 @@ def _render_address_section_response(request, entity, entity_kind, *, form=None,
 @login_required(login_url="gerenciador/login/")
 def add_client_address(request, client_id):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso invalido")
+        return HttpResponseBadRequest("Acesso inválido")
 
     try:
         client = address_page_services.get_client(client_id)
@@ -46,7 +46,7 @@ def add_client_address(request, client_id):
             )
 
         if request.method != "POST":
-            return HttpResponseBadRequest("Metodo invalido")
+            return HttpResponseBadRequest("Método inválido")
 
         form = AddressForm(request.POST)
         if form.is_valid():
@@ -70,10 +70,10 @@ def add_client_address(request, client_id):
 @login_required(login_url="gerenciador/login/")
 def delete_client_address(request, client_id, address_id):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso invalido")
+        return HttpResponseBadRequest("Acesso inválido")
 
     if request.method != "POST":
-        return HttpResponseBadRequest("Metodo invalido")
+        return HttpResponseBadRequest("Método inválido")
 
     try:
         client = address_page_services.get_client(client_id)
@@ -87,7 +87,7 @@ def delete_client_address(request, client_id, address_id):
 @login_required(login_url="gerenciador/login/")
 def add_employee_address(request, employee_id):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso invalido")
+        return HttpResponseBadRequest("Acesso inválido")
 
     try:
         employee = address_page_services.get_employee(employee_id)
@@ -101,7 +101,7 @@ def add_employee_address(request, employee_id):
             )
 
         if request.method != "POST":
-            return HttpResponseBadRequest("Metodo invalido")
+            return HttpResponseBadRequest("Método inválido")
 
         form = AddressForm(request.POST)
         if form.is_valid():
@@ -125,10 +125,10 @@ def add_employee_address(request, employee_id):
 @login_required(login_url="gerenciador/login/")
 def delete_employee_address(request, employee_id, address_id):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso invalido")
+        return HttpResponseBadRequest("Acesso inválido")
 
     if request.method != "POST":
-        return HttpResponseBadRequest("Metodo invalido")
+        return HttpResponseBadRequest("Método inválido")
 
     try:
         employee = address_page_services.get_employee(employee_id)

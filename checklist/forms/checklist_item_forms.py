@@ -15,7 +15,7 @@ class ChecklistItemForm(forms.ModelForm):
             "name": forms.TextInput(
                 attrs={
                     "class": INPUT_TW_CLASS,
-                    "placeholder": "Ex.: Verificar pneus, luzes, oleo...",
+                    "placeholder": "Ex.: Verificar pneus, luzes, óleo...",
                 }
             ),
         }

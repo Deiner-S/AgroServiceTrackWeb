@@ -47,13 +47,13 @@ def authenticate_web_user(request, username, password):
         _register_failed_login_with_audit(request, username)
         return LoginServiceResult(
             ok=False,
-            error_message="Funcionario inativo. Procure um administrador.",
+            error_message="Funcionário inativo. Procure um administrador.",
         )
 
     _register_failed_login_with_audit(request, username)
     return LoginServiceResult(
         ok=False,
-        error_message="Usuario ou senha invalidos.",
+        error_message="Usuário ou senha inválidos.",
     )
 
 

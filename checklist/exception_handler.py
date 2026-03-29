@@ -67,10 +67,10 @@ def handle_repository_exceptions(func):
             return {"error": get_validation_error_message(exc)}, 400
         except IntegrityError as exc:
             save_log(exc)
-            return {"error": "Dados invalidos"}, 400
+            return {"error": "Dados inválidos"}, 400
         except ObjectDoesNotExist as exc:
             save_log(exc)
-            return {"error": "Nao encontrado"}, 404
+            return {"error": "Não encontrado"}, 404
         except Exception as exc:
             save_log(exc)
             return {"error": "Erro interno"}, 500
