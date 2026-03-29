@@ -74,14 +74,14 @@
         <span></span>
         {% endif %}
 
-        <span>Pagina {{ page_checklist_items.number }} de {{ page_checklist_items.paginator.num_pages }}</span>
+        <span>Página {{ page_checklist_items.number }} de {{ page_checklist_items.paginator.num_pages }}</span>
 
         {% if page_checklist_items.has_next %}
         <button class="bg-gray-600 hover:bg-gray-700 text-white py-1 px-3 rounded"
             hx-get="{% url 'checklist-item-list' %}?page={{ page_checklist_items.next_page_number }}&search={{ current_search|urlencode }}"
             hx-target="#main-content"
             hx-swap="innerHTML">
-            Proxima
+            Próxima
         </button>
         {% else %}
         <span></span>

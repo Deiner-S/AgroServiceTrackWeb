@@ -8,7 +8,7 @@
         hx-post="{% url 'toggle-employee-status' employee.id %}?search={{ current_search|urlencode }}&page={{ current_page }}"
         hx-target="#main-content"
         hx-swap="innerHTML"
-        onsubmit="return confirm('Tem certeza que deseja alterar o status deste funcionario?');">
+        onsubmit="return confirm('Tem certeza que deseja alterar o status deste funcionário?');">
         {% csrf_token %}
     </form>
     <form
@@ -17,7 +17,7 @@
         hx-post="{% url 'employee-detail' employee.id %}?search={{ current_search|urlencode }}&page={{ current_page }}"
         hx-target="#main-content"
         hx-swap="innerHTML">
-    <h1 class="text-2xl font-bold text-center mb-6">Editar Funcionario</h1>
+    <h1 class="text-2xl font-bold text-center mb-6">Editar Funcionário</h1>
     {% csrf_token %}
     {{ form.non_field_errors }}
 

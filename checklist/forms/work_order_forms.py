@@ -9,8 +9,8 @@ class DataSheetCreateForm(forms.ModelForm):
         model = WorkOrder
         fields = ["operation_code", "symptoms"]
         labels = {
-            "operation_code": "Ordem de serviÃƒÂ§o",
-            "symptoms": "DescriÃƒÂ§ÃƒÂ£o do problema",
+            "operation_code": "Ordem de serviço",
+            "symptoms": "Descrição do problema",
         }
         widgets = {
             "operation_code": forms.TextInput(

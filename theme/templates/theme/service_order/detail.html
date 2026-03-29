@@ -4,7 +4,7 @@
 <div class="container mx-auto mt-4 space-y-4 text-white">
     <div class="bg-gradient-to-t from-black to-gray-800 rounded-lg p-6 shadow-md">
         <div class="flex items-center justify-between gap-3 mb-4">
-            <h1 class="text-2xl font-semibold">Detalhes da Ordem de Servico</h1>
+            <h1 class="text-2xl font-semibold">Detalhes da Ordem de Serviço</h1>
             <button
                 type="button"
                 class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded"
@@ -25,16 +25,16 @@
             <div class="bg-white rounded-lg p-4 text-black">
                 <p><strong>Modelo:</strong> {{ order.model|default:'-' }}</p>
                 <p><strong>Chassi:</strong> {{ order.chassi|default:'-' }}</p>
-                <p><strong>Horimetro:</strong> {{ order.horimetro|default:'-' }}</p>
+                <p><strong>Horímetro:</strong> {{ order.horimetro|default:'-' }}</p>
                 <p><strong>Entrada:</strong> {{ order.date_in|date:'d/m/Y H:i'|default:'-' }}</p>
-                <p><strong>Saida:</strong> {{ order.date_out|date:'d/m/Y H:i'|default:'-' }}</p>
+                <p><strong>Saída:</strong> {{ order.date_out|date:'d/m/Y H:i'|default:'-' }}</p>
             </div>
         </div>
 
         <div class="mt-4 bg-white rounded-lg p-4 text-black">
             <p class="mb-3"><strong>Problema:</strong></p>
             <p>{{ order.symptoms|default:'-' }}</p>
-            <p class="mt-4 mb-3"><strong>Servico executado:</strong></p>
+            <p class="mt-4 mb-3"><strong>Serviço executado:</strong></p>
             <p>{{ order.service|default:'-' }}</p>
         </div>
     </div>
@@ -48,7 +48,7 @@
                 <thead>
                     <tr class="bg-gray-200">
                         <th class="py-2 px-4 text-left">Item</th>
-                        <th class="py-2 px-4 text-left">Funcionario</th>
+                        <th class="py-2 px-4 text-left">Funcionário</th>
                         <th class="py-2 px-4 text-left">Status</th>
                         <th class="py-2 px-4 text-left">Data</th>
                         <th class="py-2 px-4 text-left">Foto</th>
@@ -78,7 +78,7 @@
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded">
-                                    Ver Saida
+                                    Ver Saída
                                 </a>
                                 {% endif %}
                                 {% if not checklist.image_in and not checklist.image_out %}
@@ -120,11 +120,11 @@
             </div>
 
             <div class="bg-white rounded-lg p-4 text-black">
-                <h3 class="text-lg font-semibold mb-3">Assinatura de Saida</h3>
+                <h3 class="text-lg font-semibold mb-3">Assinatura de Saída</h3>
                 {% if order.signature_out %}
                 <img
                     src="{{ order.signature_out.url }}"
-                    alt="Assinatura de saida"
+                    alt="Assinatura de saída"
                     class="w-full max-h-72 object-contain rounded border border-gray-300 bg-gray-100" />
                 <a
                     href="{{ order.signature_out.url }}"
@@ -134,7 +134,7 @@
                     Visualizar assinatura
                 </a>
                 {% else %}
-                <p class="text-gray-500">Sem assinatura de saida.</p>
+                <p class="text-gray-500">Sem assinatura de saída.</p>
                 {% endif %}
             </div>
         </div>

@@ -6,7 +6,7 @@
     hx-post="{% url 'client-detail' client.id %}?search={{ current_search|urlencode }}&page={{ current_page }}"
     hx-target="#main-content"
     hx-swap="innerHTML">
-    <h1 class="text-2xl font-bold text-center mb-6">Informacoes do Cliente</h1>
+    <h1 class="text-2xl font-bold text-center mb-6">Informações do Cliente</h1>
     {% csrf_token %}
     {{ form.non_field_errors }}
 
@@ -55,14 +55,14 @@
 
 <div class="mt-4 bg-gradient-to-t from-black to-gray-800 p-6 rounded-lg shadow-md w-full max-w-3xl mx-auto text-white">
     <div class="flex items-center justify-between gap-3 mb-4">
-        <h2 class="text-xl font-semibold">Servicos do Cliente</h2>
+        <h2 class="text-xl font-semibold">Serviços do Cliente</h2>
         <button
             type="button"
             class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded whitespace-nowrap"
             hx-get="{% url 'add_service' client.id %}?search={{ current_search|urlencode }}&page={{ current_page }}"
             hx-target="#main-content"
             hx-swap="innerHTML">
-            Abrir Novo Servico
+            Abrir Novo Serviço
         </button>
     </div>
 
@@ -70,9 +70,9 @@
     <table class="min-w-full bg-white shadow rounded-lg text-black">
         <thead>
             <tr class="bg-gray-200">
-                <th class="py-2 px-4 text-left">Codigo operacional</th>
+                <th class="py-2 px-4 text-left">Código operacional</th>
                 <th class="py-2 px-4 text-left">Status</th>
-                <th class="py-2 px-4 text-left">Data da solicitacao</th>
+                <th class="py-2 px-4 text-left">Data da solicitação</th>
             </tr>
         </thead>
         <tbody>
@@ -86,7 +86,7 @@
         </tbody>
     </table>
     {% else %}
-    <p>Este cliente ainda nao possui servicos cadastrados.</p>
+    <p>Este cliente ainda não possui serviços cadastrados.</p>
     {% endif %}
 </div>
 {% endblock %}

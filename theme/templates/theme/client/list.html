@@ -72,14 +72,14 @@
         <span></span>
         {% endif %}
 
-        <span>Pagina {{ page_client.number }} de {{ page_client.paginator.num_pages }}</span>
+        <span>Página {{ page_client.number }} de {{ page_client.paginator.num_pages }}</span>
 
         {% if page_client.has_next %}
         <button class="bg-gray-600 hover:bg-gray-700 text-white py-1 px-3 rounded"
             hx-get="{% url 'client-list' %}?page={{ page_client.next_page_number }}&search={{ current_search|urlencode }}"
             hx-target="#main-content"
             hx-swap="innerHTML">
-            Proxima
+            Próxima
         </button>
         {% else %}
         <span></span>

@@ -3,7 +3,9 @@
 {% block content %}
 <header class="w-full bg-gradient-to-t from-black to-gray-800 text-white px-4">
     <div class="max-w-7xl mx-auto flex items-center justify-between h-[72px]">
-        <h2 class="text-xl font-semibold">Agro service track</h2>
+        <h2 class="text-xl font-semibold">
+            <a href="{% url 'home' %}" class="hover:underline">Agro service track</a>
+        </h2>
         <nav class="flex flex-wrap gap-3 items-stretch h-full">
         <button class="text-white px-3 py-0 h-full flex items-center justify-center border-b-4 border-transparent hover:border-white"
             hx-get="{% url 'employee-list' %}"

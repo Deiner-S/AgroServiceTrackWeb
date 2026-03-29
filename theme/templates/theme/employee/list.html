@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container mx-auto bg-gradient-to-t from-black to-gray-800 mt-4 rounded-lg p-6 text-white">
-    <h1 class="text-2xl font-semibold mb-4">Lista de Funcionarios</h1>
+    <h1 class="text-2xl font-semibold mb-4">Lista de Funcionários</h1>
     <form id="search-form" class="flex gap-2 mb-4"
             hx-get="{% url 'employee-list' %}"
             hx-target="#main-content"
@@ -23,7 +23,7 @@
             hx-target="#main-content"
             hx-swap="innerHTML"
         >
-            Cadastrar Funcionario
+            Cadastrar Funcionário
         </button>
     </form>
     {% if page_employees %}
@@ -76,21 +76,21 @@
         <span></span>
         {% endif %}
 
-        <span>Pagina {{ page_employees.number }} de {{ page_employees.paginator.num_pages }}</span>
+        <span>Página {{ page_employees.number }} de {{ page_employees.paginator.num_pages }}</span>
 
         {% if page_employees.has_next %}
         <button class="bg-gray-600 hover:bg-gray-700 text-white py-1 px-3 rounded"
             hx-get="{% url 'employee-list' %}?page={{ page_employees.next_page_number }}&search={{ current_search|urlencode }}"
             hx-target="#main-content"
             hx-swap="innerHTML">
-            Proxima
+            Próxima
         </button>
         {% else %}
         <span></span>
         {% endif %}
     </div>
     {% else %}
-    <p class="text-white">Nenhum funcionario cadastrado ainda.</p>
+    <p class="text-white">Nenhum funcionário cadastrado ainda.</p>
     {% endif %}
 </div>
 {% endblock %}
