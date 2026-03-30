@@ -4,9 +4,16 @@ from django.shortcuts import render
 
 from checklist.forms import ClientDetailForm, ClientForm
 from checklist.exception_handler import RepositoryOperationError
+from checklist.permissions import (
+    can_manage_client,
+    can_manage_client_addresses,
+    can_view_client_detail,
+    can_view_client_list,
+    get_access_context,
+)
 from checklist.services import client_page_services
 from checklist.templates_paths import TemplatePaths
-from checklist.views.pages.view_utils import render_repository_error
+from checklist.views.pages.view_utils import render_forbidden, render_repository_error
 
 
 def _render_client_list(request):
@@ -15,6 +22,7 @@ def _render_client_list(request):
         search_query=query,
         page_number=request.GET.get("page"),
     )
+    context.update(get_access_context(request.user))
     return render(request, TemplatePaths.CLIENT_LIST, context)
 
 
@@ -25,6 +33,8 @@ def _render_client_detail(request, client, form):
         search_query=(request.GET.get("search") or "").strip(),
         page_number=request.GET.get("page", ""),
     )
+    context.update(get_access_context(request.user))
+    context["can_manage_addresses"] = can_manage_client_addresses(request.user)
     return render(
         request,
         TemplatePaths.CLIENT_DETAIL,
@@ -36,6 +46,8 @@ def _render_client_detail(request, client, form):
 def add_cliente(request):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso inválido")
+    if not can_manage_client(request.user):
+        return render_forbidden(request, "Seu cargo não pode cadastrar clientes.")
 
     try:
         if request.method == "POST":
@@ -46,7 +58,14 @@ def add_cliente(request):
         else:
             form = ClientForm()
 
-        return render(request, TemplatePaths.CLIENT_FORM, {"form": form})
+        return render(
+            request,
+            TemplatePaths.CLIENT_FORM,
+            {
+                "form": form,
+                **get_access_context(request.user),
+            },
+        )
     except RepositoryOperationError as exc:
         return render_repository_error(request, exc)
 
@@ -55,11 +74,16 @@ def add_cliente(request):
 def client_detail(request, client_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso inválido")
+    if not can_view_client_detail(request.user):
+        return render_forbidden(request, "Seu cargo só pode visualizar a lista de clientes.")
 
     try:
         client = client_page_services.get_client(client_id)
 
         if request.method == "POST":
+            if not can_manage_client(request.user):
+                return render_forbidden(request, "Seu cargo não pode editar clientes.")
+
             form = ClientDetailForm(request.POST, instance=client)
             if form.is_valid():
                 client_page_services.save_client(form.save(commit=False))
@@ -81,6 +105,9 @@ def delete_client(request, client_id):
         return HttpResponseBadRequest("Método inválido")
 
     try:
+        if not can_manage_client(request.user):
+            return render_forbidden(request, "Seu cargo não pode excluir clientes.")
+
         client_page_services.delete_client(client_id)
         return _render_client_list(request)
     except RepositoryOperationError as exc:
@@ -90,6 +117,8 @@ def delete_client(request, client_id):
 @login_required(login_url="gerenciador/login/")
 def client_list(request):
     try:
+        if not can_view_client_list(request.user):
+            return render_forbidden(request, "Seu cargo não pode acessar clientes.")
         return _render_client_list(request)
     except RepositoryOperationError as exc:
         return render_repository_error(request, exc)

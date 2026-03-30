@@ -59,6 +59,16 @@
             return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
         }
 
+        function applyZipCodeMask(value) {
+            const digits = value.replace(/\D/g, "").slice(0, 8);
+
+            if (digits.length <= 5) {
+                return digits;
+            }
+
+            return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+        }
+
         function bindCpfMask(root = document) {
             root.querySelectorAll('input[data-mask="cpf"]').forEach((input) => {
                 input.value = applyCpfMask(input.value);
@@ -91,14 +101,32 @@
             });
         }
 
+        function bindZipCodeMask(root = document) {
+            root.querySelectorAll('input[data-mask="zip_code"]').forEach((input) => {
+                input.value = applyZipCodeMask(input.value);
+
+                if (input.dataset.maskBound === "true") {
+                    return;
+                }
+
+                input.addEventListener("input", () => {
+                    input.value = applyZipCodeMask(input.value);
+                });
+
+                input.dataset.maskBound = "true";
+            });
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             bindCpfMask();
             bindPhoneMask();
+            bindZipCodeMask();
         });
 
         document.body.addEventListener("htmx:afterSwap", (event) => {
             bindCpfMask(event.target);
             bindPhoneMask(event.target);
+            bindZipCodeMask(event.target);
         });
     </script>
 </body>

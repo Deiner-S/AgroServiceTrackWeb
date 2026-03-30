@@ -2,6 +2,7 @@
 
 {% block content %}
 <div class="mt-4 bg-white p-8 rounded-lg shadow-md w-full max-w-3xl mx-auto text-black">
+    {% if can_toggle_selected_employee_status %}
     <form
         id="employee-status-form"
         method="POST"
@@ -11,13 +12,19 @@
         onsubmit="return confirm('Tem certeza que deseja alterar o status deste funcionário?');">
         {% csrf_token %}
     </form>
+    {% endif %}
+
     <form
         id="employee-detail-form"
         method="POST"
+        {% if can_edit_selected_employee %}
         hx-post="{% url 'employee-detail' employee.id %}?search={{ current_search|urlencode }}&page={{ current_page }}"
         hx-target="#main-content"
-        hx-swap="innerHTML">
-    <h1 class="text-2xl font-bold text-center mb-6">Editar Funcionário</h1>
+        hx-swap="innerHTML"
+        {% endif %}>
+    <h1 class="text-2xl font-bold text-center mb-6">
+        {% if can_edit_selected_employee %}Editar Funcionário{% else %}Visualizar Funcionário{% endif %}
+    </h1>
     {% csrf_token %}
     {{ form.non_field_errors }}
 
@@ -65,13 +72,17 @@
     </div>
 
     <div class="mt-4 flex gap-2 flex-wrap">
+        {% if can_edit_selected_employee %}
         <button type="submit" form="employee-detail-form" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">Salvar</button>
+        {% endif %}
+        {% if can_toggle_selected_employee_status %}
         <button
             type="submit"
             form="employee-status-form"
             class="{% if employee.is_active %}bg-red-600 hover:bg-red-700{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white py-2 px-4 rounded whitespace-nowrap shadow-sm transition-colors duration-200">
             {% if employee.is_active %}Desativar{% else %}Ativar{% endif %}
         </button>
+        {% endif %}
         <button
             type="button"
             class="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded"

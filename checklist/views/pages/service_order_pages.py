@@ -4,16 +4,24 @@ from django.shortcuts import render
 
 from checklist.forms import ClientDetailForm, DataSheetCreateForm
 from checklist.exception_handler import RepositoryOperationError
+from checklist.permissions import (
+    can_create_service_order,
+    can_view_client_detail,
+    can_view_service_panel,
+    get_access_context,
+)
 from checklist.services import client_page_services, service_order_page_services
 from checklist.templates_paths import TemplatePaths
 from checklist.views.pages.client_pages import _render_client_detail
-from checklist.views.pages.view_utils import render_repository_error
+from checklist.views.pages.view_utils import render_forbidden, render_repository_error
 
 
 @login_required(login_url="gerenciador/login/")
 def open_client_order(request, client_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso inválido")
+    if not can_view_client_detail(request.user):
+        return render_forbidden(request, "Seu cargo não pode inspecionar clientes.")
 
     try:
         client = client_page_services.get_client(client_id)
@@ -27,6 +35,8 @@ def open_client_order(request, client_id):
 def add_order(request, client_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso inválido")
+    if not can_create_service_order(request.user):
+        return render_forbidden(request, "Seu cargo não pode abrir novas ordens.")
 
     try:
         client = client_page_services.get_client(client_id)
@@ -50,6 +60,7 @@ def add_order(request, client_id):
             {
                 "form": form,
                 "client": client,
+                **get_access_context(request.user),
             },
         )
     except RepositoryOperationError as exc:
@@ -60,6 +71,8 @@ def add_order(request, client_id):
 def service_panel(request):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso inválido")
+    if not can_view_service_panel(request.user):
+        return render_forbidden(request, "Seu cargo não pode acessar o painel de serviço.")
 
     status_filter = (request.GET.get("status") or "all").strip()
     search_query = (request.GET.get("search") or "").strip()
@@ -68,6 +81,7 @@ def service_panel(request):
             status_filter=status_filter,
             search_query=search_query,
         )
+        context.update(get_access_context(request.user))
         return render(request, TemplatePaths.SERVICE_ORDER_PANEL, context)
     except RepositoryOperationError as exc:
         return render_repository_error(request, exc)
@@ -77,6 +91,8 @@ def service_panel(request):
 def service_order_detail(request, order_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso inválido")
+    if not can_view_service_panel(request.user):
+        return render_forbidden(request, "Seu cargo não pode acessar o painel de serviço.")
 
     try:
         context = service_order_page_services.get_service_order_detail_context(
@@ -84,6 +100,7 @@ def service_order_detail(request, order_id):
             search_query=(request.GET.get("search") or "").strip(),
             status_filter=(request.GET.get("status") or "all").strip(),
         )
+        context.update(get_access_context(request.user))
         return render(request, TemplatePaths.SERVICE_ORDER_DETAIL, context)
     except RepositoryOperationError as exc:
         return render_repository_error(request, exc)

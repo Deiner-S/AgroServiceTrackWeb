@@ -90,6 +90,7 @@ REST_FRAMEWORK = {
 }
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'checklist.middleware.GlobalExceptionMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

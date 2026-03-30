@@ -2,6 +2,7 @@ from django import forms
 
 from checklist.forms.common import CPF_INPUT_ATTRS, INPUT_TW_CLASS, PHONE_INPUT_ATTRS
 from checklist.models import Employee
+from checklist.permissions import get_allowed_employee_positions
 from checklist.utils.validation_utils import (
     validate_cpf_format,
     validate_email_format,
@@ -15,6 +16,25 @@ class EmployeeForm(forms.ModelForm):
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={"class": INPUT_TW_CLASS})
     )
+
+    def __init__(self, *args, actor=None, read_only=False, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if actor is not None:
+            self.fields["position"].choices = get_allowed_employee_positions(actor)
+            current_position = getattr(self.instance, "position", None)
+            available_positions = {
+                value for value, _label in self.fields["position"].choices
+            }
+            if current_position and current_position not in available_positions:
+                self.fields["position"].choices = [
+                    (current_position, self.instance.get_position_display()),
+                    *self.fields["position"].choices,
+                ]
+
+        if read_only:
+            for field in self.fields.values():
+                field.disabled = True
 
     def clean_first_name(self):
         return validate_only_letters_and_spaces(self.cleaned_data["first_name"])
@@ -77,6 +97,25 @@ class EmployeeDetailForm(forms.ModelForm):
             }
         ),
     )
+
+    def __init__(self, *args, actor=None, read_only=False, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if actor is not None:
+            self.fields["position"].choices = get_allowed_employee_positions(actor)
+            current_position = getattr(self.instance, "position", None)
+            available_positions = {
+                value for value, _label in self.fields["position"].choices
+            }
+            if current_position and current_position not in available_positions:
+                self.fields["position"].choices = [
+                    (current_position, self.instance.get_position_display()),
+                    *self.fields["position"].choices,
+                ]
+
+        if read_only:
+            for field in self.fields.values():
+                field.disabled = True
 
     def clean_first_name(self):
         return validate_only_letters_and_spaces(self.cleaned_data["first_name"])

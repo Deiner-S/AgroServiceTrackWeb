@@ -16,6 +16,7 @@
             hx-trigger="keyup changed delay:500ms"
         >
         <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">Buscar</button>
+        {% if can_manage_checklist_item %}
         <button
             type="button"
             class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded whitespace-nowrap"
@@ -25,6 +26,7 @@
         >
             Cadastrar Item
         </button>
+        {% endif %}
     </form>
 
     {% if page_checklist_items %}

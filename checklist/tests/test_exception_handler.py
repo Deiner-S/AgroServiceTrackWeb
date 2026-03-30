@@ -3,6 +3,7 @@ from unittest.mock import Mock
 import pytest
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import IntegrityError
+from django.test import RequestFactory
 from rest_framework.exceptions import NotFound, Throttled
 
 from checklist.exception_handler import (
@@ -14,6 +15,7 @@ from checklist.exception_handler import (
     is_repository_error,
     unwrap_repository_result,
 )
+from checklist.views.pages.view_utils import render_repository_error, resolve_repository_result
 
 
 def test_get_validation_error_message_from_messages():
@@ -133,3 +135,44 @@ def test_api_exception_handler_does_not_log_non_throttled_requests(client, monke
     assert response is not None
     assert response.status_code == 404
     save_security_log_mock.assert_not_called()
+
+
+def test_render_repository_error_logs_original_error_and_returns_generic_message(monkeypatch):
+    request = RequestFactory().get("/gerenciador/clientes/")
+    save_log_mock = Mock()
+    render_mock = Mock(return_value="rendered-response")
+    monkeypatch.setattr("checklist.views.pages.view_utils.save_log", save_log_mock)
+    monkeypatch.setattr("checklist.views.pages.view_utils.render", render_mock)
+
+    response = render_repository_error(
+        request,
+        RepositoryOperationError("Falha detalhada do repositorio", 400),
+    )
+
+    assert response == "rendered-response"
+    save_log_mock.assert_called_once()
+    assert save_log_mock.call_args.args[0].args[0] == "Falha detalhada do repositorio"
+    assert save_log_mock.call_args.kwargs["request"] is request
+    assert render_mock.call_args.args[2]["error_message"] == "Dados invalidos"
+    assert render_mock.call_args.kwargs["status"] == 400
+
+
+def test_resolve_repository_result_logs_original_error_and_returns_generic_message(
+    monkeypatch,
+):
+    request = RequestFactory().get("/gerenciador/clientes/")
+    save_log_mock = Mock()
+    render_mock = Mock(return_value="rendered-response")
+    monkeypatch.setattr("checklist.views.pages.view_utils.save_log", save_log_mock)
+    monkeypatch.setattr("checklist.views.pages.view_utils.render", render_mock)
+
+    result, response = resolve_repository_result(
+        request,
+        ({"error": "Falha detalhada do repositorio"}, 404),
+    )
+
+    assert result is None
+    assert response == "rendered-response"
+    save_log_mock.assert_called_once_with("Falha detalhada do repositorio", request=request)
+    assert render_mock.call_args.args[2]["error_message"] == "Nao encontrado"
+    assert render_mock.call_args.kwargs["status"] == 404

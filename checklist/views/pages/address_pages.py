@@ -4,8 +4,13 @@ from django.shortcuts import render
 
 from checklist.forms import AddressForm
 from checklist.exception_handler import RepositoryOperationError
+from checklist.permissions import (
+    can_manage_client_addresses,
+    can_manage_employee_addresses,
+    get_access_context,
+)
 from checklist.services import address_page_services
-from checklist.views.pages.view_utils import render_repository_error
+from checklist.views.pages.view_utils import render_forbidden, render_repository_error
 
 ADDRESS_SECTION_TEMPLATE = "theme/address/cards.html"
 
@@ -26,6 +31,14 @@ def _render_address_section_response(request, entity, entity_kind, *, form=None,
         form=form,
         show_form=show_form,
     )
+    context.update(get_access_context(request.user))
+    if entity_kind == "client":
+        context["can_manage_addresses"] = can_manage_client_addresses(request.user)
+    else:
+        context["can_manage_addresses"] = can_manage_employee_addresses(
+            request.user,
+            entity,
+        )
     return render(request, ADDRESS_SECTION_TEMPLATE, context)
 
 
@@ -36,6 +49,8 @@ def add_client_address(request, client_id):
 
     try:
         client = address_page_services.get_client(client_id)
+        if not can_manage_client_addresses(request.user):
+            return render_forbidden(request, "Seu cargo não pode editar endereços de clientes.")
 
         if request.method == "GET":
             return _render_address_section_response(
@@ -77,6 +92,9 @@ def delete_client_address(request, client_id, address_id):
 
     try:
         client = address_page_services.get_client(client_id)
+        if not can_manage_client_addresses(request.user):
+            return render_forbidden(request, "Seu cargo não pode editar endereços de clientes.")
+
         address = address_page_services.get_address(address_id)
         address_page_services.delete_address_from_client(client, address)
         return _render_address_section_response(request, client, "client")
@@ -91,6 +109,11 @@ def add_employee_address(request, employee_id):
 
     try:
         employee = address_page_services.get_employee(employee_id)
+        if not can_manage_employee_addresses(request.user, employee):
+            return render_forbidden(
+                request,
+                "Seu cargo não pode editar endereços deste funcionário.",
+            )
 
         if request.method == "GET":
             return _render_address_section_response(
@@ -132,6 +155,12 @@ def delete_employee_address(request, employee_id, address_id):
 
     try:
         employee = address_page_services.get_employee(employee_id)
+        if not can_manage_employee_addresses(request.user, employee):
+            return render_forbidden(
+                request,
+                "Seu cargo não pode editar endereços deste funcionário.",
+            )
+
         address = address_page_services.get_address(address_id)
         address_page_services.delete_address_from_employee(employee, address)
         return _render_address_section_response(request, employee, "employee")

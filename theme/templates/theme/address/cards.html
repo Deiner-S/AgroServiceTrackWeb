@@ -4,6 +4,7 @@
     hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     <div class="flex items-center justify-between gap-3 mb-4">
         <h2 class="text-xl font-semibold">Endereços</h2>
+        {% if can_manage_addresses %}
         <button
             type="button"
             class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded whitespace-nowrap"
@@ -12,9 +13,10 @@
             hx-swap="outerHTML">
             Adicionar Endereço
         </button>
+        {% endif %}
     </div>
 
-    {% if show_address_form %}
+    {% if show_address_form and can_manage_addresses %}
         {% include "theme/address/form.html" %}
     {% endif %}
 
@@ -22,6 +24,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         {% for address in addresses %}
         <div class="relative bg-white text-black rounded-xl p-5 shadow">
+            {% if can_manage_addresses %}
             <button
                 type="button"
                 class="absolute top-3 left-3 text-red-600 hover:text-red-700"
@@ -34,9 +37,13 @@
                     <path d="M9 3a1 1 0 0 0-1 1v1H5a1 1 0 1 0 0 2h1v11a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V7h1a1 1 0 1 0 0-2h-3V4a1 1 0 0 0-1-1H9Zm5 2h-4v0h4v0ZM8 7h8v11a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V7Zm2 3a1 1 0 0 0-1 1v5a1 1 0 1 0 2 0v-5a1 1 0 0 0-1-1Zm4 0a1 1 0 0 0-1 1v5a1 1 0 1 0 2 0v-5a1 1 0 0 0-1-1Z"/>
                 </svg>
             </button>
+            {% endif %}
 
-            <div class="pt-7 space-y-2">
+            <div class="{% if can_manage_addresses %}pt-7{% endif %} space-y-2">
                 <p class="font-semibold text-lg">{{ address.street }}, {{ address.number }}</p>
+                {% if address.complement %}
+                <p>Complemento: {{ address.complement }}</p>
+                {% endif %}
                 <p>{{ address.city }} - {{ address.state }}</p>
                 <p>CEP: {{ address.zip_code }}</p>
             </div>

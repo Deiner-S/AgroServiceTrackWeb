@@ -7,6 +7,7 @@ class Address(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     street = models.CharField(max_length=255)
     number = models.CharField(max_length=20)
+    complement = models.CharField(max_length=255, blank=True, default="")
     city = models.CharField(max_length=120)
     state = models.CharField(max_length=120)
     zip_code = models.CharField(max_length=20)
@@ -17,6 +18,11 @@ class Address(models.Model):
         db_table = "addresses"
 
     def __str__(self):
+        if self.complement:
+            return (
+                f"{self.street}, {self.number}, {self.complement} - "
+                f"{self.city}/{self.state}"
+            )
         return f"{self.street}, {self.number} - {self.city}/{self.state}"
 
 
@@ -39,6 +45,7 @@ class Client(models.Model):
         return self.name
     
 STATUS_CHOICES_POSITION = [
+    ("0", "Diretor"),
     ("1", "Gerente"),
     ("2", "Administrativo"),
     ("3", "Técnico"),

@@ -24,3 +24,10 @@ PHONE_INPUT_ATTRS = {
     "maxlength": "15",
     "autocomplete": "off",
 }
+
+ZIP_CODE_INPUT_ATTRS = {
+    "data-mask": "zip_code",
+    "inputmode": "numeric",
+    "maxlength": "9",
+    "autocomplete": "off",
+}

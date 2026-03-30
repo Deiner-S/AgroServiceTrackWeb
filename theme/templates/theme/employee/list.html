@@ -16,6 +16,7 @@
             hx-trigger="keyup changed delay:500ms"
         >
         <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">Buscar</button>
+        {% if can_create_employee %}
         <button
             type="button"
             class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded whitespace-nowrap"
@@ -25,6 +26,7 @@
         >
             Cadastrar Funcionário
         </button>
+        {% endif %}
     </form>
     {% if page_employees %}
     <table class="min-w-full bg-white shadow rounded-lg text-black">
@@ -42,10 +44,12 @@
         <tbody>
             {% for employee in page_employees %}
             <tr
-                class="hover:bg-gray-100 text-black cursor-pointer"
+                class="hover:bg-gray-100 text-black {% if can_view_employee_module %}cursor-pointer{% endif %}"
+                {% if can_view_employee_module %}
                 hx-get="{% url 'employee-detail' employee.id %}?search={{ current_search|urlencode }}&page={{ page_employees.number }}"
                 hx-target="#main-content"
                 hx-swap="innerHTML"
+                {% endif %}
             >
                 <td class="py-2 px-4">{{ employee.first_name }} {{ employee.last_name }}</td>
                 <td class="py-2 px-4">{{ employee.email }}</td>

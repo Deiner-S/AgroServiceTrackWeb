@@ -4,9 +4,14 @@ from django.shortcuts import render
 
 from checklist.forms import ChecklistItemForm
 from checklist.exception_handler import RepositoryOperationError
+from checklist.permissions import (
+    can_manage_checklist_item,
+    can_view_checklist_item_module,
+    get_access_context,
+)
 from checklist.services import checklist_item_page_services
 from checklist.templates_paths import TemplatePaths
-from checklist.views.pages.view_utils import render_repository_error
+from checklist.views.pages.view_utils import render_forbidden, render_repository_error
 
 
 def _render_checklist_item_list(request):
@@ -15,6 +20,7 @@ def _render_checklist_item_list(request):
         search_query=query,
         page_number=request.GET.get("page"),
     )
+    context.update(get_access_context(request.user))
     return render(request, TemplatePaths.CHECKLIST_ITEM_LIST, context)
 
 
@@ -25,6 +31,7 @@ def _render_checklist_item_detail(request, checklist_item, form):
         search_query=(request.GET.get("search") or "").strip(),
         page_number=request.GET.get("page", ""),
     )
+    context.update(get_access_context(request.user))
     return render(
         request,
         TemplatePaths.CHECKLIST_ITEM_DETAIL,
@@ -35,6 +42,8 @@ def _render_checklist_item_detail(request, checklist_item, form):
 @login_required(login_url="gerenciador/login/")
 def checklist_item_list(request):
     try:
+        if not can_view_checklist_item_module(request.user):
+            return render_forbidden(request, "Seu cargo não pode acessar checklist.")
         return _render_checklist_item_list(request)
     except RepositoryOperationError as exc:
         return render_repository_error(request, exc)
@@ -44,6 +53,8 @@ def checklist_item_list(request):
 def add_checklist_item(request):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso inválido")
+    if not can_manage_checklist_item(request.user):
+        return render_forbidden(request, "Seu cargo não pode cadastrar itens de checklist.")
 
     try:
         if request.method == "POST":
@@ -54,7 +65,14 @@ def add_checklist_item(request):
         else:
             form = ChecklistItemForm()
 
-        return render(request, TemplatePaths.CHECKLIST_ITEM_FORM, {"form": form})
+        return render(
+            request,
+            TemplatePaths.CHECKLIST_ITEM_FORM,
+            {
+                "form": form,
+                **get_access_context(request.user),
+            },
+        )
     except RepositoryOperationError as exc:
         return render_repository_error(request, exc)
 
@@ -63,6 +81,8 @@ def add_checklist_item(request):
 def checklist_item_detail(request, item_id):
     if not request.headers.get("HX-Request"):
         return HttpResponseBadRequest("Acesso inválido")
+    if not can_manage_checklist_item(request.user):
+        return render_forbidden(request, "Seu cargo não pode editar itens de checklist.")
 
     try:
         checklist_item = checklist_item_page_services.get_checklist_item(item_id)
@@ -87,6 +107,8 @@ def toggle_checklist_item_status(request, item_id):
 
     if request.method != "POST":
         return HttpResponseBadRequest("Método inválido")
+    if not can_manage_checklist_item(request.user):
+        return render_forbidden(request, "Seu cargo não pode alterar itens de checklist.")
 
     try:
         checklist_item = checklist_item_page_services.toggle_checklist_item_status(item_id)
