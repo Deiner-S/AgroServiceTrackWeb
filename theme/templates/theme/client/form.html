@@ -1,37 +1,57 @@
 {% extends "base.html" %}
 
 {% block content %}
-<form class="mt-4 bg-white p-8 rounded-lg shadow-md w-full max-w-2xl mx-auto text-black"
-    method="POST"
-    hx-post="{% url 'add_client' %}"
-    hx-target="#main-content"
-    hx-swap="innerHTML">
-    <h1 class="text-2xl font-bold text-center mb-6">Cadastrar Cliente</h1>
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="mb-4">
-            {{ form.cnpj.label_tag }}
-            {{ form.cnpj }}
-            {{ form.cnpj.errors }}
+<section class="page-shell">
+    <form class="form-shell"
+        method="POST"
+        hx-post="{% url 'add_client' %}"
+        hx-target="#main-content"
+        hx-swap="innerHTML">
+        <div class="page-header">
+            <div>
+                <p class="page-kicker">Novo cadastro</p>
+                <h1 class="text-3xl font-semibold tracking-[-0.03em] text-white" style="font-family: 'Space Grotesk', sans-serif;">Cadastrar Cliente</h1>
+                <p class="page-subtitle">Preencha os dados essenciais para iniciar o relacionamento e abrir futuras ordens de servico.</p>
+            </div>
         </div>
-        <div class="mb-4">
-            {{ form.name.label_tag }}
-            {{ form.name }}
-            {{ form.name.errors }}
+
+        {% csrf_token %}
+        <div class="field-errors mt-6">{{ form.non_field_errors }}</div>
+
+        <div class="form-grid mt-6">
+            <div class="field-group">
+                {{ form.cnpj.label_tag }}
+                {{ form.cnpj }}
+                <div class="field-errors">{{ form.cnpj.errors }}</div>
+            </div>
+            <div class="field-group">
+                {{ form.name.label_tag }}
+                {{ form.name }}
+                <div class="field-errors">{{ form.name.errors }}</div>
+            </div>
+            <div class="field-group">
+                {{ form.email.label_tag }}
+                {{ form.email }}
+                <div class="field-errors">{{ form.email.errors }}</div>
+            </div>
+            <div class="field-group">
+                {{ form.phone.label_tag }}
+                {{ form.phone }}
+                <div class="field-errors">{{ form.phone.errors }}</div>
+            </div>
         </div>
-        <div class="mb-4">
-            {{ form.email.label_tag }}
-            {{ form.email }}
-            {{ form.email.errors }}
+
+        <div class="mt-8 flex flex-wrap gap-3">
+            <button type="submit" class="action-btn-primary">Salvar cliente</button>
+            <button
+                type="button"
+                class="action-btn-secondary"
+                hx-get="{% url 'client-list' %}"
+                hx-target="#main-content"
+                hx-swap="innerHTML">
+                Voltar
+            </button>
         </div>
-        <div class="mb-4">
-            {{ form.phone.label_tag }}
-            {{ form.phone }}
-            {{ form.phone.errors }}
-        </div>
-    </div>
-    <button type="submit" class="mt-4 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">Salvar</button>
-</form>
+    </form>
+</section>
 {% endblock %}

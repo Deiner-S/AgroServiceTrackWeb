@@ -1,99 +1,82 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="mt-4 bg-white p-8 rounded-lg shadow-md w-full max-w-3xl mx-auto text-black">
-    {% if can_toggle_selected_employee_status %}
-    <form
-        id="employee-status-form"
-        method="POST"
-        hx-post="{% url 'toggle-employee-status' employee.id %}?search={{ current_search|urlencode }}&page={{ current_page }}"
-        hx-target="#main-content"
-        hx-swap="innerHTML"
-        onsubmit="return confirm('Tem certeza que deseja alterar o status deste funcionário?');">
-        {% csrf_token %}
-    </form>
-    {% endif %}
-
-    <form
-        id="employee-detail-form"
-        method="POST"
-        {% if can_edit_selected_employee %}
-        hx-post="{% url 'employee-detail' employee.id %}?search={{ current_search|urlencode }}&page={{ current_page }}"
-        hx-target="#main-content"
-        hx-swap="innerHTML"
-        {% endif %}>
-    <h1 class="text-2xl font-bold text-center mb-6">
-        {% if can_edit_selected_employee %}Editar Funcionário{% else %}Visualizar Funcionário{% endif %}
-    </h1>
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="mb-4">
-            {{ form.first_name.label_tag }}
-            {{ form.first_name }}
-            {{ form.first_name.errors }}
-        </div>
-        <div class="mb-4">
-            {{ form.last_name.label_tag }}
-            {{ form.last_name }}
-            {{ form.last_name.errors }}
-        </div>
-        <div class="mb-4">
-            {{ form.cpf.label_tag }}
-            {{ form.cpf }}
-            {{ form.cpf.errors }}
-        </div>
-        <div class="mb-4">
-            {{ form.phone.label_tag }}
-            {{ form.phone }}
-            {{ form.phone.errors }}
-        </div>
-        <div class="mb-4">
-            {{ form.email.label_tag }}
-            {{ form.email }}
-            {{ form.email.errors }}
-        </div>
-        <div class="mb-4">
-            {{ form.position.label_tag }}
-            {{ form.position }}
-            {{ form.position.errors }}
-        </div>
-        <div class="mb-4">
-            {{ form.username.label_tag }}
-            {{ form.username }}
-            {{ form.username.errors }}
-        </div>
-        <div class="mb-4">
-            {{ form.password.label_tag }}
-            {{ form.password }}
-            {{ form.password.errors }}
-        </div>
-    </div>
-
-    <div class="mt-4 flex gap-2 flex-wrap">
-        {% if can_edit_selected_employee %}
-        <button type="submit" form="employee-detail-form" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">Salvar</button>
-        {% endif %}
+<section class="page-shell">
+    <div class="form-shell">
         {% if can_toggle_selected_employee_status %}
-        <button
-            type="submit"
-            form="employee-status-form"
-            class="{% if employee.is_active %}bg-red-600 hover:bg-red-700{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white py-2 px-4 rounded whitespace-nowrap shadow-sm transition-colors duration-200">
-            {% if employee.is_active %}Desativar{% else %}Ativar{% endif %}
-        </button>
-        {% endif %}
-        <button
-            type="button"
-            class="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded"
-            hx-get="{% url 'employee-list' %}?search={{ current_search|urlencode }}&page={{ current_page }}"
+        <form
+            id="employee-status-form"
+            method="POST"
+            hx-post="{% url 'toggle-employee-status' employee.id %}?search={{ current_search|urlencode }}&page={{ current_page }}"
             hx-target="#main-content"
-            hx-swap="innerHTML">
-            Voltar
-        </button>
-    </div>
-</form>
-</div>
+            hx-swap="innerHTML"
+            onsubmit="return confirm('Tem certeza que deseja alterar o status deste funcionario?');">
+            {% csrf_token %}
+        </form>
+        {% endif %}
 
-{% include "theme/address/cards.html" %}
+        <form
+            id="employee-detail-form"
+            method="POST"
+            {% if can_edit_selected_employee %}
+            hx-post="{% url 'employee-detail' employee.id %}?search={{ current_search|urlencode }}&page={{ current_page }}"
+            hx-target="#main-content"
+            hx-swap="innerHTML"
+            {% endif %}>
+            <div class="page-header">
+                <div>
+                    <p class="page-kicker">Perfil interno</p>
+                    <h1 class="text-3xl font-semibold tracking-[-0.03em] text-white" style="font-family: 'Space Grotesk', sans-serif;">
+                        {% if can_edit_selected_employee %}Editar Funcionario{% else %}Visualizar Funcionario{% endif %}
+                    </h1>
+                </div>
+                <div>
+                    {% if employee.is_active %}
+                    <span class="badge badge-success">Ativo</span>
+                    {% else %}
+                    <span class="badge badge-danger">Inativo</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% csrf_token %}
+            <div class="field-errors mt-6">{{ form.non_field_errors }}</div>
+
+            <div class="form-grid mt-6">
+                <div class="field-group">{{ form.first_name.label_tag }}{{ form.first_name }}<div class="field-errors">{{ form.first_name.errors }}</div></div>
+                <div class="field-group">{{ form.last_name.label_tag }}{{ form.last_name }}<div class="field-errors">{{ form.last_name.errors }}</div></div>
+                <div class="field-group">{{ form.cpf.label_tag }}{{ form.cpf }}<div class="field-errors">{{ form.cpf.errors }}</div></div>
+                <div class="field-group">{{ form.phone.label_tag }}{{ form.phone }}<div class="field-errors">{{ form.phone.errors }}</div></div>
+                <div class="field-group">{{ form.email.label_tag }}{{ form.email }}<div class="field-errors">{{ form.email.errors }}</div></div>
+                <div class="field-group">{{ form.position.label_tag }}{{ form.position }}<div class="field-errors">{{ form.position.errors }}</div></div>
+                <div class="field-group">{{ form.username.label_tag }}{{ form.username }}<div class="field-errors">{{ form.username.errors }}</div></div>
+                <div class="field-group">{{ form.password.label_tag }}{{ form.password }}<div class="field-errors">{{ form.password.errors }}</div></div>
+            </div>
+
+            <div class="mt-8 flex flex-wrap gap-3">
+                {% if can_edit_selected_employee %}
+                <button type="submit" form="employee-detail-form" class="action-btn-primary">Salvar</button>
+                {% endif %}
+                {% if can_toggle_selected_employee_status %}
+                <button
+                    type="submit"
+                    form="employee-status-form"
+                    class="{% if employee.is_active %}action-btn-danger{% else %}action-btn-success{% endif %}">
+                    {% if employee.is_active %}Desativar{% else %}Ativar{% endif %}
+                </button>
+                {% endif %}
+                <button
+                    type="button"
+                    class="action-btn-secondary"
+                    hx-get="{% url 'employee-list' %}?search={{ current_search|urlencode }}&page={{ current_page }}"
+                    hx-target="#main-content"
+                    hx-swap="innerHTML">
+                    Voltar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% include "theme/address/cards.html" %}
+</section>
 {% endblock %}

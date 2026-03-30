@@ -1,50 +1,26 @@
 <form
-    class="mb-4 bg-white text-black rounded-xl p-5 shadow"
+    class="mt-6 rounded-[26px] border border-white/10 bg-white/[0.04] p-5 shadow-[0_18px_50px_rgba(2,8,23,0.22)]"
     method="POST"
     hx-post="{% url address_add_url_name entity.id %}"
     hx-target="#{{ address_section_id }}"
     hx-swap="outerHTML">
     {% csrf_token %}
-    {{ address_form.non_field_errors }}
+    <div class="field-errors">{{ address_form.non_field_errors }}</div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-            {{ address_form.street.label_tag }}
-            {{ address_form.street }}
-            {{ address_form.street.errors }}
-        </div>
-        <div>
-            {{ address_form.number.label_tag }}
-            {{ address_form.number }}
-            {{ address_form.number.errors }}
-        </div>
-        <div>
-            {{ address_form.complement.label_tag }}
-            {{ address_form.complement }}
-            {{ address_form.complement.errors }}
-        </div>
-        <div>
-            {{ address_form.city.label_tag }}
-            {{ address_form.city }}
-            {{ address_form.city.errors }}
-        </div>
-        <div>
-            {{ address_form.state.label_tag }}
-            {{ address_form.state }}
-            {{ address_form.state.errors }}
-        </div>
-        <div class="md:col-span-2">
-            {{ address_form.zip_code.label_tag }}
-            {{ address_form.zip_code }}
-            {{ address_form.zip_code.errors }}
-        </div>
+    <div class="form-grid mt-4">
+        <div class="field-group">{{ address_form.street.label_tag }}{{ address_form.street }}<div class="field-errors">{{ address_form.street.errors }}</div></div>
+        <div class="field-group">{{ address_form.number.label_tag }}{{ address_form.number }}<div class="field-errors">{{ address_form.number.errors }}</div></div>
+        <div class="field-group">{{ address_form.complement.label_tag }}{{ address_form.complement }}<div class="field-errors">{{ address_form.complement.errors }}</div></div>
+        <div class="field-group">{{ address_form.city.label_tag }}{{ address_form.city }}<div class="field-errors">{{ address_form.city.errors }}</div></div>
+        <div class="field-group">{{ address_form.state.label_tag }}{{ address_form.state }}<div class="field-errors">{{ address_form.state.errors }}</div></div>
+        <div class="field-group md:col-span-2">{{ address_form.zip_code.label_tag }}{{ address_form.zip_code }}<div class="field-errors">{{ address_form.zip_code.errors }}</div></div>
     </div>
 
-    <div class="mt-4 flex gap-2">
-        <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">Salvar Endereço</button>
+    <div class="mt-6 flex flex-wrap gap-3">
+        <button type="submit" class="action-btn-primary">Salvar endereco</button>
         <button
             type="button"
-            class="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded"
+            class="action-btn-secondary"
             hx-get="{% url address_add_url_name entity.id %}"
             hx-target="#{{ address_section_id }}"
             hx-swap="outerHTML"

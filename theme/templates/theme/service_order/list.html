@@ -1,51 +1,58 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mx-auto bg-gradient-to-t from-black to-gray-800 mt-4 rounded-lg p-6 text-white">
-    <div class="flex items-center justify-between mb-4">
-        <h1 class="text-2xl font-semibold">Serviços de {{ client.name }}</h1>
-        <button
-            class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded"
-            hx-get="{% url 'add_service' client.id %}"
-            hx-target="#main-content"
-            hx-swap="innerHTML"
-        >
-            Adicionar novo serviço
-        </button>
-    </div>
+<section class="page-shell">
+    <div class="surface-panel">
+        <div class="page-header">
+            <div>
+                <p class="page-kicker">Historico do cliente</p>
+                <h1 class="page-title" style="font-family: 'Space Grotesk', sans-serif;">Servicos de {{ client.name }}</h1>
+            </div>
+            <button
+                class="action-btn-primary"
+                hx-get="{% url 'add_service' client.id %}"
+                hx-target="#main-content"
+                hx-swap="innerHTML">
+                Adicionar novo servico
+            </button>
+        </div>
 
-    {% if services %}
-    <table class="min-w-full bg-white shadow rounded-lg text-black">
-        <thead>
-            <tr class="bg-gray-200">
-                <th class="py-2 px-4 text-left">Código operacional</th>
-                <th class="py-2 px-4 text-left">Status</th>
-                <th class="py-2 px-4 text-left">Data da solicitação</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for service in services %}
-            <tr class="hover:bg-gray-100 text-black">
-                <td class="py-2 px-4">{{ service.operation_code }}</td>
-                <td class="py-2 px-4">{{ service.get_status_display }}</td>
-                <td class="py-2 px-4">{{ service.insert_date|date:'d/m/Y H:i' }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p class="text-white">Este cliente ainda não possui serviços cadastrados.</p>
-    {% endif %}
+        {% if services %}
+        <div class="data-table-wrap mt-6">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Codigo operacional</th>
+                        <th>Status</th>
+                        <th>Data da solicitacao</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in services %}
+                    <tr>
+                        <td>{{ service.operation_code }}</td>
+                        <td>{{ service.get_status_display }}</td>
+                        <td>{{ service.insert_date|date:'d/m/Y H:i' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state mt-6">
+            Este cliente ainda nao possui servicos cadastrados.
+        </div>
+        {% endif %}
 
-    <div class="mt-4">
-        <button
-            class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded"
-            hx-get="{% url 'client-list' %}"
-            hx-target="#main-content"
-            hx-swap="innerHTML"
-        >
-            Voltar para clientes
-        </button>
+        <div class="mt-6">
+            <button
+                class="action-btn-secondary"
+                hx-get="{% url 'client-list' %}"
+                hx-target="#main-content"
+                hx-swap="innerHTML">
+                Voltar para clientes
+            </button>
+        </div>
     </div>
-</div>
+</section>
 {% endblock %}

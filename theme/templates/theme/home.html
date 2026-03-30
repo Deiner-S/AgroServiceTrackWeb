@@ -3,11 +3,8 @@
 {% block content %}
 <header class="w-full bg-gradient-to-t from-black to-gray-800 text-white px-4">
     <div class="max-w-7xl mx-auto flex items-center justify-between h-[72px]">
-        <h2 class="text-xl font-semibold">
-            <a href="{% url 'home' %}" class="hover:underline">Agro service track</a>
-        </h2>
+        <h2 class="text-xl font-semibold">Agro service track</h2>
         <nav class="flex flex-wrap gap-3 items-stretch h-full">
-        {% if can_view_employee_module %}
         <button class="text-white px-3 py-0 h-full flex items-center justify-center border-b-4 border-transparent hover:border-white"
             hx-get="{% url 'employee-list' %}"
             hx-target="#main-content"
@@ -15,9 +12,6 @@
         >
             Funcionário
         </button>
-        {% endif %}
-
-        {% if can_view_client_list %}
         <button class="text-white px-3 py-0 h-full flex items-center justify-center border-b-4 border-transparent hover:border-white"
             hx-get="{% url 'client-list' %}"
             hx-target="#main-content"
@@ -25,9 +19,7 @@
         >
             Clientes
         </button>
-        {% endif %}
 
-        {% if can_view_checklist_item_module %}
         <button class="text-white px-3 py-0 h-full flex items-center justify-center border-b-4 border-transparent hover:border-white"
             hx-get="{% url 'checklist-item-list' %}"
             hx-target="#main-content"
@@ -35,9 +27,7 @@
         >
             Checklist Itens
         </button>
-        {% endif %}
 
-        {% if can_view_service_panel %}
         <button class="text-white px-3 py-0 h-full flex items-center justify-center border-b-4 border-transparent hover:border-white"
             hx-get="{% url 'service_panel' %}"
             hx-target="#main-content"
@@ -45,26 +35,11 @@
         >
             Painel de Serviço
         </button>
-        {% endif %}
 
-        <div class="flex items-center gap-4 h-full ml-4 pl-4 border-l border-gray-500">
-            <form method="POST" action="{% url 'logout' %}" class="inline-flex h-full">
-                {% csrf_token %}
-                <button type="submit" class="text-red-300 px-3 py-0 h-full flex items-center justify-center border-b-4 border-transparent hover:border-red-300">logout</button>
-            </form>
-            <div class="text-sm leading-tight text-right flex items-center">
-                <div>
-                    <p class="font-semibold">
-                        {% if request.user.first_name or request.user.last_name %}
-                            {{ request.user.first_name }} {{ request.user.last_name }}
-                        {% else %}
-                            {{ request.user.username }}
-                        {% endif %}
-                    </p>
-                    <p class="text-gray-300">{{ request.user.get_position_display }}</p>
-                </div>
-            </div>
-        </div>
+        <form method="POST" action="{% url 'logout' %}" class="inline-flex h-full">
+            {% csrf_token %}
+            <button type="submit" class="text-red-300 px-3 py-0 h-full flex items-center justify-center border-b-4 border-transparent hover:border-red-300">logout</button>
+        </form>
     </nav>
     </div>
 </header>

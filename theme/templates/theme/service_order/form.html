@@ -1,52 +1,57 @@
 {% extends "base.html" %}
 
 {% block content %}
-<form method="POST" class="mt-4 bg-white p-8 rounded-lg shadow-md w-full max-w-2xl mx-auto text-black"
-      hx-post="{% url 'add_service' client.id %}?search={{ request.GET.search|urlencode }}&page={{ request.GET.page }}"
-      hx-target="#main-content"
-      hx-swap="innerHTML">
-    
-    <h1 class="text-2xl font-bold text-center mb-6">Nova Ordem de Serviço</h1>
+<section class="page-shell">
+    <form method="POST" class="form-shell"
+        hx-post="{% url 'add_service' client.id %}?search={{ request.GET.search|urlencode }}&page={{ request.GET.page }}"
+        hx-target="#main-content"
+        hx-swap="innerHTML">
 
-    {% csrf_token %}
-
-    {{ form.non_field_errors }}
-    
-    <div class="grid grid-cols-1 gap-4">
-        <div class="mb-4">
-            <label class="block text-gray-700 font-medium">Cliente</label>
-            <input
-                type="text"
-                value="{{ client.name }}"
-                disabled
-                class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl shadow-sm text-gray-300 cursor-not-allowed"
-            />
+        <div class="page-header">
+            <div>
+                <p class="page-kicker">Nova ordem</p>
+                <h1 class="text-3xl font-semibold tracking-[-0.03em] text-white" style="font-family: 'Space Grotesk', sans-serif;">Nova Ordem de Servico</h1>
+                <p class="page-subtitle">Registre a entrada do equipamento e descreva o problema inicial para iniciar o fluxo.</p>
+            </div>
         </div>
 
-        <div class="mb-4">
-            {{ form.operation_code.label_tag }}
-            {{ form.operation_code }}
-            {{ form.operation_code.errors }}
+        {% csrf_token %}
+        <div class="field-errors mt-6">{{ form.non_field_errors }}</div>
+
+        <div class="mt-6 space-y-5">
+            <div class="field-group">
+                <label>Cliente</label>
+                <input
+                    type="text"
+                    value="{{ client.name }}"
+                    disabled
+                    class="w-full rounded-2xl border border-white/8 bg-slate-950/80 px-4 py-3.5 text-slate-400 cursor-not-allowed select-none" />
+            </div>
+
+            <div class="field-group">
+                {{ form.operation_code.label_tag }}
+                {{ form.operation_code }}
+                <div class="field-errors">{{ form.operation_code.errors }}</div>
+            </div>
+
+            <div class="field-group">
+                {{ form.symptoms.label_tag }}
+                {{ form.symptoms }}
+                <div class="field-errors">{{ form.symptoms.errors }}</div>
+            </div>
         </div>
 
-        <div class="mb-4">
-            {{ form.symptoms.label_tag }}
-            {{ form.symptoms }}
-            {{ form.symptoms.errors }}
+        <div class="mt-8 flex flex-wrap gap-3">
+            <button type="submit" class="action-btn-primary">Salvar</button>
+            <button
+                type="button"
+                class="action-btn-secondary"
+                hx-get="{% url 'client-detail' client.id %}?search={{ request.GET.search|urlencode }}&page={{ request.GET.page }}"
+                hx-target="#main-content"
+                hx-swap="innerHTML">
+                Voltar
+            </button>
         </div>
-    </div>
-
-    <div class="mt-4 flex gap-2">
-        <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">Salvar</button>
-        <button
-            type="button"
-            class="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded"
-            hx-get="{% url 'client-detail' client.id %}?search={{ request.GET.search|urlencode }}&page={{ request.GET.page }}"
-            hx-target="#main-content"
-            hx-swap="innerHTML"
-        >
-            Voltar
-        </button>
-    </div>
-</form>
+    </form>
+</section>
 {% endblock %}

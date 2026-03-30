@@ -1,88 +1,91 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mx-auto mt-4 space-y-4 text-white">
-    <div class="bg-gradient-to-t from-black to-gray-800 rounded-lg p-6 shadow-md">
-        <div class="flex items-center justify-between gap-3 mb-4">
-            <h1 class="text-2xl font-semibold">Detalhes da Ordem de Serviço</h1>
+<section class="page-shell">
+    <div class="surface-panel">
+        <div class="page-header">
+            <div>
+                <p class="page-kicker">Detalhamento tecnico</p>
+                <h1 class="page-title" style="font-family: 'Space Grotesk', sans-serif;">Detalhes da Ordem de Servico</h1>
+            </div>
             <button
                 type="button"
-                class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded"
+                class="action-btn-secondary"
                 hx-get="{% url 'service_panel' %}?status={{ selected_status }}&search={{ current_search|urlencode }}"
                 hx-target="#main-content"
                 hx-swap="innerHTML">
-                Voltar para o Painel
+                Voltar para o painel
             </button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-white rounded-lg p-4 text-black">
-                <p><strong>OS:</strong> {{ order.operation_code }}</p>
-                <p><strong>Cliente:</strong> {{ order.client.name }}</p>
-                <p><strong>Status:</strong> {{ order.get_status_display }}</p>
-                <p><strong>Solicitada em:</strong> {{ order.insert_date|date:'d/m/Y H:i' }}</p>
+        <div class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
+            <div class="surface-card">
+                <p class="field-note">Resumo da OS</p>
+                <div class="mt-4 space-y-3 text-sm leading-6 text-slate-300">
+                    <p><span class="text-slate-500">OS:</span> {{ order.operation_code }}</p>
+                    <p><span class="text-slate-500">Cliente:</span> {{ order.client.name }}</p>
+                    <p>
+                        <span class="text-slate-500">Status:</span>
+                        <span class="badge {% if order.status == '1' %}badge-warning{% elif order.status == '2' %}badge-info{% elif order.status == '3' %}badge-success{% else %}badge-neutral{% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </p>
+                    <p><span class="text-slate-500">Solicitada em:</span> {{ order.insert_date|date:'d/m/Y H:i' }}</p>
+                </div>
             </div>
-            <div class="bg-white rounded-lg p-4 text-black">
-                <p><strong>Modelo:</strong> {{ order.model|default:'-' }}</p>
-                <p><strong>Chassi:</strong> {{ order.chassi|default:'-' }}</p>
-                <p><strong>Horímetro:</strong> {{ order.horimetro|default:'-' }}</p>
-                <p><strong>Entrada:</strong> {{ order.date_in|date:'d/m/Y H:i'|default:'-' }}</p>
-                <p><strong>Saída:</strong> {{ order.date_out|date:'d/m/Y H:i'|default:'-' }}</p>
+
+            <div class="surface-card">
+                <p class="field-note">Dados do equipamento</p>
+                <div class="mt-4 space-y-3 text-sm leading-6 text-slate-300">
+                    <p><span class="text-slate-500">Modelo:</span> {{ order.model|default:'-' }}</p>
+                    <p><span class="text-slate-500">Chassi:</span> {{ order.chassi|default:'-' }}</p>
+                    <p><span class="text-slate-500">Horimetro:</span> {{ order.horimetro|default:'-' }}</p>
+                    <p><span class="text-slate-500">Entrada:</span> {{ order.date_in|date:'d/m/Y H:i'|default:'-' }}</p>
+                    <p><span class="text-slate-500">Saida:</span> {{ order.date_out|date:'d/m/Y H:i'|default:'-' }}</p>
+                </div>
             </div>
         </div>
 
-        <div class="mt-4 bg-white rounded-lg p-4 text-black">
-            <p class="mb-3"><strong>Problema:</strong></p>
-            <p>{{ order.symptoms|default:'-' }}</p>
-            <p class="mt-4 mb-3"><strong>Serviço executado:</strong></p>
-            <p>{{ order.service|default:'-' }}</p>
+        <div class="mt-5 surface-card">
+            <p class="field-note">Ocorrencia</p>
+            <p class="mt-4 text-sm leading-7 text-slate-300">{{ order.symptoms|default:'-' }}</p>
+            <p class="field-note mt-6">Servico executado</p>
+            <p class="mt-4 text-sm leading-7 text-slate-300">{{ order.service|default:'-' }}</p>
         </div>
     </div>
 
-    <div class="bg-gradient-to-t from-black to-gray-800 rounded-lg p-6 shadow-md">
-        <h2 class="text-xl font-semibold mb-4">Checklists da Ordem</h2>
+    <div class="surface-panel">
+        <h2 class="text-2xl font-semibold tracking-[-0.03em] text-white" style="font-family: 'Space Grotesk', sans-serif;">Checklists da Ordem</h2>
 
         {% if order.checklists.all %}
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-white shadow rounded-lg text-black">
+        <div class="data-table-wrap mt-6">
+            <table class="data-table">
                 <thead>
-                    <tr class="bg-gray-200">
-                        <th class="py-2 px-4 text-left">Item</th>
-                        <th class="py-2 px-4 text-left">Funcionário</th>
-                        <th class="py-2 px-4 text-left">Status</th>
-                        <th class="py-2 px-4 text-left">Data</th>
-                        <th class="py-2 px-4 text-left">Foto</th>
+                    <tr>
+                        <th>Item</th>
+                        <th>Funcionario</th>
+                        <th>Status</th>
+                        <th>Data</th>
+                        <th>Foto</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for checklist in order.checklists.all %}
-                    <tr class="border-t">
-                        <td class="py-2 px-4">{{ checklist.checklist_item_fk.name }}</td>
-                        <td class="py-2 px-4">{{ checklist.employee.first_name }} {{ checklist.employee.last_name }}</td>
-                        <td class="py-2 px-4">{{ checklist.get_status_display }}</td>
-                        <td class="py-2 px-4">{{ checklist.insert_date|date:'d/m/Y H:i' }}</td>
-                        <td class="py-2 px-4">
-                            <div class="flex gap-2 flex-wrap">
+                    <tr>
+                        <td>{{ checklist.checklist_item_fk.name }}</td>
+                        <td>{{ checklist.employee.first_name }} {{ checklist.employee.last_name }}</td>
+                        <td>{{ checklist.get_status_display }}</td>
+                        <td>{{ checklist.insert_date|date:'d/m/Y H:i' }}</td>
+                        <td>
+                            <div class="flex flex-wrap gap-2">
                                 {% if checklist.image_in %}
-                                <a
-                                    href="{{ checklist.image_in.url }}"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded">
-                                    Ver Entrada
-                                </a>
+                                <a href="{{ checklist.image_in.url }}" target="_blank" rel="noopener noreferrer" class="action-btn-secondary">Ver entrada</a>
                                 {% endif %}
                                 {% if checklist.image_out %}
-                                <a
-                                    href="{{ checklist.image_out.url }}"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded">
-                                    Ver Saída
-                                </a>
+                                <a href="{{ checklist.image_out.url }}" target="_blank" rel="noopener noreferrer" class="action-btn-secondary">Ver saida</a>
                                 {% endif %}
                                 {% if not checklist.image_in and not checklist.image_out %}
-                                <span class="text-gray-500">Sem foto</span>
+                                <span class="text-slate-500">Sem foto</span>
                                 {% endif %}
                             </div>
                         </td>
@@ -92,52 +95,40 @@
             </table>
         </div>
         {% else %}
-        <p>Nenhum checklist vinculado a esta ordem.</p>
+        <div class="empty-state mt-6">Nenhum checklist vinculado a esta ordem.</div>
         {% endif %}
     </div>
 
-    <div class="bg-gradient-to-t from-black to-gray-800 rounded-lg p-6 shadow-md">
-        <h2 class="text-xl font-semibold mb-4">Assinaturas da Ordem</h2>
+    <div class="surface-panel">
+        <h2 class="text-2xl font-semibold tracking-[-0.03em] text-white" style="font-family: 'Space Grotesk', sans-serif;">Assinaturas da Ordem</h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-white rounded-lg p-4 text-black">
-                <h3 class="text-lg font-semibold mb-3">Assinatura de Entrada</h3>
+        <div class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
+            <div class="surface-card">
+                <h3 class="text-lg font-semibold text-white">Assinatura de Entrada</h3>
                 {% if order.signature_in %}
                 <img
                     src="{{ order.signature_in.url }}"
                     alt="Assinatura de entrada"
-                    class="w-full max-h-72 object-contain rounded border border-gray-300 bg-gray-100" />
-                <a
-                    href="{{ order.signature_in.url }}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="inline-block mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">
-                    Visualizar assinatura
-                </a>
+                    class="mt-4 w-full rounded-2xl border border-white/10 bg-white/[0.04] object-contain p-3" />
+                <a href="{{ order.signature_in.url }}" target="_blank" rel="noopener noreferrer" class="action-btn-secondary mt-4">Visualizar assinatura</a>
                 {% else %}
-                <p class="text-gray-500">Sem assinatura de entrada.</p>
+                <p class="mt-4 text-slate-400">Sem assinatura de entrada.</p>
                 {% endif %}
             </div>
 
-            <div class="bg-white rounded-lg p-4 text-black">
-                <h3 class="text-lg font-semibold mb-3">Assinatura de Saída</h3>
+            <div class="surface-card">
+                <h3 class="text-lg font-semibold text-white">Assinatura de Saida</h3>
                 {% if order.signature_out %}
                 <img
                     src="{{ order.signature_out.url }}"
-                    alt="Assinatura de saída"
-                    class="w-full max-h-72 object-contain rounded border border-gray-300 bg-gray-100" />
-                <a
-                    href="{{ order.signature_out.url }}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="inline-block mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">
-                    Visualizar assinatura
-                </a>
+                    alt="Assinatura de saida"
+                    class="mt-4 w-full rounded-2xl border border-white/10 bg-white/[0.04] object-contain p-3" />
+                <a href="{{ order.signature_out.url }}" target="_blank" rel="noopener noreferrer" class="action-btn-secondary mt-4">Visualizar assinatura</a>
                 {% else %}
-                <p class="text-gray-500">Sem assinatura de saída.</p>
+                <p class="mt-4 text-slate-400">Sem assinatura de saida.</p>
                 {% endif %}
             </div>
         </div>
     </div>
-</div>
+</section>
 {% endblock %}

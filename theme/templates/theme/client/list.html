@@ -16,7 +16,6 @@
             hx-trigger="keyup changed delay:500ms"
         >
         <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">Buscar</button>
-        {% if can_manage_client %}
         <button
             type="button"
             class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded whitespace-nowrap"
@@ -26,7 +25,6 @@
         >
             Cadastrar Cliente
         </button>
-        {% endif %}
     </form>
     {% if page_client %}
     <table class="min-w-full bg-white shadow rounded-lg text-black">
@@ -42,12 +40,10 @@
         <tbody>
             {% for client in page_client %}
             <tr
-                class="hover:bg-gray-100 text-black {% if can_view_client_detail %}cursor-pointer{% endif %}"
-                {% if can_view_client_detail %}
+                class="hover:bg-gray-100 text-black cursor-pointer"
                 hx-get="{% url 'client-detail' client.id %}?search={{ current_search|urlencode }}&page={{ page_client.number }}"
                 hx-target="#main-content"
                 hx-swap="innerHTML"
-                {% endif %}
             >
                 <td class="py-2 px-4">
                     {% if client.cnpj %}
@@ -76,14 +72,14 @@
         <span></span>
         {% endif %}
 
-        <span>Página {{ page_client.number }} de {{ page_client.paginator.num_pages }}</span>
+        <span>Pagina {{ page_client.number }} de {{ page_client.paginator.num_pages }}</span>
 
         {% if page_client.has_next %}
         <button class="bg-gray-600 hover:bg-gray-700 text-white py-1 px-3 rounded"
             hx-get="{% url 'client-list' %}?page={{ page_client.next_page_number }}&search={{ current_search|urlencode }}"
             hx-target="#main-content"
             hx-swap="innerHTML">
-            Próxima
+            Proxima
         </button>
         {% else %}
         <span></span>

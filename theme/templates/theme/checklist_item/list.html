@@ -1,96 +1,108 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mx-auto bg-gradient-to-t from-black to-gray-800 mt-4 rounded-lg p-6 text-white">
-    <h1 class="text-2xl font-semibold mb-4">Lista de Itens do Checklist</h1>
-    <form id="search-form" class="flex gap-2 mb-4"
+<section class="page-shell">
+    <div class="surface-panel">
+        <div class="page-header">
+            <div>
+                <p class="page-kicker">Padronizacao operacional</p>
+                <h1 class="page-title" style="font-family: 'Space Grotesk', sans-serif;">Itens do Checklist</h1>
+                <p class="page-subtitle">Mantenha os itens de inspecao organizados com um visual mais limpo para consulta e manutencao.</p>
+            </div>
+        </div>
+
+        <form id="search-form" class="toolbar mt-6"
             hx-get="{% url 'checklist-item-list' %}"
             hx-target="#main-content"
             hx-swap="innerHTML">
-        <input
-            class="w-full px-3 py-2 border border-gray-500 bg-gray-700 text-white placeholder-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-400"
-            type="text"
-            name="search"
-            placeholder="Buscar por nome do item"
-            value="{{ current_search|default:'' }}"
-            hx-trigger="keyup changed delay:500ms"
-        >
-        <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">Buscar</button>
-        {% if can_manage_checklist_item %}
-        <button
-            type="button"
-            class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded whitespace-nowrap"
-            hx-get="{% url 'add_checklist_item' %}"
-            hx-target="#main-content"
-            hx-swap="innerHTML"
-        >
-            Cadastrar Item
-        </button>
-        {% endif %}
-    </form>
-
-    {% if page_checklist_items %}
-    <table class="min-w-full bg-white shadow rounded-lg text-black">
-        <thead>
-            <tr class="bg-gray-200">
-                <th class="py-2 px-4 text-left">Nome</th>
-                <th class="py-2 px-4 text-left">Status</th>
-                <th class="py-2 px-4 text-left">Data de cadastro</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            {% for item in page_checklist_items %}
-            <tr
-                class="hover:bg-gray-100 text-black cursor-pointer"
-                hx-get="{% url 'checklist-item-detail' item.id %}?search={{ current_search|urlencode }}&page={{ page_checklist_items.number }}"
+            <div class="toolbar-search">
+                <input
+                    class="w-full rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3.5 text-slate-100 focus:border-sky-300/40 focus:outline-none focus:ring-4 focus:ring-sky-400/10"
+                    type="text"
+                    name="search"
+                    placeholder="Buscar por nome do item"
+                    value="{{ current_search|default:'' }}"
+                    hx-trigger="keyup changed delay:500ms">
+                <button type="submit" class="action-btn-secondary">Buscar</button>
+            </div>
+            {% if can_manage_checklist_item %}
+            <button
+                type="button"
+                class="action-btn-primary"
+                hx-get="{% url 'add_checklist_item' %}"
                 hx-target="#main-content"
                 hx-swap="innerHTML">
-                <td class="py-2 px-4">{{ item.name }}</td>
-                <td class="py-2 px-4">
-                    {% if item.status == 1 %}
-                        <span class="inline-block px-2 py-1 rounded text-sm bg-green-100 text-green-800">Ativo</span>
-                    {% else %}
-                        <span class="inline-block px-2 py-1 rounded text-sm bg-red-100 text-red-800">Inativo</span>
-                    {% endif %}
-                </td>
-                <td class="py-2 px-4">{{ item.insert_date|date:'d/m/Y H:i' }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="3" class="py-4 px-4 text-center">Nenhum item cadastrado ainda.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                Cadastrar item
+            </button>
+            {% endif %}
+        </form>
 
-    <div class="flex items-center justify-between mt-4 text-white">
-        {% if page_checklist_items.has_previous %}
-        <button class="bg-gray-600 hover:bg-gray-700 text-white py-1 px-3 rounded"
-            hx-get="{% url 'checklist-item-list' %}?page={{ page_checklist_items.previous_page_number }}&search={{ current_search|urlencode }}"
-            hx-target="#main-content"
-            hx-swap="innerHTML">
-            Anterior
-        </button>
+        {% if page_checklist_items %}
+        <div class="data-table-wrap mt-6">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Status</th>
+                        <th>Data de cadastro</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page_checklist_items %}
+                    <tr
+                        class="cursor-pointer"
+                        hx-get="{% url 'checklist-item-detail' item.id %}?search={{ current_search|urlencode }}&page={{ page_checklist_items.number }}"
+                        hx-target="#main-content"
+                        hx-swap="innerHTML">
+                        <td>{{ item.name }}</td>
+                        <td>
+                            {% if item.status == 1 %}
+                            <span class="badge badge-success">Ativo</span>
+                            {% else %}
+                            <span class="badge badge-danger">Inativo</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.insert_date|date:'d/m/Y H:i' }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center">Nenhum item cadastrado ainda.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-6 flex flex-col gap-3 text-sm text-slate-300 sm:flex-row sm:items-center sm:justify-between">
+            {% if page_checklist_items.has_previous %}
+            <button class="action-btn-secondary"
+                hx-get="{% url 'checklist-item-list' %}?page={{ page_checklist_items.previous_page_number }}&search={{ current_search|urlencode }}"
+                hx-target="#main-content"
+                hx-swap="innerHTML">
+                Anterior
+            </button>
+            {% else %}
+            <span></span>
+            {% endif %}
+
+            <span>Pagina {{ page_checklist_items.number }} de {{ page_checklist_items.paginator.num_pages }}</span>
+
+            {% if page_checklist_items.has_next %}
+            <button class="action-btn-secondary"
+                hx-get="{% url 'checklist-item-list' %}?page={{ page_checklist_items.next_page_number }}&search={{ current_search|urlencode }}"
+                hx-target="#main-content"
+                hx-swap="innerHTML">
+                Proxima
+            </button>
+            {% else %}
+            <span></span>
+            {% endif %}
+        </div>
         {% else %}
-        <span></span>
-        {% endif %}
-
-        <span>Página {{ page_checklist_items.number }} de {{ page_checklist_items.paginator.num_pages }}</span>
-
-        {% if page_checklist_items.has_next %}
-        <button class="bg-gray-600 hover:bg-gray-700 text-white py-1 px-3 rounded"
-            hx-get="{% url 'checklist-item-list' %}?page={{ page_checklist_items.next_page_number }}&search={{ current_search|urlencode }}"
-            hx-target="#main-content"
-            hx-swap="innerHTML">
-            Próxima
-        </button>
-        {% else %}
-        <span></span>
+        <div class="empty-state mt-6">
+            Nenhum item cadastrado ainda.
+        </div>
         {% endif %}
     </div>
-    {% else %}
-    <p class="text-white">Nenhum item cadastrado ainda.</p>
-    {% endif %}
-</div>
+</section>
 {% endblock %}
