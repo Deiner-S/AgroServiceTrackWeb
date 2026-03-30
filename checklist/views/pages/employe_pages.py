@@ -1,6 +1,5 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseBadRequest
-from django.shortcuts import render
 
 from checklist.forms import EmployeeDetailForm, EmployeeForm
 from checklist.exception_handler import RepositoryOperationError
@@ -14,7 +13,7 @@ from checklist.permissions import (
 )
 from checklist.services import employee_page_services
 from checklist.templates_paths import TemplatePaths
-from checklist.views.pages.view_utils import render_forbidden, render_repository_error
+from checklist.views.pages.view_utils import render_forbidden, render_page, render_repository_error
 
 
 def _render_employee_list(request):
@@ -24,7 +23,7 @@ def _render_employee_list(request):
         page_number=request.GET.get("page"),
     )
     context.update(get_access_context(request.user))
-    return render(request, TemplatePaths.EMPLOYEE_LIST, context)
+    return render_page(request, TemplatePaths.EMPLOYEE_LIST, context)
 
 
 def _render_employee_detail(request, employee, form):
@@ -44,19 +43,13 @@ def _render_employee_detail(request, employee, form):
         request.user,
         employee,
     )
-    return render(
-        request,
-        TemplatePaths.EMPLOYEE_DETAIL,
-        context,
-    )
+    return render_page(request, TemplatePaths.EMPLOYEE_DETAIL, context)
 
 
 @login_required(login_url="gerenciador/login/")
 def add_employee(request):
-    if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso inválido")
     if not can_create_employee(request.user):
-        return render_forbidden(request, "Seu cargo não pode cadastrar funcionários.")
+        return render_forbidden(request, "Seu cargo nao pode cadastrar funcionarios.")
 
     try:
         if request.method == "POST":
@@ -72,7 +65,7 @@ def add_employee(request):
         else:
             form = EmployeeForm(actor=request.user)
 
-        return render(
+        return render_page(
             request,
             TemplatePaths.EMPLOYEE_FORM,
             {
@@ -86,10 +79,8 @@ def add_employee(request):
 
 @login_required(login_url="gerenciador/login/")
 def employee_detail(request, employee_id):
-    if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso inválido")
     if not can_view_employee_module(request.user):
-        return render_forbidden(request, "Seu cargo não pode acessar funcionários.")
+        return render_forbidden(request, "Seu cargo nao pode acessar funcionarios.")
 
     try:
         employee = employee_page_services.get_employee(employee_id)
@@ -99,7 +90,7 @@ def employee_detail(request, employee_id):
             if not can_edit_target:
                 return render_forbidden(
                     request,
-                    "Seu cargo não pode editar este funcionário.",
+                    "Seu cargo nao pode editar este funcionario.",
                 )
 
             form = EmployeeDetailForm(
@@ -129,17 +120,17 @@ def employee_detail(request, employee_id):
 @login_required(login_url="gerenciador/login/")
 def delete_employee(request, employee_id):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso inválido")
+        return HttpResponseBadRequest("Acesso invalido")
 
     if request.method != "POST":
-        return HttpResponseBadRequest("Método inválido")
+        return HttpResponseBadRequest("Metodo invalido")
 
     try:
         employee = employee_page_services.get_employee(employee_id)
         if not can_edit_employee(request.user, employee):
             return render_forbidden(
                 request,
-                "Seu cargo não pode excluir este funcionário.",
+                "Seu cargo nao pode excluir este funcionario.",
             )
 
         employee_page_services.delete_employee(employee_id)
@@ -151,17 +142,17 @@ def delete_employee(request, employee_id):
 @login_required(login_url="gerenciador/login/")
 def toggle_employee_status(request, employee_id):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso inválido")
+        return HttpResponseBadRequest("Acesso invalido")
 
     if request.method != "POST":
-        return HttpResponseBadRequest("Método inválido")
+        return HttpResponseBadRequest("Metodo invalido")
 
     try:
         current_employee = employee_page_services.get_employee(employee_id)
         if not can_toggle_employee_status(request.user, current_employee):
             return render_forbidden(
                 request,
-                "Seu cargo não pode ativar ou desativar este funcionário.",
+                "Seu cargo nao pode ativar ou desativar este funcionario.",
             )
 
         employee = employee_page_services.toggle_employee_status(employee_id)
@@ -175,7 +166,7 @@ def toggle_employee_status(request, employee_id):
 def employee_list(request):
     try:
         if not can_view_employee_module(request.user):
-            return render_forbidden(request, "Seu cargo não pode acessar funcionários.")
+            return render_forbidden(request, "Seu cargo nao pode acessar funcionarios.")
         return _render_employee_list(request)
     except RepositoryOperationError as exc:
         return render_repository_error(request, exc)

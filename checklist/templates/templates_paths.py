@@ -1,5 +1,8 @@
 
 class TemplatePaths:
+    APP_SHELL = "theme/app_shell.html"
+    HOME = "theme/dashboard.html"
+
     CLIENT_FORM = "theme/client/form.html"
     CLIENT_LIST = "theme/client/list.html"
     
@@ -9,5 +12,4 @@ class TemplatePaths:
     SERVICE_ORDER_PANEL = "theme/service_order/panel.html"
     EMPLOYEE_FORM = "theme/employee/form.html"
 
-    HOME = "theme/home.html"
     LOGIN = "theme/login.html"

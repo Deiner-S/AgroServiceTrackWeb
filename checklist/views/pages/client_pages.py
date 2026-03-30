@@ -1,6 +1,5 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseBadRequest
-from django.shortcuts import render
 
 from checklist.forms import ClientDetailForm, ClientForm
 from checklist.exception_handler import RepositoryOperationError
@@ -13,7 +12,7 @@ from checklist.permissions import (
 )
 from checklist.services import client_page_services
 from checklist.templates_paths import TemplatePaths
-from checklist.views.pages.view_utils import render_forbidden, render_repository_error
+from checklist.views.pages.view_utils import render_forbidden, render_page, render_repository_error
 
 
 def _render_client_list(request):
@@ -23,7 +22,7 @@ def _render_client_list(request):
         page_number=request.GET.get("page"),
     )
     context.update(get_access_context(request.user))
-    return render(request, TemplatePaths.CLIENT_LIST, context)
+    return render_page(request, TemplatePaths.CLIENT_LIST, context)
 
 
 def _render_client_detail(request, client, form):
@@ -35,19 +34,13 @@ def _render_client_detail(request, client, form):
     )
     context.update(get_access_context(request.user))
     context["can_manage_addresses"] = can_manage_client_addresses(request.user)
-    return render(
-        request,
-        TemplatePaths.CLIENT_DETAIL,
-        context,
-    )
+    return render_page(request, TemplatePaths.CLIENT_DETAIL, context)
 
 
 @login_required(login_url="gerenciador/login/")
 def add_cliente(request):
-    if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso inválido")
     if not can_manage_client(request.user):
-        return render_forbidden(request, "Seu cargo não pode cadastrar clientes.")
+        return render_forbidden(request, "Seu cargo nao pode cadastrar clientes.")
 
     try:
         if request.method == "POST":
@@ -58,7 +51,7 @@ def add_cliente(request):
         else:
             form = ClientForm()
 
-        return render(
+        return render_page(
             request,
             TemplatePaths.CLIENT_FORM,
             {
@@ -72,17 +65,15 @@ def add_cliente(request):
 
 @login_required(login_url="gerenciador/login/")
 def client_detail(request, client_id):
-    if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso inválido")
     if not can_view_client_detail(request.user):
-        return render_forbidden(request, "Seu cargo só pode visualizar a lista de clientes.")
+        return render_forbidden(request, "Seu cargo so pode visualizar a lista de clientes.")
 
     try:
         client = client_page_services.get_client(client_id)
 
         if request.method == "POST":
             if not can_manage_client(request.user):
-                return render_forbidden(request, "Seu cargo não pode editar clientes.")
+                return render_forbidden(request, "Seu cargo nao pode editar clientes.")
 
             form = ClientDetailForm(request.POST, instance=client)
             if form.is_valid():
@@ -99,14 +90,14 @@ def client_detail(request, client_id):
 @login_required(login_url="gerenciador/login/")
 def delete_client(request, client_id):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso inválido")
+        return HttpResponseBadRequest("Acesso invalido")
 
     if request.method != "POST":
-        return HttpResponseBadRequest("Método inválido")
+        return HttpResponseBadRequest("Metodo invalido")
 
     try:
         if not can_manage_client(request.user):
-            return render_forbidden(request, "Seu cargo não pode excluir clientes.")
+            return render_forbidden(request, "Seu cargo nao pode excluir clientes.")
 
         client_page_services.delete_client(client_id)
         return _render_client_list(request)
@@ -118,7 +109,7 @@ def delete_client(request, client_id):
 def client_list(request):
     try:
         if not can_view_client_list(request.user):
-            return render_forbidden(request, "Seu cargo não pode acessar clientes.")
+            return render_forbidden(request, "Seu cargo nao pode acessar clientes.")
         return _render_client_list(request)
     except RepositoryOperationError as exc:
         return render_repository_error(request, exc)

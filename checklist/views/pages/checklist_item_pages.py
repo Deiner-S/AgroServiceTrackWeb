@@ -1,6 +1,5 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseBadRequest
-from django.shortcuts import render
 
 from checklist.forms import ChecklistItemForm
 from checklist.exception_handler import RepositoryOperationError
@@ -11,7 +10,7 @@ from checklist.permissions import (
 )
 from checklist.services import checklist_item_page_services
 from checklist.templates_paths import TemplatePaths
-from checklist.views.pages.view_utils import render_forbidden, render_repository_error
+from checklist.views.pages.view_utils import render_forbidden, render_page, render_repository_error
 
 
 def _render_checklist_item_list(request):
@@ -21,7 +20,7 @@ def _render_checklist_item_list(request):
         page_number=request.GET.get("page"),
     )
     context.update(get_access_context(request.user))
-    return render(request, TemplatePaths.CHECKLIST_ITEM_LIST, context)
+    return render_page(request, TemplatePaths.CHECKLIST_ITEM_LIST, context)
 
 
 def _render_checklist_item_detail(request, checklist_item, form):
@@ -32,18 +31,14 @@ def _render_checklist_item_detail(request, checklist_item, form):
         page_number=request.GET.get("page", ""),
     )
     context.update(get_access_context(request.user))
-    return render(
-        request,
-        TemplatePaths.CHECKLIST_ITEM_DETAIL,
-        context,
-    )
+    return render_page(request, TemplatePaths.CHECKLIST_ITEM_DETAIL, context)
 
 
 @login_required(login_url="gerenciador/login/")
 def checklist_item_list(request):
     try:
         if not can_view_checklist_item_module(request.user):
-            return render_forbidden(request, "Seu cargo não pode acessar checklist.")
+            return render_forbidden(request, "Seu cargo nao pode acessar checklist.")
         return _render_checklist_item_list(request)
     except RepositoryOperationError as exc:
         return render_repository_error(request, exc)
@@ -51,10 +46,8 @@ def checklist_item_list(request):
 
 @login_required(login_url="gerenciador/login/")
 def add_checklist_item(request):
-    if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso inválido")
     if not can_manage_checklist_item(request.user):
-        return render_forbidden(request, "Seu cargo não pode cadastrar itens de checklist.")
+        return render_forbidden(request, "Seu cargo nao pode cadastrar itens de checklist.")
 
     try:
         if request.method == "POST":
@@ -65,7 +58,7 @@ def add_checklist_item(request):
         else:
             form = ChecklistItemForm()
 
-        return render(
+        return render_page(
             request,
             TemplatePaths.CHECKLIST_ITEM_FORM,
             {
@@ -79,10 +72,8 @@ def add_checklist_item(request):
 
 @login_required(login_url="gerenciador/login/")
 def checklist_item_detail(request, item_id):
-    if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso inválido")
     if not can_manage_checklist_item(request.user):
-        return render_forbidden(request, "Seu cargo não pode editar itens de checklist.")
+        return render_forbidden(request, "Seu cargo nao pode editar itens de checklist.")
 
     try:
         checklist_item = checklist_item_page_services.get_checklist_item(item_id)
@@ -103,12 +94,12 @@ def checklist_item_detail(request, item_id):
 @login_required(login_url="gerenciador/login/")
 def toggle_checklist_item_status(request, item_id):
     if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso inválido")
+        return HttpResponseBadRequest("Acesso invalido")
 
     if request.method != "POST":
-        return HttpResponseBadRequest("Método inválido")
+        return HttpResponseBadRequest("Metodo invalido")
     if not can_manage_checklist_item(request.user):
-        return render_forbidden(request, "Seu cargo não pode alterar itens de checklist.")
+        return render_forbidden(request, "Seu cargo nao pode alterar itens de checklist.")
 
     try:
         checklist_item = checklist_item_page_services.toggle_checklist_item_status(item_id)

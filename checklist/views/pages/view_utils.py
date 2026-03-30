@@ -13,13 +13,26 @@ def get_generic_repository_error_message(status_code):
     return "Erro interno"
 
 
+def render_page(request, template_name, context=None, *, status=200):
+    context = context or {}
+
+    if request.headers.get("HX-Request"):
+        return render(request, template_name, context, status=status)
+
+    shell_context = {
+        **context,
+        "initial_template": template_name,
+    }
+    return render(request, TemplatePaths.APP_SHELL, shell_context, status=status)
+
+
 def resolve_repository_result(request, result):
     if not is_repository_error(result):
         return result, None
 
     payload, status_code = result
     save_log(payload["error"], request=request)
-    response = render(
+    response = render_page(
         request,
         TemplatePaths.ERROR,
         {
@@ -37,7 +50,7 @@ def render_repository_error(request, exc):
 
     save_log(exc, request=request)
 
-    return render(
+    return render_page(
         request,
         TemplatePaths.ERROR,
         {
@@ -49,7 +62,7 @@ def render_repository_error(request, exc):
 
 
 def render_forbidden(request, message="Acesso negado"):
-    return render(
+    return render_page(
         request,
         TemplatePaths.ERROR,
         {

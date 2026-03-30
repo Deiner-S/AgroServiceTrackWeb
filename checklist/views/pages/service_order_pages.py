@@ -1,6 +1,4 @@
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseBadRequest
-from django.shortcuts import render
 
 from checklist.forms import ClientDetailForm, DataSheetCreateForm
 from checklist.exception_handler import RepositoryOperationError
@@ -13,15 +11,13 @@ from checklist.permissions import (
 from checklist.services import client_page_services, service_order_page_services
 from checklist.templates_paths import TemplatePaths
 from checklist.views.pages.client_pages import _render_client_detail
-from checklist.views.pages.view_utils import render_forbidden, render_repository_error
+from checklist.views.pages.view_utils import render_forbidden, render_page, render_repository_error
 
 
 @login_required(login_url="gerenciador/login/")
 def open_client_order(request, client_id):
-    if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso inválido")
     if not can_view_client_detail(request.user):
-        return render_forbidden(request, "Seu cargo não pode inspecionar clientes.")
+        return render_forbidden(request, "Seu cargo nao pode inspecionar clientes.")
 
     try:
         client = client_page_services.get_client(client_id)
@@ -33,10 +29,8 @@ def open_client_order(request, client_id):
 
 @login_required(login_url="gerenciador/login/")
 def add_order(request, client_id):
-    if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso inválido")
     if not can_create_service_order(request.user):
-        return render_forbidden(request, "Seu cargo não pode abrir novas ordens.")
+        return render_forbidden(request, "Seu cargo nao pode abrir novas ordens.")
 
     try:
         client = client_page_services.get_client(client_id)
@@ -54,7 +48,7 @@ def add_order(request, client_id):
             next_code = service_order_page_services.get_next_operation_code()
             form = DataSheetCreateForm(initial={"operation_code": next_code})
 
-        return render(
+        return render_page(
             request,
             TemplatePaths.SERVICE_ORDER_FORM,
             {
@@ -69,10 +63,8 @@ def add_order(request, client_id):
 
 @login_required(login_url="gerenciador/login/")
 def service_panel(request):
-    if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso inválido")
     if not can_view_service_panel(request.user):
-        return render_forbidden(request, "Seu cargo não pode acessar o painel de serviço.")
+        return render_forbidden(request, "Seu cargo nao pode acessar o painel de servico.")
 
     status_filter = (request.GET.get("status") or "all").strip()
     search_query = (request.GET.get("search") or "").strip()
@@ -82,17 +74,15 @@ def service_panel(request):
             search_query=search_query,
         )
         context.update(get_access_context(request.user))
-        return render(request, TemplatePaths.SERVICE_ORDER_PANEL, context)
+        return render_page(request, TemplatePaths.SERVICE_ORDER_PANEL, context)
     except RepositoryOperationError as exc:
         return render_repository_error(request, exc)
 
 
 @login_required(login_url="gerenciador/login/")
 def service_order_detail(request, order_id):
-    if not request.headers.get("HX-Request"):
-        return HttpResponseBadRequest("Acesso inválido")
     if not can_view_service_panel(request.user):
-        return render_forbidden(request, "Seu cargo não pode acessar o painel de serviço.")
+        return render_forbidden(request, "Seu cargo nao pode acessar o painel de servico.")
 
     try:
         context = service_order_page_services.get_service_order_detail_context(
@@ -101,6 +91,6 @@ def service_order_detail(request, order_id):
             status_filter=(request.GET.get("status") or "all").strip(),
         )
         context.update(get_access_context(request.user))
-        return render(request, TemplatePaths.SERVICE_ORDER_DETAIL, context)
+        return render_page(request, TemplatePaths.SERVICE_ORDER_DETAIL, context)
     except RepositoryOperationError as exc:
         return render_repository_error(request, exc)

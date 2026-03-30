@@ -7,12 +7,12 @@ from checklist.exception_handler import RepositoryOperationError
 from checklist.permissions import get_access_context
 from checklist.services import auth_page_services
 from checklist.templates_paths import TemplatePaths
-from checklist.views.pages.view_utils import render_repository_error
+from checklist.views.pages.view_utils import render_page, render_repository_error
 
 
 @login_required(login_url="gerenciador/login/")
 def home(request):
-    return render(request, TemplatePaths.HOME, get_access_context(request.user))
+    return render_page(request, TemplatePaths.HOME, get_access_context(request.user))
 
 
 def auth_login(request):

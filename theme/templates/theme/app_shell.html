@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="app-shell">
+    <div class="app-grid">
+        <header class="topbar">
+            <div class="topbar-inner">
+                <div class="flex items-start gap-4">
+                    <div class="brand-mark" style="font-family: 'Space Grotesk', sans-serif;">AST</div>
+                    <div class="brand-copy">
+                        <span class="brand-kicker">Field Ops Platform</span>
+                        <a href="{% url 'home' %}" class="brand-title" style="font-family: 'Space Grotesk', sans-serif;">Agro Service Track</a>
+                        <p class="brand-subtitle">Gestao operacional com foco em rastreabilidade, velocidade e confianca no atendimento.</p>
+                    </div>
+                </div>
+
+                <div class="w-full max-w-3xl space-y-4 lg:w-auto">
+                    <nav class="nav-cluster">
+                        {% if can_view_employee_module %}
+                        <button class="nav-link" hx-get="{% url 'employee-list' %}" hx-target="#main-content" hx-swap="innerHTML">Funcionarios</button>
+                        {% endif %}
+                        {% if can_view_client_list %}
+                        <button class="nav-link" hx-get="{% url 'client-list' %}" hx-target="#main-content" hx-swap="innerHTML">Clientes</button>
+                        {% endif %}
+                        {% if can_view_checklist_item_module %}
+                        <button class="nav-link" hx-get="{% url 'checklist-item-list' %}" hx-target="#main-content" hx-swap="innerHTML">Itens de Checklist</button>
+                        {% endif %}
+                        {% if can_view_service_panel %}
+                        <button class="nav-link" hx-get="{% url 'service_panel' %}" hx-target="#main-content" hx-swap="innerHTML">Painel de Servicos</button>
+                        {% endif %}
+                    </nav>
+
+                    <div class="user-panel">
+                        <div class="user-meta">
+                            <p class="field-note">Sessao ativa</p>
+                            <p class="user-name">
+                                {% if request.user.first_name or request.user.last_name %}
+                                    {{ request.user.first_name }} {{ request.user.last_name }}
+                                {% else %}
+                                    {{ request.user.username }}
+                                {% endif %}
+                            </p>
+                            <p>{{ request.user.get_position_display }}</p>
+                        </div>
+
+                        <form method="POST" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="action-btn-danger">Encerrar sessao</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-stage">
+            <div id="main-content">
+                {% include initial_template %}
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
