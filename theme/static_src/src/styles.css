@@ -50,6 +50,30 @@
   ::selection {
     @apply bg-sky-400/30 text-white;
   }
+
+  html[data-theme="light"] {
+    background:
+      radial-gradient(circle at top left, rgba(14, 165, 233, 0.1), transparent 30%),
+      radial-gradient(circle at top right, rgba(37, 99, 235, 0.08), transparent 24%),
+      linear-gradient(180deg, #f3f7fb 0%, #edf3f9 55%, #e3ebf4 100%);
+  }
+
+  html[data-theme="light"] body {
+    @apply text-slate-900;
+  }
+
+  html[data-theme="light"] label {
+    @apply text-slate-700;
+  }
+
+  html[data-theme="light"] input::placeholder,
+  html[data-theme="light"] textarea::placeholder {
+    @apply text-slate-500;
+  }
+
+  html[data-theme="light"] ::selection {
+    @apply bg-sky-300/40 text-slate-950;
+  }
 }
 
 @layer components {
@@ -81,7 +105,7 @@
   }
 
   .topbar-inner {
-    @apply relative flex flex-col gap-5 px-5 py-5 lg:flex-row lg:items-center lg:justify-between lg:px-7;
+    @apply relative flex flex-col gap-5 px-5 py-5 pr-20 lg:flex-row lg:items-center lg:justify-between lg:px-7 lg:pr-24;
   }
 
   .brand-mark {
@@ -110,6 +134,18 @@
 
   .nav-link {
     @apply inline-flex items-center justify-center rounded-2xl border border-white/8 bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-slate-200 transition duration-200 hover:-translate-y-0.5 hover:border-sky-400/30 hover:bg-sky-400/10 hover:text-white;
+  }
+
+  .theme-toggle {
+    @apply inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-sm font-semibold text-slate-100 transition duration-200 hover:-translate-y-0.5 hover:border-sky-400/25 hover:bg-sky-400/10;
+  }
+
+  .theme-toggle-icon {
+    @apply inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-[0.68rem] font-semibold uppercase tracking-[0.18em];
+  }
+
+  .theme-toggle-header {
+    @apply absolute right-5 top-5 z-30 shadow-[0_16px_36px_rgba(2,8,23,0.32)] lg:right-7;
   }
 
   .user-panel {
@@ -325,5 +361,218 @@
 
   .rich-list {
     @apply space-y-3 text-sm text-slate-300;
+  }
+
+  .auth-theme-toggle {
+    @apply absolute right-4 top-4 z-20 shadow-[0_16px_36px_rgba(2,8,23,0.24)] sm:right-6 sm:top-6;
+  }
+}
+
+@layer components {
+  html[data-theme="light"] .topbar {
+    @apply border-slate-200/80 bg-white/88 shadow-[0_24px_80px_rgba(148,163,184,0.28)];
+  }
+
+  html[data-theme="light"] .topbar::before {
+    @apply bg-[linear-gradient(135deg,rgba(14,165,233,0.1),transparent_40%,rgba(59,130,246,0.08))];
+  }
+
+  html[data-theme="light"] .brand-mark {
+    @apply border-sky-300/50 bg-sky-100 text-sky-700 shadow-[0_0_30px_rgba(14,165,233,0.12)];
+  }
+
+  html[data-theme="light"] .brand-kicker,
+  html[data-theme="light"] .page-kicker,
+  html[data-theme="light"] .stat-label {
+    @apply text-sky-700/85;
+  }
+
+  html[data-theme="light"] .brand-title,
+  html[data-theme="light"] .page-title,
+  html[data-theme="light"] .user-name,
+  html[data-theme="light"] .stat-value {
+    @apply text-slate-900;
+  }
+
+  html[data-theme="light"] .brand-subtitle,
+  html[data-theme="light"] .page-subtitle,
+  html[data-theme="light"] .user-meta,
+  html[data-theme="light"] .stat-help,
+  html[data-theme="light"] .rich-list {
+    @apply text-slate-600;
+  }
+
+  html[data-theme="light"] .nav-link,
+  html[data-theme="light"] .theme-toggle {
+    @apply border-slate-200 bg-white text-slate-700 hover:border-sky-300/60 hover:bg-sky-50 hover:text-sky-700;
+  }
+
+  html[data-theme="light"] .theme-toggle-icon {
+    @apply border-slate-200 bg-slate-50 text-slate-600;
+  }
+
+  html[data-theme="light"] .user-panel {
+    @apply border-slate-200/80 bg-slate-50/90;
+  }
+
+  html[data-theme="light"] .field-note {
+    @apply text-slate-500;
+  }
+
+  html[data-theme="light"] .main-stage {
+    @apply border-slate-200/80 bg-white/70 shadow-[0_24px_80px_rgba(148,163,184,0.18)];
+  }
+
+  html[data-theme="light"] .main-stage::before {
+    @apply border-slate-200/70;
+  }
+
+  html[data-theme="light"] .surface-panel {
+    @apply border-slate-200/80 bg-white/88 text-slate-800 shadow-[0_20px_70px_rgba(148,163,184,0.18)];
+  }
+
+  html[data-theme="light"] .surface-card {
+    @apply border-slate-200 bg-white text-slate-800 shadow-[0_18px_50px_rgba(148,163,184,0.16)];
+  }
+
+  html[data-theme="light"] .stat-card {
+    @apply border border-slate-200 bg-[linear-gradient(180deg,#ffffff,#f8fbff)] shadow-[0_20px_50px_rgba(148,163,184,0.16)];
+  }
+
+  html[data-theme="light"] .action-btn-secondary {
+    @apply border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50;
+  }
+
+  html[data-theme="light"] .action-btn-danger {
+    @apply border-rose-300/60 bg-rose-50 text-rose-700 hover:bg-rose-100;
+  }
+
+  html[data-theme="light"] .action-btn-success {
+    @apply border-emerald-300/60 bg-emerald-50 text-emerald-700 hover:bg-emerald-100;
+  }
+
+  html[data-theme="light"] .data-table-wrap {
+    @apply border-slate-200 bg-white;
+  }
+
+  html[data-theme="light"] .data-table {
+    @apply divide-slate-200 text-slate-700;
+  }
+
+  html[data-theme="light"] .data-table thead {
+    @apply bg-slate-50;
+  }
+
+  html[data-theme="light"] .data-table th {
+    @apply text-slate-500;
+  }
+
+  html[data-theme="light"] .data-table td {
+    @apply text-slate-700;
+  }
+
+  html[data-theme="light"] .data-table tbody tr {
+    @apply border-slate-100;
+  }
+
+  html[data-theme="light"] .data-table tbody tr:hover {
+    @apply bg-sky-50;
+  }
+
+  html[data-theme="light"] .badge-neutral {
+    @apply border-slate-300 bg-slate-100 text-slate-700;
+  }
+
+  html[data-theme="light"] .badge-info {
+    @apply border-sky-200 bg-sky-50 text-sky-700;
+  }
+
+  html[data-theme="light"] .badge-warning {
+    @apply border-amber-200 bg-amber-50 text-amber-700;
+  }
+
+  html[data-theme="light"] .badge-success {
+    @apply border-emerald-200 bg-emerald-50 text-emerald-700;
+  }
+
+  html[data-theme="light"] .badge-danger {
+    @apply border-rose-200 bg-rose-50 text-rose-700;
+  }
+
+  html[data-theme="light"] .form-shell {
+    @apply border-slate-200/80 bg-white/90 text-slate-800 shadow-[0_24px_80px_rgba(148,163,184,0.2)];
+  }
+
+  html[data-theme="light"] .field-errors {
+    @apply text-rose-600;
+  }
+
+  html[data-theme="light"] .empty-state {
+    @apply border-slate-200 bg-slate-50 text-slate-600;
+  }
+
+  html[data-theme="light"] .auth-card {
+    @apply border-slate-200/80 bg-white/90 shadow-[0_30px_120px_rgba(148,163,184,0.22)];
+  }
+
+  html[data-theme="light"] .auth-panel-brand {
+    @apply border-slate-200 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.14),transparent_36%),linear-gradient(180deg,rgba(248,250,252,0.96),rgba(241,245,249,0.96))];
+  }
+
+  html[data-theme="light"] .auth-panel-form {
+    @apply bg-white/70;
+  }
+
+  html[data-theme="light"] .auth-orb {
+    @apply border-sky-100 bg-sky-100/60;
+  }
+
+  html[data-theme="light"] .surface-panel .text-white,
+  html[data-theme="light"] .surface-card .text-white,
+  html[data-theme="light"] .auth-card .text-white,
+  html[data-theme="light"] .main-stage .text-white {
+    @apply text-slate-900;
+  }
+
+  html[data-theme="light"] .surface-panel .text-slate-400,
+  html[data-theme="light"] .surface-panel .text-slate-300,
+  html[data-theme="light"] .surface-card .text-slate-400,
+  html[data-theme="light"] .surface-card .text-slate-300,
+  html[data-theme="light"] .auth-card .text-slate-400,
+  html[data-theme="light"] .auth-card .text-slate-300,
+  html[data-theme="light"] .main-stage .text-slate-400,
+  html[data-theme="light"] .main-stage .text-slate-300 {
+    @apply text-slate-600;
+  }
+
+  html[data-theme="light"] .surface-panel .text-slate-500,
+  html[data-theme="light"] .surface-card .text-slate-500,
+  html[data-theme="light"] .auth-card .text-slate-500,
+  html[data-theme="light"] .main-stage .text-slate-500 {
+    @apply text-slate-500;
+  }
+
+  html[data-theme="light"] .surface-panel input:not([type="checkbox"]):not([type="radio"]),
+  html[data-theme="light"] .surface-panel textarea,
+  html[data-theme="light"] .surface-panel select,
+  html[data-theme="light"] .form-shell input:not([type="checkbox"]):not([type="radio"]),
+  html[data-theme="light"] .form-shell textarea,
+  html[data-theme="light"] .form-shell select,
+  html[data-theme="light"] .auth-card input:not([type="checkbox"]):not([type="radio"]),
+  html[data-theme="light"] .auth-card textarea,
+  html[data-theme="light"] .auth-card select {
+    @apply border-slate-200 bg-white text-slate-800;
+  }
+
+  html[data-theme="light"] .surface-panel input:focus,
+  html[data-theme="light"] .surface-panel textarea:focus,
+  html[data-theme="light"] .surface-panel select:focus,
+  html[data-theme="light"] .form-shell input:focus,
+  html[data-theme="light"] .form-shell textarea:focus,
+  html[data-theme="light"] .form-shell select:focus,
+  html[data-theme="light"] .auth-card input:focus,
+  html[data-theme="light"] .auth-card textarea:focus,
+  html[data-theme="light"] .auth-card select:focus {
+    @apply border-sky-300/70 ring-sky-200/60;
   }
 }
