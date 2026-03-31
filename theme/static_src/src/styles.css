@@ -355,6 +355,18 @@
     @apply flex items-center p-6 sm:p-8 lg:p-10;
   }
 
+  .auth-brand-title {
+    @apply text-white;
+  }
+
+  .auth-form-title {
+    @apply text-white;
+  }
+
+  .auth-input {
+    @apply border border-white/10 bg-white/[0.06] text-slate-100 focus:border-sky-300/40 focus:ring-sky-400/10;
+  }
+
   .auth-orb {
     @apply absolute rounded-full border border-white/10 bg-white/[0.05] backdrop-blur-sm;
   }
@@ -521,6 +533,18 @@
 
   html[data-theme="light"] .auth-panel-form {
     @apply bg-white/70;
+  }
+
+  html[data-theme="light"] .auth-brand-title {
+    @apply text-sky-950;
+  }
+
+  html[data-theme="light"] .auth-form-title {
+    @apply text-sky-950;
+  }
+
+  html[data-theme="light"] .auth-input {
+    @apply border-slate-300 bg-white text-slate-800 placeholder:text-slate-500 focus:border-sky-400/70 focus:ring-sky-200/60;
   }
 
   html[data-theme="light"] .auth-orb {

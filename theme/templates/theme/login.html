@@ -16,10 +16,10 @@
                 <div class="relative z-10 space-y-6">
                     <div class="brand-mark" style="font-family: 'Space Grotesk', sans-serif;">AST</div>
                     <div class="space-y-4">
-                        <p class="page-kicker">Modern tech interface</p>
-                        <h1 class="text-4xl font-semibold tracking-[-0.04em] text-white sm:text-5xl" style="font-family: 'Space Grotesk', sans-serif;">Agro Service Track</h1>
+                        <p class="page-kicker">Management and Tracking</p>
+                        <h1 class="auth-brand-title text-4xl font-semibold tracking-[-0.04em] sm:text-5xl" style="font-family: 'Space Grotesk', sans-serif;">Agro Service Track</h1>
                         <p class="max-w-lg text-base leading-7 text-slate-300">
-                            Plataforma para coordenar atendimentos, ordens de servico e evidencias tecnicas com uma experiencia visual mais sofisticada e objetiva.
+                            Plataforma para coordenar atendimentos, ordens de servico e evidencias tecnicas.
                         </p>
                     </div>
                 </div>
@@ -38,7 +38,7 @@
                 <form action="{% url 'login' %}" method="post" class="w-full space-y-6">
                     <div class="space-y-3">
                         <p class="page-kicker">Acesso seguro</p>
-                        <h2 class="text-3xl font-semibold tracking-[-0.03em] text-white" style="font-family: 'Space Grotesk', sans-serif;">Entrar na plataforma</h2>
+                        <h2 class="auth-form-title text-3xl font-semibold tracking-[-0.03em]" style="font-family: 'Space Grotesk', sans-serif;">Entrar na plataforma</h2>
                         <p class="text-sm leading-6 text-slate-400">Use suas credenciais para acessar o painel administrativo.</p>
                     </div>
 
@@ -52,12 +52,12 @@
                     <div class="space-y-5">
                         <div class="field-group">
                             <label for="usuario">Usuario</label>
-                            <input type="text" id="usuario" name="usuario" required class="w-full rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3.5 text-slate-100 focus:border-sky-300/40 focus:outline-none focus:ring-4 focus:ring-sky-400/10" />
+                            <input type="text" id="usuario" name="usuario" required class="auth-input w-full rounded-2xl px-4 py-3.5 focus:outline-none focus:ring-4" />
                         </div>
 
                         <div class="field-group">
                             <label for="senha">Senha</label>
-                            <input type="password" id="senha" name="senha" required class="w-full rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3.5 text-slate-100 focus:border-sky-300/40 focus:outline-none focus:ring-4 focus:ring-sky-400/10" />
+                            <input type="password" id="senha" name="senha" required class="auth-input w-full rounded-2xl px-4 py-3.5 focus:outline-none focus:ring-4" />
                         </div>
                     </div>
 
