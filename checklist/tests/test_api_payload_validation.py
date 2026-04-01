@@ -12,6 +12,7 @@ from checklist.api_payload_validation import (
     _require_repository_object,
     _validate_chassi,
     _validate_model,
+    validate_mobile_log_entries,
     _validate_status,
     validate_checklist_entries,
     validate_work_order_entries,
@@ -149,6 +150,63 @@ def test_validate_chassi_raises_for_invalid_value():
 def test_validate_model_raises_for_invalid_type():
     with pytest.raises(ValidationError, match="model invalido"):
         _validate_model(123)
+
+
+def test_validate_mobile_log_entries_returns_normalized_payload():
+    payload = [
+        {
+            "id": str(uuid.uuid4()),
+            "osVersion": "35",
+            "deviceModel": "Pixel 9",
+            "user": "deiner",
+            "erro": "Falha ao salvar checklist",
+            "stacktrace": "trace",
+            "horario": "2026-03-31T12:00:00",
+            "status_sync": 0,
+        }
+    ]
+
+    validated = validate_mobile_log_entries(payload)
+
+    assert validated[0]["osVersion"] == "35"
+    assert validated[0]["status_sync"] == 0
+
+
+def test_validate_mobile_log_entries_rejects_unexpected_keys():
+    payload = [
+        {
+            "id": str(uuid.uuid4()),
+            "osVersion": "35",
+            "deviceModel": "Pixel 9",
+            "user": "deiner",
+            "erro": "Falha ao salvar checklist",
+            "stacktrace": "trace",
+            "horario": "2026-03-31T12:00:00",
+            "status_sync": 0,
+            "extra": True,
+        }
+    ]
+
+    with pytest.raises(ValidationError, match="chaves nao esperadas"):
+        validate_mobile_log_entries(payload)
+
+
+def test_validate_mobile_log_entries_rejects_invalid_status_sync():
+    payload = [
+        {
+            "id": str(uuid.uuid4()),
+            "osVersion": "35",
+            "deviceModel": "Pixel 9",
+            "user": "deiner",
+            "erro": "Falha ao salvar checklist",
+            "stacktrace": "trace",
+            "horario": "2026-03-31T12:00:00",
+            "status_sync": 9,
+        }
+    ]
+
+    with pytest.raises(ValidationError, match="status_sync invalido"):
+        validate_mobile_log_entries(payload)
 
 
 @pytest.mark.django_db

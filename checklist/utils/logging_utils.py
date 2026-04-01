@@ -61,3 +61,14 @@ def save_security_log(event, request=None, **extra_data):
 
     with open(_get_log_dir() / "api_security_events.jsonl", "a", encoding="utf-8") as log_file:
         log_file.write(json.dumps(log_data, ensure_ascii=False) + "\n")
+
+
+def save_mobile_log(log_entry, request=None):
+    log_data = {
+        "received_at": timezone.now().isoformat(),
+        **log_entry,
+    }
+    log_data.update(_get_request_metadata(request))
+
+    with open(_get_log_dir() / "mobile_app_logs.jsonl", "a", encoding="utf-8") as log_file:
+        log_file.write(json.dumps(log_data, ensure_ascii=False) + "\n")

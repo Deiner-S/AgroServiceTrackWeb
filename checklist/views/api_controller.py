@@ -5,6 +5,7 @@ from rest_framework.response import Response
 
 from checklist.api_payload_validation import (
     validate_checklist_entries,
+    validate_mobile_log_entries,
     validate_work_order_entries,
 )
 from checklist.exception_handler import get_validation_error_message
@@ -86,6 +87,30 @@ def receive_checkLists_filleds(request):
         save_log(e, request)
         response = False
         print("\n\nFailed to save checklist:", repr(e))
+        traceback.print_exc()
+
+    return Response({"ok": response}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@throttle_classes([SyncWriteRateThrottle])
+def receive_mobile_logs_api(request):
+    try:
+        print("\n\nTry save mobile logs")
+        validated_mobile_logs = validate_mobile_log_entries(request.data)
+        api_services.save_mobile_logs(validated_mobile_logs, request=request)
+        response = True
+    except ValidationError as e:
+        save_log(e, request)
+        response = False
+        return Response(
+            {"ok": response, "error": get_validation_error_message(e)},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    except Exception as e:
+        save_log(e, request)
+        response = False
+        print("\n\nFailed to save mobile logs:", repr(e))
         traceback.print_exc()
 
     return Response({"ok": response}, status=status.HTTP_200_OK)

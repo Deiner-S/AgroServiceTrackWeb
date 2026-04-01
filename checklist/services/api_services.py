@@ -7,6 +7,7 @@ from checklist.repository import (
 )
 from checklist.exception_handler import unwrap_repository_result
 from checklist.utils.data_processing import prepare_image
+from checklist.utils.logging_utils import save_mobile_log
 
 
 def get_pending_work_order():
@@ -104,3 +105,10 @@ def save_checklists_filleds(checklists, employee_id):
         unwrap_repository_result(checklist_repository.save(checklist_obj))
 
     print("save_checklists_filleds [FINISHED]")
+
+
+def save_mobile_logs(log_entries, request=None):
+    for log_entry in log_entries:
+        save_mobile_log(log_entry, request=request)
+
+    print("save_mobile_logs [FINISHED]")

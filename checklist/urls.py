@@ -33,6 +33,7 @@ urlpatterns = [
     path("send_checklist_items_api/", send_checklist_items, name="send_checklist_items_api"),
     path("receive_work_orders_api/", receive_work_orders_api, name="receive_work_orders_api"),
     path("receive_checklist_api/", receive_checkLists_filleds, name="receive_checkLists_filleds"),
+    path("receive_mobile_logs_api/", receive_mobile_logs_api, name="receive_mobile_logs_api"),
     path('api/token/', ActiveEmployeeTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', ActiveEmployeeTokenRefreshView.as_view(), name='token_refresh'),
 ]

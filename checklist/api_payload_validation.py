@@ -32,6 +32,17 @@ CHECKLIST_REQUIRED_KEYS = {
     "img_out",
 }
 
+MOBILE_LOG_REQUIRED_KEYS = {
+    "id",
+    "osVersion",
+    "deviceModel",
+    "user",
+    "erro",
+    "stacktrace",
+    "horario",
+    "status_sync",
+}
+
 VALID_WORK_ORDER_STATUS = {"1", "2", "3", "4"}
 VALID_CHECKLIST_STATUS = {"1", "2", "3"}
 
@@ -51,22 +62,28 @@ def _ensure_dict(payload, label):
 def _require_keys(payload, required_keys, label):
     missing_keys = sorted(required_keys - payload.keys())
     if missing_keys:
-        raise ValidationError(f"{label} sem chaves obrigatórias: {', '.join(missing_keys)}.")
+        raise ValidationError(f"{label} sem chaves obrigatorias: {', '.join(missing_keys)}.")
+
+
+def _reject_unexpected_keys(payload, allowed_keys, label):
+    unexpected_keys = sorted(set(payload.keys()) - set(allowed_keys))
+    if unexpected_keys:
+        raise ValidationError(f"{label} contem chaves nao esperadas: {', '.join(unexpected_keys)}.")
 
 
 def _parse_uuid(value, field_name):
     if not value:
-        raise ValidationError(f"{field_name} é obrigatório.")
+        raise ValidationError(f"{field_name} e obrigatorio.")
 
     try:
         return uuid.UUID(str(value))
     except (ValueError, TypeError):
-        raise ValidationError(f"{field_name} deve ser um UUID válido.")
+        raise ValidationError(f"{field_name} deve ser um UUID valido.")
 
 
 def _parse_datetime(value, field_name):
     if not value:
-        raise ValidationError(f"{field_name} é obrigatório.")
+        raise ValidationError(f"{field_name} e obrigatorio.")
 
     parsed = parse_datetime(str(value))
     if parsed is not None:
@@ -80,14 +97,14 @@ def _parse_datetime(value, field_name):
 
 def _require_repository_object(result, field_name):
     if is_repository_error(result):
-        raise ValidationError(f"{field_name} informado não existe.")
+        raise ValidationError(f"{field_name} informado nao existe.")
     return result
 
 
 def _validate_status(value, allowed_values, field_name):
     if value not in allowed_values:
         raise ValidationError(
-            f"{field_name} inválido. Valores permitidos: {', '.join(sorted(allowed_values))}."
+            f"{field_name} invalido. Valores permitidos: {', '.join(sorted(allowed_values))}."
         )
     return value
 
@@ -95,15 +112,27 @@ def _validate_status(value, allowed_values, field_name):
 def _validate_chassi(value):
     if not isinstance(value, str) or len(value) != 17 or not value.isalnum():
         raise ValidationError(
-            "chassi inválido. Ele deve conter 17 caracteres, sem espaços e sem traços."
+            "chassi invalido. Ele deve conter 17 caracteres, sem espacos e sem tracos."
         )
     return value
 
 
 def _validate_model(value):
     if not isinstance(value, str):
-        raise ValidationError("model inválido. Ele deve conter somente letras e números.")
+        raise ValidationError("model invalido. Ele deve conter somente letras e numeros.")
     return validate_only_letters_and_numbers(value)
+
+
+def _validate_mobile_sync_status(value):
+    if value not in (0, 1, "0", "1"):
+        raise ValidationError("status_sync invalido. Valores permitidos: 0 ou 1.")
+    return int(value)
+
+
+def _validate_required_string(value, field_name):
+    if not isinstance(value, str) or not value.strip():
+        raise ValidationError(f"{field_name} deve ser um texto nao vazio.")
+    return value.strip()
 
 
 def validate_work_order_entries(payload):
@@ -115,7 +144,7 @@ def validate_work_order_entries(payload):
 
         operation_code = entry.get("operation_code")
         if not operation_code:
-            raise ValidationError("operation_code é obrigatório.")
+            raise ValidationError("operation_code e obrigatorio.")
 
         work_order = _require_repository_object(
             work_order_repository.get_by_operation_code(operation_code),
@@ -157,9 +186,7 @@ def validate_checklist_entries(payload):
         entry = _ensure_dict(raw_entry, f"checklist[{index}]")
         _require_keys(entry, CHECKLIST_REQUIRED_KEYS, f"checklist[{index}]")
 
-        checklist_uuid = (
-            _parse_uuid(entry.get("id"), "id") if entry.get("id") else uuid.uuid4()
-        )
+        checklist_uuid = _parse_uuid(entry.get("id"), "id") if entry.get("id") else uuid.uuid4()
         checklist_item_uuid = _parse_uuid(entry.get("checklist_item_fk"), "checklist_item_fk")
         work_order_uuid = _parse_uuid(entry.get("work_order_fk"), "work_order_fk")
 
@@ -184,6 +211,34 @@ def validate_checklist_entries(payload):
                 "image_out": prepare_image(entry.get("img_out"), filename_prefix="checklist_out")
                 if entry.get("img_out")
                 else None,
+            }
+        )
+
+    return validated_entries
+
+
+def validate_mobile_log_entries(payload):
+    validated_entries = []
+
+    for index, raw_entry in enumerate(_ensure_list(payload, "mobile_logs"), start=1):
+        entry = _ensure_dict(raw_entry, f"mobile_log[{index}]")
+        _require_keys(entry, MOBILE_LOG_REQUIRED_KEYS, f"mobile_log[{index}]")
+        _reject_unexpected_keys(entry, MOBILE_LOG_REQUIRED_KEYS, f"mobile_log[{index}]")
+
+        validated_entries.append(
+            {
+                "id": str(_parse_uuid(entry.get("id"), "id")),
+                "osVersion": _validate_required_string(entry.get("osVersion"), "osVersion"),
+                "deviceModel": _validate_required_string(entry.get("deviceModel"), "deviceModel"),
+                "user": _validate_required_string(entry.get("user"), "user"),
+                "erro": _validate_required_string(entry.get("erro"), "erro"),
+                "stacktrace": (
+                    _validate_required_string(entry.get("stacktrace"), "stacktrace")
+                    if entry.get("stacktrace") is not None
+                    else None
+                ),
+                "horario": _parse_datetime(entry.get("horario"), "horario").isoformat(),
+                "status_sync": _validate_mobile_sync_status(entry.get("status_sync")),
             }
         )
 
