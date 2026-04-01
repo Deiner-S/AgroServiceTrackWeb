@@ -2,6 +2,8 @@ import pytest
 from types import SimpleNamespace
 
 from checklist.services.api_services import (
+    get_mobile_checklist_item_detail,
+    get_mobile_employee_detail,
     get_pending_work_order,
     save_checklists_filleds,
     save_mobile_logs,
@@ -88,3 +90,50 @@ def test_save_mobile_logs_writes_each_entry(monkeypatch):
     save_mobile_logs(logs, request=request)
 
     assert save_mobile_log_mock == [(logs[0], request)]
+
+
+def test_get_mobile_employee_detail_returns_toggle_permission(monkeypatch):
+    employee = SimpleNamespace(
+        id="11111111-1111-4111-8111-111111111111",
+        username="tecnico",
+        first_name="Tecnico",
+        last_name="Campo",
+        email="tecnico@example.com",
+        cpf="123",
+        phone="9999",
+        position="3",
+        get_position_display=lambda: "Tecnico",
+        is_active=True,
+        insert_date=None,
+        addresses=SimpleNamespace(all=lambda: [], count=lambda: 0),
+    )
+    user = SimpleNamespace(position="1")
+
+    monkeypatch.setattr(
+        "checklist.services.api_services.employee_repository.get_by_identifier",
+        lambda employee_id: employee,
+    )
+
+    response = get_mobile_employee_detail("11111111-1111-4111-8111-111111111111", user)
+
+    assert response["permissions"]["canToggleStatus"] is True
+
+
+def test_get_mobile_checklist_item_detail_returns_toggle_permission(monkeypatch):
+    item = SimpleNamespace(
+        id="11111111-1111-4111-8111-111111111111",
+        name="Freio",
+        status=1,
+        executions=SimpleNamespace(count=lambda: 2),
+        insert_date=None,
+    )
+    user = SimpleNamespace(position="1")
+
+    monkeypatch.setattr(
+        "checklist.services.api_services.checklist_item_repository.get_by_id",
+        lambda item_id: item,
+    )
+
+    response = get_mobile_checklist_item_detail("11111111-1111-4111-8111-111111111111", user)
+
+    assert response["permissions"]["canToggleStatus"] is True

@@ -15,6 +15,11 @@ from checklist.utils.validation_utils import (
 
 WORK_ORDER_REQUIRED_KEYS = {
     "operation_code",
+    "status",
+}
+
+WORK_ORDER_ALLOWED_KEYS = {
+    "operation_code",
     "chassi",
     "horimetro",
     "model",
@@ -22,6 +27,9 @@ WORK_ORDER_REQUIRED_KEYS = {
     "date_out",
     "status",
     "service",
+    "signature",
+    "signature_in",
+    "signature_out",
 }
 
 CHECKLIST_REQUIRED_KEYS = {
@@ -169,41 +177,64 @@ def validate_work_order_entries(payload):
 
     for index, raw_entry in enumerate(_ensure_list(payload, "work_orders"), start=1):
         entry = _ensure_dict(raw_entry, f"work_order[{index}]")
-        _require_keys(entry, WORK_ORDER_REQUIRED_KEYS, f"work_order[{index}]")
+        _reject_unexpected_keys(entry, WORK_ORDER_ALLOWED_KEYS, f"work_order[{index}]")
 
         operation_code = entry.get("operation_code")
         if not operation_code:
             raise ValidationError("operation_code e obrigatorio.")
+
+        status = _validate_status(entry.get("status"), VALID_WORK_ORDER_STATUS, "status")
+
+        required_keys = set(WORK_ORDER_REQUIRED_KEYS)
+        if status != "1":
+            required_keys.update({"chassi", "horimetro", "model", "date_in"})
+        if status in {"3", "4"}:
+            required_keys.add("service")
+        if status == "4":
+            required_keys.add("date_out")
+
+        _require_keys(entry, required_keys, f"work_order[{index}]")
 
         work_order = _require_repository_object(
             work_order_repository.get_by_operation_code(operation_code),
             "operation_code",
         )
 
-        validated_entries.append(
-            {
-                "work_order": work_order,
-                "chassi": _validate_chassi(entry.get("chassi")),
-                "horimetro": validate_only_numbers(str(entry.get("horimetro"))),
-                "model": _validate_model(entry.get("model")),
-                "date_in": _parse_datetime(entry.get("date_in"), "date_in"),
-                "date_out": _parse_datetime(entry.get("date_out"), "date_out"),
-                "status": _validate_status(entry.get("status"), VALID_WORK_ORDER_STATUS, "status"),
-                "service": entry.get("service"),
-                "signature_in": prepare_image(
-                    entry.get("signature_in") or entry.get("signature"),
-                    filename_prefix="signature_in",
-                )
-                if entry.get("signature_in") or entry.get("signature")
-                else None,
-                "signature_out": prepare_image(
-                    entry.get("signature_out"),
-                    filename_prefix="signature_out",
-                )
-                if entry.get("signature_out")
-                else None,
-            }
-        )
+        validated_entry = {
+            "work_order": work_order,
+            "status": status,
+            "service": entry.get("service"),
+            "date_out": None,
+            "signature_in": prepare_image(
+                entry.get("signature_in") or entry.get("signature"),
+                filename_prefix="signature_in",
+            )
+            if entry.get("signature_in") or entry.get("signature")
+            else None,
+            "signature_out": prepare_image(
+                entry.get("signature_out"),
+                filename_prefix="signature_out",
+            )
+            if entry.get("signature_out")
+            else None,
+        }
+
+        if status != "1":
+            validated_entry.update(
+                {
+                    "chassi": _validate_chassi(entry.get("chassi")),
+                    "horimetro": validate_only_numbers(str(entry.get("horimetro"))),
+                    "model": _validate_model(entry.get("model")),
+                    "date_in": _parse_datetime(entry.get("date_in"), "date_in"),
+                }
+            )
+
+        if status == "4":
+            validated_entry["date_out"] = _parse_datetime(entry.get("date_out"), "date_out")
+        elif entry.get("date_out"):
+            validated_entry["date_out"] = _parse_datetime(entry.get("date_out"), "date_out")
+
+        validated_entries.append(validated_entry)
 
     return validated_entries
 
@@ -217,14 +248,17 @@ def validate_checklist_entries(payload):
 
         checklist_uuid = _parse_uuid(entry.get("id"), "id") if entry.get("id") else uuid.uuid4()
         checklist_item_uuid = _parse_uuid(entry.get("checklist_item_fk"), "checklist_item_fk")
-        work_order_uuid = _parse_uuid(entry.get("work_order_fk"), "work_order_fk")
+        work_order_operation_code = entry.get("work_order_fk")
+        if not isinstance(work_order_operation_code, str) or not work_order_operation_code.strip():
+            raise ValidationError("work_order_fk e obrigatorio.")
+        work_order_operation_code = work_order_operation_code.strip()
 
         checklist_item = _require_repository_object(
             checklist_item_repository.get_by_id(checklist_item_uuid),
             "checklist_item_fk",
         )
         work_order = _require_repository_object(
-            work_order_repository.get_by_id(work_order_uuid),
+            work_order_repository.get_by_operation_code(work_order_operation_code),
             "work_order_fk",
         )
 

@@ -72,7 +72,7 @@ def mobile_employee_detail_api(request, employee_id):
     try:
         forbid_if(not can_view_employee_module(request.user), "Usuario sem permissao para consultar funcionario.")
         validated_employee_id = validate_mobile_identifier(employee_id, "employee_id")
-        return Response(api_services.get_mobile_employee_detail(validated_employee_id), status=status.HTTP_200_OK)
+        return Response(api_services.get_mobile_employee_detail(validated_employee_id, request.user), status=status.HTTP_200_OK)
     except ValidationError as error:
         return validation_error_response(error, request)
 
@@ -123,7 +123,10 @@ def mobile_checklist_item_detail_api(request, item_id):
             "Usuario sem permissao para consultar item de checklist.",
         )
         validated_item_id = validate_mobile_identifier(item_id, "item_id")
-        return Response(api_services.get_mobile_checklist_item_detail(validated_item_id), status=status.HTTP_200_OK)
+        return Response(
+            api_services.get_mobile_checklist_item_detail(validated_item_id, request.user),
+            status=status.HTTP_200_OK,
+        )
     except ValidationError as error:
         return validation_error_response(error, request)
 

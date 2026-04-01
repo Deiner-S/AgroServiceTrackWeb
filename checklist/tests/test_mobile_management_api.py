@@ -1,0 +1,222 @@
+from unittest.mock import Mock
+
+from django.core.exceptions import ValidationError
+from rest_framework.test import APIRequestFactory, force_authenticate
+
+from checklist.views.api.mobile_management_api import (
+    mobile_checklist_item_detail_api,
+    mobile_checklist_items_api,
+    mobile_client_detail_api,
+    mobile_clients_api,
+    mobile_dashboard_api,
+    mobile_employee_detail_api,
+    mobile_employees_api,
+    mobile_toggle_checklist_item_status_api,
+    mobile_toggle_employee_status_api,
+)
+
+
+def create_user(django_user_model, username, position):
+    return django_user_model.objects.create_user(
+        username=username,
+        password="secret123",
+        position=position,
+        cpf=f"cpf-{username}",
+        phone="999999",
+    )
+
+
+def test_mobile_dashboard_api_returns_service_payload(db, django_user_model, monkeypatch):
+    user = create_user(django_user_model, "director", "0")
+    factory = APIRequestFactory()
+    request = factory.get("/gerenciador/mobile/dashboard_api/")
+    force_authenticate(request, user=user)
+
+    monkeypatch.setattr(
+        "checklist.views.api.mobile_management_api.api_services.get_mobile_dashboard",
+        Mock(return_value={"summary": {"pendingOrders": 1}}),
+    )
+
+    response = mobile_dashboard_api(request)
+
+    assert response.status_code == 200
+    assert response.data == {"summary": {"pendingOrders": 1}}
+
+
+def test_mobile_clients_api_blocks_user_without_permission(db, django_user_model):
+    user = create_user(django_user_model, "tech", "3")
+    factory = APIRequestFactory()
+    request = factory.get("/gerenciador/mobile/clients_api/")
+    force_authenticate(request, user=user)
+
+    response = mobile_clients_api(request)
+
+    assert response.status_code == 400
+    assert response.data["ok"] is False
+
+
+def test_mobile_clients_api_validates_query_and_calls_service(db, django_user_model, monkeypatch):
+    user = create_user(django_user_model, "manager", "1")
+    factory = APIRequestFactory()
+    request = factory.get("/gerenciador/mobile/clients_api/?search= cliente ")
+    force_authenticate(request, user=user)
+
+    service_mock = Mock(return_value=[{"id": "1"}])
+    monkeypatch.setattr("checklist.views.api.mobile_management_api.api_services.get_mobile_clients", service_mock)
+
+    response = mobile_clients_api(request)
+
+    assert response.status_code == 200
+    assert response.data == [{"id": "1"}]
+    service_mock.assert_called_once_with("cliente")
+
+
+def test_mobile_client_detail_api_returns_validation_error_for_invalid_identifier(db, django_user_model):
+    user = create_user(django_user_model, "admin", "2")
+    factory = APIRequestFactory()
+    request = factory.get("/gerenciador/mobile/clients_api/bad/detail/")
+    force_authenticate(request, user=user)
+
+    response = mobile_client_detail_api(request, "bad-id")
+
+    assert response.status_code == 400
+    assert response.data["ok"] is False
+
+
+def test_mobile_employees_api_returns_service_payload(db, django_user_model, monkeypatch):
+    user = create_user(django_user_model, "director2", "0")
+    factory = APIRequestFactory()
+    request = factory.get("/gerenciador/mobile/employees_api/")
+    force_authenticate(request, user=user)
+
+    service_mock = Mock(return_value=[{"id": "emp-1"}])
+    monkeypatch.setattr("checklist.views.api.mobile_management_api.api_services.get_mobile_employees", service_mock)
+
+    response = mobile_employees_api(request)
+
+    assert response.status_code == 200
+    assert response.data == [{"id": "emp-1"}]
+
+
+def test_mobile_employee_detail_api_returns_service_payload(db, django_user_model, monkeypatch):
+    user = create_user(django_user_model, "manager2", "1")
+    employee_id = "11111111-1111-4111-8111-111111111111"
+    factory = APIRequestFactory()
+    request = factory.get(f"/gerenciador/mobile/employees_api/{employee_id}/detail/")
+    force_authenticate(request, user=user)
+
+    service_mock = Mock(return_value={"id": employee_id})
+    monkeypatch.setattr("checklist.views.api.mobile_management_api.api_services.get_mobile_employee_detail", service_mock)
+
+    response = mobile_employee_detail_api(request, employee_id)
+
+    assert response.status_code == 200
+    assert response.data == {"id": employee_id}
+    service_mock.assert_called_once_with(employee_id, user)
+
+
+def test_mobile_toggle_employee_status_api_handles_missing_employee(db, django_user_model, monkeypatch):
+    user = create_user(django_user_model, "director3", "0")
+    employee_id = "11111111-1111-4111-8111-111111111111"
+    factory = APIRequestFactory()
+    request = factory.post(f"/gerenciador/mobile/employees_api/{employee_id}/toggle-status/")
+    force_authenticate(request, user=user)
+
+    monkeypatch.setattr(
+        "checklist.views.api.mobile_management_api.employee_repository.get_by_identifier",
+        Mock(return_value=({"error": "not found"}, 404)),
+    )
+
+    response = mobile_toggle_employee_status_api(request, employee_id)
+
+    assert response.status_code == 400
+    assert response.data["error"] == "Funcionario nao encontrado."
+
+
+def test_mobile_toggle_employee_status_api_checks_permission_before_service_call(db, django_user_model, monkeypatch):
+    user = create_user(django_user_model, "manager3", "1")
+    employee_id = "11111111-1111-4111-8111-111111111111"
+    factory = APIRequestFactory()
+    request = factory.post(f"/gerenciador/mobile/employees_api/{employee_id}/toggle-status/")
+    force_authenticate(request, user=user)
+
+    employee = type("Employee", (), {"position": "0"})()
+    monkeypatch.setattr(
+        "checklist.views.api.mobile_management_api.employee_repository.get_by_identifier",
+        Mock(return_value=employee),
+    )
+    service_mock = Mock(return_value={"ok": True})
+    monkeypatch.setattr("checklist.views.api.mobile_management_api.api_services.toggle_mobile_employee_status", service_mock)
+
+    response = mobile_toggle_employee_status_api(request, employee_id)
+
+    assert response.status_code == 400
+    assert response.data["ok"] is False
+    service_mock.assert_not_called()
+
+
+def test_mobile_checklist_items_api_returns_service_payload(db, django_user_model, monkeypatch):
+    user = create_user(django_user_model, "director4", "0")
+    factory = APIRequestFactory()
+    request = factory.get("/gerenciador/mobile/checklist_items_api/?search=freio")
+    force_authenticate(request, user=user)
+
+    service_mock = Mock(return_value=[{"id": "item-1"}])
+    monkeypatch.setattr("checklist.views.api.mobile_management_api.api_services.get_mobile_checklist_items", service_mock)
+
+    response = mobile_checklist_items_api(request)
+
+    assert response.status_code == 200
+    assert response.data == [{"id": "item-1"}]
+    service_mock.assert_called_once_with("freio")
+
+
+def test_mobile_checklist_item_detail_api_blocks_user_without_permission(db, django_user_model):
+    user = create_user(django_user_model, "admin2", "2")
+    item_id = "11111111-1111-4111-8111-111111111111"
+    factory = APIRequestFactory()
+    request = factory.get(f"/gerenciador/mobile/checklist_items_api/{item_id}/detail/")
+    force_authenticate(request, user=user)
+
+    response = mobile_checklist_item_detail_api(request, item_id)
+
+    assert response.status_code == 400
+    assert response.data["ok"] is False
+
+
+def test_mobile_checklist_item_detail_api_passes_authenticated_user_to_service(db, django_user_model, monkeypatch):
+    user = create_user(django_user_model, "director5", "0")
+    item_id = "11111111-1111-4111-8111-111111111111"
+    factory = APIRequestFactory()
+    request = factory.get(f"/gerenciador/mobile/checklist_items_api/{item_id}/detail/")
+    force_authenticate(request, user=user)
+
+    service_mock = Mock(return_value={"id": item_id, "permissions": {"canToggleStatus": True}})
+    monkeypatch.setattr(
+        "checklist.views.api.mobile_management_api.api_services.get_mobile_checklist_item_detail",
+        service_mock,
+    )
+
+    response = mobile_checklist_item_detail_api(request, item_id)
+
+    assert response.status_code == 200
+    assert response.data["permissions"]["canToggleStatus"] is True
+    service_mock.assert_called_once_with(item_id, user)
+
+
+def test_mobile_toggle_checklist_item_status_api_returns_validation_error(db, django_user_model, monkeypatch):
+    user = create_user(django_user_model, "manager4", "1")
+    item_id = "11111111-1111-4111-8111-111111111111"
+    factory = APIRequestFactory()
+    request = factory.post(f"/gerenciador/mobile/checklist_items_api/{item_id}/toggle-status/")
+    force_authenticate(request, user=user)
+
+    monkeypatch.setattr(
+        "checklist.views.api.mobile_management_api.api_services.toggle_mobile_checklist_item_status",
+        Mock(side_effect=ValidationError("falha de validacao")),
+    )
+
+    response = mobile_toggle_checklist_item_status_api(request, item_id)
+
+    assert response.status_code == 400
+    assert response.data == {"ok": False, "error": "falha de validacao"}

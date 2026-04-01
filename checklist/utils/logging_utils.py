@@ -48,7 +48,7 @@ def save_log(error, request=None):
     log_data.update(_get_request_metadata(request))
 
     with open(_get_log_dir() / "api_errors.jsonl", "a", encoding="utf-8") as log_file:
-        log_file.write(json.dumps(log_data, ensure_ascii=False) + "\n")
+        log_file.write(json.dumps(log_data, ensure_ascii=False, default=str) + "\n")
 
 
 def save_security_log(event, request=None, **extra_data):
@@ -60,7 +60,7 @@ def save_security_log(event, request=None, **extra_data):
     log_data.update(extra_data)
 
     with open(_get_log_dir() / "api_security_events.jsonl", "a", encoding="utf-8") as log_file:
-        log_file.write(json.dumps(log_data, ensure_ascii=False) + "\n")
+        log_file.write(json.dumps(log_data, ensure_ascii=False, default=str) + "\n")
 
 
 def save_mobile_log(log_entry, request=None):
@@ -71,4 +71,4 @@ def save_mobile_log(log_entry, request=None):
     log_data.update(_get_request_metadata(request))
 
     with open(_get_log_dir() / "mobile_app_logs.jsonl", "a", encoding="utf-8") as log_file:
-        log_file.write(json.dumps(log_data, ensure_ascii=False) + "\n")
+        log_file.write(json.dumps(log_data, ensure_ascii=False, default=str) + "\n")

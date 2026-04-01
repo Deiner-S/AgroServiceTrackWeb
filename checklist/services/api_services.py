@@ -12,6 +12,7 @@ from checklist.exception_handler import unwrap_repository_result
 from checklist.utils.data_processing import prepare_image
 from checklist.utils.logging_utils import save_mobile_log
 from checklist.permissions import get_access_context
+from checklist.permissions import can_manage_checklist_item, can_toggle_employee_status
 
 
 Employee = get_user_model()
@@ -266,12 +267,15 @@ def get_mobile_employees(search_query=""):
     return [_build_employee_payload(employee) for employee in employees]
 
 
-def get_mobile_employee_detail(employee_id):
+def get_mobile_employee_detail(employee_id, user=None):
     employee = unwrap_repository_result(employee_repository.get_by_identifier(employee_id))
 
     return {
         **_build_employee_payload(employee),
         "addresses": [_build_address_payload(address) for address in employee.addresses.all()],
+        "permissions": {
+            "canToggleStatus": can_toggle_employee_status(user, employee) if user else False,
+        },
     }
 
 
@@ -286,9 +290,14 @@ def get_mobile_checklist_items(search_query=""):
     return [_build_checklist_item_payload(item) for item in items]
 
 
-def get_mobile_checklist_item_detail(item_id):
+def get_mobile_checklist_item_detail(item_id, user=None):
     item = unwrap_repository_result(checklist_item_repository.get_by_id(item_id))
-    return _build_checklist_item_payload(item)
+    return {
+        **_build_checklist_item_payload(item),
+        "permissions": {
+            "canToggleStatus": can_manage_checklist_item(user) if user else False,
+        },
+    }
 
 
 def toggle_mobile_checklist_item_status(item_id):
