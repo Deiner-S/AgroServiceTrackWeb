@@ -45,6 +45,7 @@ MOBILE_LOG_REQUIRED_KEYS = {
 
 VALID_WORK_ORDER_STATUS = {"1", "2", "3", "4"}
 VALID_CHECKLIST_STATUS = {"1", "2", "3"}
+VALID_MOBILE_STATUS_FILTER = {"all", "1", "2", "3", "4"}
 
 
 def _ensure_list(payload, label):
@@ -133,6 +134,34 @@ def _validate_required_string(value, field_name):
     if not isinstance(value, str) or not value.strip():
         raise ValidationError(f"{field_name} deve ser um texto nao vazio.")
     return value.strip()
+
+
+def validate_mobile_search_query(value):
+    if value in (None, ""):
+        return ""
+
+    if not isinstance(value, str):
+        raise ValidationError("search deve ser um texto.")
+
+    normalized = value.strip()
+
+    if len(normalized) > 120:
+        raise ValidationError("search excede o tamanho maximo permitido.")
+
+    return normalized
+
+
+def validate_mobile_status_filter(value):
+    normalized = "all" if value in (None, "") else str(value).strip()
+
+    if normalized not in VALID_MOBILE_STATUS_FILTER:
+        raise ValidationError("status invalido para consulta mobile.")
+
+    return normalized
+
+
+def validate_mobile_identifier(value, field_name):
+    return str(_parse_uuid(value, field_name))
 
 
 def validate_work_order_entries(payload):

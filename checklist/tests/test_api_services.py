@@ -1,7 +1,38 @@
 import pytest
 from types import SimpleNamespace
 
-from checklist.services.api_services import save_checklists_filleds, save_mobile_logs
+from checklist.services.api_services import (
+    get_pending_work_order,
+    save_checklists_filleds,
+    save_mobile_logs,
+)
+
+
+def test_get_pending_work_order_includes_status_sync(monkeypatch):
+    work_order = SimpleNamespace(
+        id="11111111-1111-4111-8111-111111111111",
+        operation_code="000001",
+        symptoms="Falha no motor",
+        client=SimpleNamespace(name="Cliente 1"),
+        status="1",
+        chassi="1HGCM82633A123456",
+        horimetro="1200",
+        model="TRATORX",
+        date_in=None,
+        date_out=None,
+        service=None,
+        insert_date=None,
+    )
+
+    monkeypatch.setattr(
+        "checklist.services.api_services.work_order_repository.list_pending_for_api_sync",
+        lambda: [work_order],
+    )
+
+    response = get_pending_work_order()
+
+    assert response[0]["operation_code"] == "000001"
+    assert response[0]["status_sync"] == 1
 
 
 def test_save_checklists_filleds_raises_when_status_is_missing(monkeypatch):

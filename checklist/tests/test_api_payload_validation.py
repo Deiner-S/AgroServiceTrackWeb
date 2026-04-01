@@ -12,7 +12,10 @@ from checklist.api_payload_validation import (
     _require_repository_object,
     _validate_chassi,
     _validate_model,
+    validate_mobile_identifier,
     validate_mobile_log_entries,
+    validate_mobile_search_query,
+    validate_mobile_status_filter,
     _validate_status,
     validate_checklist_entries,
     validate_work_order_entries,
@@ -207,6 +210,29 @@ def test_validate_mobile_log_entries_rejects_invalid_status_sync():
 
     with pytest.raises(ValidationError, match="status_sync invalido"):
         validate_mobile_log_entries(payload)
+
+
+def test_validate_mobile_search_query_normalizes_blank_values():
+    assert validate_mobile_search_query("   ") == ""
+
+
+def test_validate_mobile_search_query_rejects_large_values():
+    with pytest.raises(ValidationError, match="maximo permitido"):
+        validate_mobile_search_query("a" * 121)
+
+
+def test_validate_mobile_status_filter_returns_all_by_default():
+    assert validate_mobile_status_filter(None) == "all"
+
+
+def test_validate_mobile_status_filter_rejects_invalid_values():
+    with pytest.raises(ValidationError, match="status invalido"):
+        validate_mobile_status_filter("9")
+
+
+def test_validate_mobile_identifier_returns_uuid_string():
+    value = "11111111-1111-4111-8111-111111111111"
+    assert validate_mobile_identifier(value, "client_id") == value
 
 
 @pytest.mark.django_db

@@ -1,13 +1,20 @@
-from checklist.models import Checklist
+from django.contrib.auth import get_user_model
+
+from checklist.models import Checklist, ChecklistItem, Client, WorkOrder
 from checklist.repository import (
     checklist_item_repository,
     checklist_repository,
+    client_repository,
     employee_repository,
     work_order_repository,
 )
 from checklist.exception_handler import unwrap_repository_result
 from checklist.utils.data_processing import prepare_image
 from checklist.utils.logging_utils import save_mobile_log
+from checklist.permissions import get_access_context
+
+
+Employee = get_user_model()
 
 
 def get_pending_work_order():
@@ -23,6 +30,7 @@ def get_pending_work_order():
                 "symptoms": item.symptoms,
                 "client": item.client.name,
                 "status": item.status,
+                "status_sync": 1,
                 "chassi": item.chassi,
                 "horimetro": item.horimetro,
                 "model": item.model,
@@ -112,3 +120,178 @@ def save_mobile_logs(log_entries, request=None):
         save_mobile_log(log_entry, request=request)
 
     print("save_mobile_logs [FINISHED]")
+
+
+def _build_address_payload(address):
+    return {
+        "id": str(address.id),
+        "label": str(address),
+    }
+
+
+def _build_client_payload(client):
+    return {
+        "id": str(client.id),
+        "name": client.name,
+        "email": client.email,
+        "phone": client.phone,
+        "cpf": client.cpf,
+        "cnpj": client.cnpj,
+        "addressCount": client.addresses.count(),
+        "insertDate": client.insert_date.isoformat() if client.insert_date else None,
+    }
+
+
+def _build_employee_payload(employee):
+    full_name = f"{employee.first_name} {employee.last_name}".strip() or employee.username
+
+    return {
+        "id": str(employee.id),
+        "username": employee.username,
+        "fullName": full_name,
+        "email": employee.email,
+        "cpf": employee.cpf,
+        "phone": employee.phone,
+        "position": employee.position,
+        "positionLabel": employee.get_position_display(),
+        "isActive": bool(employee.is_active),
+        "addressCount": employee.addresses.count(),
+        "insertDate": employee.insert_date.isoformat() if employee.insert_date else None,
+    }
+
+
+def _build_checklist_item_payload(item):
+    return {
+        "id": str(item.id),
+        "name": item.name,
+        "status": int(item.status),
+        "statusLabel": "Ativo" if item.status == 1 else "Inativo",
+        "usageCount": item.executions.count(),
+        "insertDate": item.insert_date.isoformat() if item.insert_date else None,
+    }
+
+
+def _build_related_order_payload(order):
+    return {
+        "id": str(order.id),
+        "operationCode": order.operation_code,
+        "status": order.status,
+        "statusLabel": order.get_status_display(),
+        "insertDate": order.insert_date.isoformat() if order.insert_date else None,
+    }
+
+
+def get_mobile_dashboard(user):
+    access_context = get_access_context(user)
+
+    modules = [
+        {
+            "id": "orders",
+            "title": "Ordens",
+            "description": "Acompanhe o fluxo operacional das ordens em campo.",
+            "icon": "assignment",
+            "route": "ordersScreen",
+            "count": WorkOrder.objects.exclude(status="4").count(),
+            "enabled": access_context["can_view_service_panel"],
+        },
+        {
+            "id": "clients",
+            "title": "Clientes",
+            "description": "Consulte cadastros e relacoes de atendimento.",
+            "icon": "groups",
+            "route": "clientsScreen",
+            "count": Client.objects.count(),
+            "enabled": access_context["can_view_client_list"],
+        },
+        {
+            "id": "employees",
+            "title": "Funcionarios",
+            "description": "Gerencie equipe, status e acessos.",
+            "icon": "badge",
+            "route": "employeesScreen",
+            "count": Employee.objects.count(),
+            "enabled": access_context["can_view_employee_module"],
+        },
+        {
+            "id": "checklist_items",
+            "title": "Checklist",
+            "description": "Acompanhe os itens usados nas inspeções.",
+            "icon": "fact-check",
+            "route": "checklistItemsScreen",
+            "count": ChecklistItem.objects.count(),
+            "enabled": access_context["can_view_checklist_item_module"],
+        },
+    ]
+
+    full_name = f"{user.first_name} {user.last_name}".strip() or user.username
+
+    return {
+        "user": {
+            "username": user.username,
+            "fullName": full_name,
+            "position": user.get_position_display(),
+        },
+        "summary": {
+            "pendingOrders": WorkOrder.objects.filter(status="1").count(),
+            "inProgressOrders": WorkOrder.objects.filter(status="2").count(),
+            "deliveryOrders": WorkOrder.objects.filter(status="3").count(),
+            "completedOrders": WorkOrder.objects.filter(status="4").count(),
+            "clients": Client.objects.count(),
+            "employees": Employee.objects.count(),
+            "checklistItems": ChecklistItem.objects.count(),
+        },
+        "modules": modules,
+        "access": access_context,
+    }
+
+
+def get_mobile_clients(search_query=""):
+    clients = unwrap_repository_result(client_repository.list_for_management(search_query))
+    return [_build_client_payload(client) for client in clients]
+
+
+def get_mobile_client_detail(client_id):
+    client = unwrap_repository_result(client_repository.get_by_id(client_id))
+    orders = unwrap_repository_result(work_order_repository.list_by_client(client))
+
+    return {
+        **_build_client_payload(client),
+        "addresses": [_build_address_payload(address) for address in client.addresses.all()],
+        "recentOrders": [_build_related_order_payload(order) for order in orders[:10]],
+    }
+
+
+def get_mobile_employees(search_query=""):
+    employees = unwrap_repository_result(employee_repository.list_for_management(search_query))
+    return [_build_employee_payload(employee) for employee in employees]
+
+
+def get_mobile_employee_detail(employee_id):
+    employee = unwrap_repository_result(employee_repository.get_by_identifier(employee_id))
+
+    return {
+        **_build_employee_payload(employee),
+        "addresses": [_build_address_payload(address) for address in employee.addresses.all()],
+    }
+
+
+def toggle_mobile_employee_status(employee_id):
+    employee = unwrap_repository_result(employee_repository.get_by_identifier(employee_id))
+    updated = unwrap_repository_result(employee_repository.toggle_active_status(employee))
+    return {"ok": True, "isActive": bool(updated.is_active)}
+
+
+def get_mobile_checklist_items(search_query=""):
+    items = unwrap_repository_result(checklist_item_repository.list_for_management(search_query))
+    return [_build_checklist_item_payload(item) for item in items]
+
+
+def get_mobile_checklist_item_detail(item_id):
+    item = unwrap_repository_result(checklist_item_repository.get_by_id(item_id))
+    return _build_checklist_item_payload(item)
+
+
+def toggle_mobile_checklist_item_status(item_id):
+    item = unwrap_repository_result(checklist_item_repository.get_by_id(item_id))
+    updated = unwrap_repository_result(checklist_item_repository.toggle_status(item))
+    return {"ok": True, "status": int(updated.status)}
