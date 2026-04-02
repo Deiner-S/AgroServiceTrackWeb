@@ -164,6 +164,15 @@ def validate_mobile_identifier(value, field_name):
     return str(_parse_uuid(value, field_name))
 
 
+def validate_mobile_payload_object(payload, label, allowed_keys=None):
+    data = _ensure_dict(payload, label)
+
+    if allowed_keys is not None:
+        _reject_unexpected_keys(data, allowed_keys, label)
+
+    return data
+
+
 def validate_work_order_entries(payload):
     validated_entries = []
 

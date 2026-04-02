@@ -2,6 +2,9 @@ import pytest
 from types import SimpleNamespace
 
 from checklist.services.api_services import (
+    create_mobile_client_address,
+    create_mobile_client_order,
+    get_mobile_client_detail,
     get_pending_work_order,
     save_checklists_filleds,
     save_mobile_logs,
@@ -88,3 +91,42 @@ def test_save_mobile_logs_writes_each_entry(monkeypatch):
     save_mobile_logs(logs, request=request)
 
     assert save_mobile_log_mock == [(logs[0], request)]
+
+
+@pytest.mark.django_db
+def test_get_mobile_client_detail_includes_permissions_and_next_operation_code(
+    client_obj,
+    work_order,
+    administrative_user,
+):
+    detail = get_mobile_client_detail(str(client_obj.id), administrative_user)
+
+    assert detail["id"] == str(client_obj.id)
+    assert detail["permissions"]["canEditClient"] is True
+    assert detail["permissions"]["canManageAddresses"] is True
+    assert detail["permissions"]["canCreateServiceOrder"] is True
+    assert detail["permissions"]["nextOperationCode"] == "000002"
+
+
+@pytest.mark.django_db
+def test_create_mobile_client_address_links_address_to_client(client_obj, address_obj):
+    create_mobile_client_address(client_obj, address_obj)
+
+    client_obj.refresh_from_db()
+
+    assert client_obj.addresses.count() == 1
+    assert str(client_obj.addresses.first()) == "Rua Projetada 12, 10 - Sao Paulo/Sao Paulo"
+
+
+@pytest.mark.django_db
+def test_create_mobile_client_order_links_order_to_client(client_obj):
+    order = SimpleNamespace(
+        operation_code="000001",
+        symptoms="Falha hidraulica",
+        client=None,
+        save=lambda *args, **kwargs: None,
+    )
+
+    saved = create_mobile_client_order(client_obj, order)
+
+    assert saved.client == client_obj

@@ -5,21 +5,36 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from checklist.api_payload_validation import (
+    validate_mobile_payload_object,
     validate_mobile_identifier,
     validate_mobile_search_query,
 )
+from checklist.forms import AddressForm, ClientDetailForm, ClientForm, DataSheetCreateForm
 from checklist.permissions import (
     can_manage_checklist_item,
+    can_manage_client,
+    can_manage_client_addresses,
+    can_create_service_order,
     can_toggle_employee_status,
     can_view_checklist_item_module,
     can_view_client_detail,
     can_view_client_list,
     can_view_employee_module,
 )
-from checklist.repository import employee_repository
+from checklist.repository import client_repository, employee_repository
 from checklist.services import api_services
 from checklist.throttling import SyncReadRateThrottle, SyncWriteRateThrottle
 from checklist.views.api.common import forbid_if, validation_error_response
+
+
+CLIENT_CREATE_ALLOWED_KEYS = {"cnpj", "name", "email", "phone"}
+CLIENT_UPDATE_ALLOWED_KEYS = {"cpf", "cnpj", "name", "email", "phone"}
+CLIENT_ADDRESS_ALLOWED_KEYS = {"street", "number", "complement", "city", "state", "zip_code"}
+CLIENT_SERVICE_ALLOWED_KEYS = {"operation_code", "symptoms"}
+
+
+def _raise_form_validation_error(form):
+    raise ValidationError(form.errors)
 
 
 @api_view(['GET'])
@@ -29,26 +44,129 @@ def mobile_dashboard_api(request):
     return Response(api_services.get_mobile_dashboard(request.user), status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 @throttle_classes([SyncReadRateThrottle])
 def mobile_clients_api(request):
     try:
-        forbid_if(not can_view_client_list(request.user), "Usuario sem permissao para consultar clientes.")
-        search_query = validate_mobile_search_query(request.query_params.get("search"))
-        return Response(api_services.get_mobile_clients(search_query), status=status.HTTP_200_OK)
+        if request.method == 'GET':
+            forbid_if(not can_view_client_list(request.user), "Usuario sem permissao para consultar clientes.")
+            search_query = validate_mobile_search_query(request.query_params.get("search"))
+            return Response(api_services.get_mobile_clients(search_query), status=status.HTTP_200_OK)
+
+        forbid_if(not can_manage_client(request.user), "Usuario sem permissao para cadastrar clientes.")
+        payload = validate_mobile_payload_object(
+            request.data,
+            "client_payload",
+            CLIENT_CREATE_ALLOWED_KEYS,
+        )
+        form = ClientForm(payload)
+
+        if not form.is_valid():
+            _raise_form_validation_error(form)
+
+        client = api_services.create_mobile_client(form.save(commit=False))
+        return Response(
+            api_services.get_mobile_client_detail(str(client.id), request.user),
+            status=status.HTTP_201_CREATED,
+        )
     except ValidationError as error:
         return validation_error_response(error, request)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
 @throttle_classes([SyncReadRateThrottle])
 def mobile_client_detail_api(request, client_id):
     try:
-        forbid_if(not can_view_client_detail(request.user), "Usuario sem permissao para consultar detalhes de clientes.")
         validated_client_id = validate_mobile_identifier(client_id, "client_id")
-        return Response(api_services.get_mobile_client_detail(validated_client_id), status=status.HTTP_200_OK)
+        client = client_repository.get_by_id(validated_client_id)
+        client = client if not isinstance(client, tuple) else None
+        forbid_if(client is None, "Cliente nao encontrado.")
+
+        if request.method == 'GET':
+            forbid_if(not can_view_client_detail(request.user), "Usuario sem permissao para consultar detalhes de clientes.")
+            return Response(
+                api_services.get_mobile_client_detail(validated_client_id, request.user),
+                status=status.HTTP_200_OK,
+            )
+
+        forbid_if(not can_manage_client(request.user), "Usuario sem permissao para editar clientes.")
+        payload = validate_mobile_payload_object(
+            request.data,
+            "client_update_payload",
+            CLIENT_UPDATE_ALLOWED_KEYS,
+        )
+        form = ClientDetailForm(payload, instance=client)
+
+        if not form.is_valid():
+            _raise_form_validation_error(form)
+
+        updated_client = api_services.update_mobile_client(form.save(commit=False))
+        return Response(
+            api_services.get_mobile_client_detail(str(updated_client.id), request.user),
+            status=status.HTTP_200_OK,
+        )
+    except ValidationError as error:
+        return validation_error_response(error, request)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@throttle_classes([SyncWriteRateThrottle])
+def mobile_add_client_address_api(request, client_id):
+    try:
+        validated_client_id = validate_mobile_identifier(client_id, "client_id")
+        client = client_repository.get_by_id(validated_client_id)
+        client = client if not isinstance(client, tuple) else None
+        forbid_if(client is None, "Cliente nao encontrado.")
+        forbid_if(not can_manage_client_addresses(request.user), "Usuario sem permissao para editar enderecos de clientes.")
+
+        payload = validate_mobile_payload_object(
+            request.data,
+            "client_address_payload",
+            CLIENT_ADDRESS_ALLOWED_KEYS,
+        )
+        form = AddressForm(payload)
+
+        if not form.is_valid():
+            _raise_form_validation_error(form)
+
+        api_services.create_mobile_client_address(client, form.save(commit=False))
+        return Response(
+            api_services.get_mobile_client_detail(validated_client_id, request.user),
+            status=status.HTTP_201_CREATED,
+        )
+    except ValidationError as error:
+        return validation_error_response(error, request)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@throttle_classes([SyncWriteRateThrottle])
+def mobile_add_client_service_order_api(request, client_id):
+    try:
+        validated_client_id = validate_mobile_identifier(client_id, "client_id")
+        client = client_repository.get_by_id(validated_client_id)
+        client = client if not isinstance(client, tuple) else None
+        forbid_if(client is None, "Cliente nao encontrado.")
+        forbid_if(not can_create_service_order(request.user), "Usuario sem permissao para abrir ordens de servico.")
+
+        payload = validate_mobile_payload_object(
+            request.data,
+            "client_service_payload",
+            CLIENT_SERVICE_ALLOWED_KEYS,
+        )
+        form = DataSheetCreateForm(payload)
+
+        if not form.is_valid():
+            _raise_form_validation_error(form)
+
+        api_services.create_mobile_client_order(client, form.save(commit=False))
+        return Response(
+            api_services.get_mobile_client_detail(validated_client_id, request.user),
+            status=status.HTTP_201_CREATED,
+        )
     except ValidationError as error:
         return validation_error_response(error, request)
 

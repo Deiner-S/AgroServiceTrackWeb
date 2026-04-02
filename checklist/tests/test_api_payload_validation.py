@@ -14,6 +14,7 @@ from checklist.api_payload_validation import (
     _validate_model,
     validate_mobile_identifier,
     validate_mobile_log_entries,
+    validate_mobile_payload_object,
     validate_mobile_search_query,
     validate_mobile_status_filter,
     _validate_status,
@@ -233,6 +234,11 @@ def test_validate_mobile_status_filter_rejects_invalid_values():
 def test_validate_mobile_identifier_returns_uuid_string():
     value = "11111111-1111-4111-8111-111111111111"
     assert validate_mobile_identifier(value, "client_id") == value
+
+
+def test_validate_mobile_payload_object_rejects_unexpected_keys():
+    with pytest.raises(ValidationError, match="chaves nao esperadas"):
+        validate_mobile_payload_object({"name": "Cliente", "extra": True}, "client_payload", {"name"})
 
 
 @pytest.mark.django_db

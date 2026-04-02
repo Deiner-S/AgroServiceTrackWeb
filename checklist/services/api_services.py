@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 
 from checklist.models import Checklist, ChecklistItem, Client, WorkOrder
 from checklist.repository import (
+    address_repository,
     checklist_item_repository,
     checklist_repository,
     client_repository,
@@ -11,7 +12,12 @@ from checklist.repository import (
 from checklist.exception_handler import unwrap_repository_result
 from checklist.utils.data_processing import prepare_image
 from checklist.utils.logging_utils import save_mobile_log
-from checklist.permissions import get_access_context
+from checklist.permissions import (
+    can_create_service_order,
+    can_manage_client,
+    can_manage_client_addresses,
+    get_access_context,
+)
 
 
 Employee = get_user_model()
@@ -46,7 +52,7 @@ def get_pending_work_order():
 
 def get_checklist_items():
     items = unwrap_repository_result(checklist_item_repository.list_for_api_sync())
-    data = [
+    return [
         {
             "id": item.id,
             "name": item.name,
@@ -54,8 +60,6 @@ def get_checklist_items():
         }
         for item in items
     ]
-    print(data)
-    return data
 
 
 def save_work_orders_filleds(work_orders):
@@ -77,7 +81,6 @@ def save_work_orders_filleds(work_orders):
             wo.signature_out = work_order["signature_out"]
 
         unwrap_repository_result(work_order_repository.save(wo))
-        print("save_work_orders_filleds [FINISHED]")
 
 
 def save_checklists_filleds(checklists, employee_id):
@@ -112,14 +115,10 @@ def save_checklists_filleds(checklists, employee_id):
 
         unwrap_repository_result(checklist_repository.save(checklist_obj))
 
-    print("save_checklists_filleds [FINISHED]")
-
 
 def save_mobile_logs(log_entries, request=None):
     for log_entry in log_entries:
         save_mobile_log(log_entry, request=request)
-
-    print("save_mobile_logs [FINISHED]")
 
 
 def _build_address_payload(address):
@@ -178,6 +177,21 @@ def _build_related_order_payload(order):
         "status": order.status,
         "statusLabel": order.get_status_display(),
         "insertDate": order.insert_date.isoformat() if order.insert_date else None,
+    }
+
+
+def _build_client_detail_permissions(user):
+    can_create_order = can_create_service_order(user)
+
+    return {
+        "canEditClient": can_manage_client(user),
+        "canManageAddresses": can_manage_client_addresses(user),
+        "canCreateServiceOrder": can_create_order,
+        "nextOperationCode": (
+            unwrap_repository_result(work_order_repository.get_next_operation_code())
+            if can_create_order
+            else None
+        ),
     }
 
 
@@ -250,7 +264,7 @@ def get_mobile_clients(search_query=""):
     return [_build_client_payload(client) for client in clients]
 
 
-def get_mobile_client_detail(client_id):
+def get_mobile_client_detail(client_id, user):
     client = unwrap_repository_result(client_repository.get_by_id(client_id))
     orders = unwrap_repository_result(work_order_repository.list_by_client(client))
 
@@ -258,7 +272,29 @@ def get_mobile_client_detail(client_id):
         **_build_client_payload(client),
         "addresses": [_build_address_payload(address) for address in client.addresses.all()],
         "recentOrders": [_build_related_order_payload(order) for order in orders[:10]],
+        "permissions": _build_client_detail_permissions(user),
     }
+
+
+def create_mobile_client(client):
+    saved_client = unwrap_repository_result(client_repository.save(client))
+    return saved_client
+
+
+def update_mobile_client(client):
+    saved_client = unwrap_repository_result(client_repository.save(client))
+    return saved_client
+
+
+def create_mobile_client_address(client, address):
+    saved_address = unwrap_repository_result(address_repository.save(address))
+    unwrap_repository_result(address_repository.add_to_client(client, saved_address))
+    return saved_address
+
+
+def create_mobile_client_order(client, work_order):
+    work_order.client = client
+    return unwrap_repository_result(work_order_repository.save(work_order))
 
 
 def get_mobile_employees(search_query=""):
