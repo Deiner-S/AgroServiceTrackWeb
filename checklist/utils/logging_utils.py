@@ -8,6 +8,10 @@ from django.conf import settings
 from django.utils import timezone
 
 
+class LogPersistenceError(RuntimeError):
+    pass
+
+
 def _get_log_dir():
     log_dir = Path(settings.BASE_DIR) / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -97,15 +101,19 @@ def _write_logger_failure(filename, error, payload):
         log_file.write(json.dumps(fallback_payload, ensure_ascii=False) + "\n")
 
 
-def _safe_write_log(filename, payload):
+def _safe_write_log(filename, payload, raise_on_failure=False):
     try:
         _write_log_line(filename, payload)
+        return True
     except Exception as log_error:
         try:
             _write_logger_failure(filename, log_error, payload)
         except Exception:
             # Falhas no logger nunca devem subir para o console nem interromper o fluxo principal.
             pass
+        if raise_on_failure:
+            raise LogPersistenceError(f"Falha ao persistir log em {filename}") from log_error
+        return False
 
 
 def save_log(error, request=None):
@@ -136,4 +144,4 @@ def save_mobile_log(log_entry, request=None):
         **log_entry,
     }
     log_data.update(_build_request_metadata(request))
-    _safe_write_log("mobile_app_logs.jsonl", log_data)
+    return _safe_write_log("mobile_app_logs.jsonl", log_data, raise_on_failure=True)

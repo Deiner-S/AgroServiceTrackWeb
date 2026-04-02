@@ -97,3 +97,26 @@ def test_receive_mobile_logs_api_returns_ok_on_success(api_user, monkeypatch):
     assert response.status_code == 200
     assert response.data == {"ok": True}
     save_logs_mock.assert_called_once_with([{"id": "1"}], request=request)
+
+
+def test_receive_mobile_logs_api_returns_false_on_persistence_failure(api_user, monkeypatch):
+    factory = APIRequestFactory()
+    request = factory.post("/gerenciador/receive_mobile_logs_api/", [], format="json")
+    force_authenticate(request, user=api_user)
+
+    monkeypatch.setattr(
+        "checklist.views.api.sync_api.validate_mobile_log_entries",
+        Mock(return_value=[{"id": "1"}]),
+    )
+    monkeypatch.setattr(
+        "checklist.views.api.sync_api.api_services.save_mobile_logs",
+        Mock(side_effect=RuntimeError("disk down")),
+    )
+    save_log_mock = Mock()
+    monkeypatch.setattr("checklist.views.api.sync_api.save_log", save_log_mock)
+
+    response = receive_mobile_logs_api(request)
+
+    assert response.status_code == 200
+    assert response.data == {"ok": False}
+    save_log_mock.assert_called_once()

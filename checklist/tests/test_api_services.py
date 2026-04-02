@@ -93,6 +93,30 @@ def test_save_mobile_logs_writes_each_entry(monkeypatch):
     assert save_mobile_log_mock == [(logs[0], request)]
 
 
+def test_save_mobile_logs_propagates_persistence_failure(monkeypatch):
+    monkeypatch.setattr(
+        "checklist.services.api_services.save_mobile_log",
+        lambda log_entry, request=None: (_ for _ in ()).throw(RuntimeError("disk down")),
+    )
+
+    with pytest.raises(RuntimeError, match="disk down"):
+        save_mobile_logs(
+            [
+                {
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "osVersion": "35",
+                    "deviceModel": "Pixel 9",
+                    "user": "deiner",
+                    "erro": "falha",
+                    "stacktrace": "stack",
+                    "horario": "2026-03-31T12:00:00+00:00",
+                    "status_sync": 0,
+                }
+            ],
+            request=object(),
+        )
+
+
 @pytest.mark.django_db
 def test_get_mobile_client_detail_includes_permissions_and_next_operation_code(
     client_obj,
