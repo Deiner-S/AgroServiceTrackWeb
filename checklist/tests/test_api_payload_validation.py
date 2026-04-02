@@ -32,9 +32,7 @@ def test_validate_work_order_entries_returns_normalized_payload(work_order):
             "horimetro": "12345",
             "model": "Trator2025",
             "date_in": "2026-03-25T10:00:00",
-            "date_out": "2026-03-25T11:00:00",
             "status": "2",
-            "service": "Troca completa",
         }
     ]
 
@@ -43,6 +41,8 @@ def test_validate_work_order_entries_returns_normalized_payload(work_order):
     assert validated[0]["work_order"].id == work_order.id
     assert validated[0]["chassi"] == "1HGCM82633A123456"
     assert validated[0]["status"] == "2"
+    assert validated[0]["date_out"] is None
+    assert validated[0]["service"] is None
 
 
 @pytest.mark.django_db
@@ -65,12 +65,47 @@ def test_validate_work_order_entries_rejects_invalid_chassi(work_order):
 
 
 @pytest.mark.django_db
+def test_validate_work_order_entries_requires_service_for_status_3(work_order):
+    payload = [
+        {
+            "operation_code": "000001",
+            "chassi": "1HGCM82633A123456",
+            "horimetro": "12345",
+            "model": "Trator2025",
+            "date_in": "2026-03-25T10:00:00",
+            "status": "3",
+        }
+    ]
+
+    with pytest.raises(ValidationError, match="sem chaves obrigatorias: service"):
+        validate_work_order_entries(payload)
+
+
+@pytest.mark.django_db
+def test_validate_work_order_entries_requires_date_out_for_status_4(work_order):
+    payload = [
+        {
+            "operation_code": "000001",
+            "chassi": "1HGCM82633A123456",
+            "horimetro": "12345",
+            "model": "Trator2025",
+            "date_in": "2026-03-25T10:00:00",
+            "status": "4",
+            "service": "Troca completa",
+        }
+    ]
+
+    with pytest.raises(ValidationError, match="sem chaves obrigatorias: date_out"):
+        validate_work_order_entries(payload)
+
+
+@pytest.mark.django_db
 def test_validate_checklist_entries_returns_normalized_payload(work_order, checklist_item):
     payload = [
         {
             "id": str(uuid.uuid4()),
             "checklist_item_fk": str(checklist_item.id),
-            "work_order_fk": str(work_order.id),
+            "work_order_fk": work_order.operation_code,
             "status": "1",
             "img_in": None,
             "img_out": None,
@@ -90,7 +125,7 @@ def test_validate_checklist_entries_rejects_invalid_image(work_order, checklist_
         {
             "id": str(uuid.uuid4()),
             "checklist_item_fk": str(checklist_item.id),
-            "work_order_fk": str(work_order.id),
+            "work_order_fk": work_order.operation_code,
             "status": "1",
             "img_in": b"not-an-image",
             "img_out": None,
@@ -318,7 +353,7 @@ def test_validate_checklist_entries_raises_for_invalid_checklist_item_uuid():
         {
             "id": str(uuid.uuid4()),
             "checklist_item_fk": "uuid-invalido",
-            "work_order_fk": str(uuid.uuid4()),
+            "work_order_fk": "000001",
             "status": "1",
             "img_in": None,
             "img_out": None,
@@ -340,7 +375,7 @@ def test_validate_checklist_entries_raises_for_missing_repository_object(monkeyp
         {
             "id": str(uuid.uuid4()),
             "checklist_item_fk": str(uuid.uuid4()),
-            "work_order_fk": str(uuid.uuid4()),
+            "work_order_fk": "000001",
             "status": "1",
             "img_in": None,
             "img_out": None,
@@ -348,4 +383,21 @@ def test_validate_checklist_entries_raises_for_missing_repository_object(monkeyp
     ]
 
     with pytest.raises(ValidationError, match="checklist_item_fk informado nao existe."):
+        validate_checklist_entries(payload)
+
+
+@pytest.mark.django_db
+def test_validate_checklist_entries_raises_for_blank_work_order_fk(checklist_item):
+    payload = [
+        {
+            "id": str(uuid.uuid4()),
+            "checklist_item_fk": str(checklist_item.id),
+            "work_order_fk": "   ",
+            "status": "1",
+            "img_in": None,
+            "img_out": None,
+        }
+    ]
+
+    with pytest.raises(ValidationError, match="work_order_fk e obrigatorio."):
         validate_checklist_entries(payload)
