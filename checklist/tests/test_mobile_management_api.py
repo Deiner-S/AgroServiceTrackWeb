@@ -105,13 +105,13 @@ def test_mobile_employee_detail_api_returns_service_payload(db, django_user_mode
     request = factory.get(f"/gerenciador/mobile/employees_api/{employee_id}/detail/")
     force_authenticate(request, user=user)
 
-    service_mock = Mock(return_value={"id": employee_id})
+    service_mock = Mock(return_value={"id": employee_id, "permissions": {"canToggleStatus": True}})
     monkeypatch.setattr("checklist.views.api.mobile_management_api.api_services.get_mobile_employee_detail", service_mock)
 
     response = mobile_employee_detail_api(request, employee_id)
 
     assert response.status_code == 200
-    assert response.data == {"id": employee_id}
+    assert response.data["permissions"]["canToggleStatus"] is True
     service_mock.assert_called_once_with(employee_id, user)
 
 

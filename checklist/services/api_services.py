@@ -16,6 +16,8 @@ from checklist.permissions import (
     can_create_service_order,
     can_manage_client,
     can_manage_client_addresses,
+    can_manage_checklist_item,
+    can_toggle_employee_status,
     get_access_context,
 )
 
@@ -195,6 +197,18 @@ def _build_client_detail_permissions(user):
     }
 
 
+def _build_employee_detail_permissions(user, employee):
+    return {
+        "canToggleStatus": can_toggle_employee_status(user, employee),
+    }
+
+
+def _build_checklist_item_detail_permissions(user):
+    return {
+        "canToggleStatus": can_manage_checklist_item(user),
+    }
+
+
 def get_mobile_dashboard(user):
     access_context = get_access_context(user)
 
@@ -302,12 +316,13 @@ def get_mobile_employees(search_query=""):
     return [_build_employee_payload(employee) for employee in employees]
 
 
-def get_mobile_employee_detail(employee_id):
+def get_mobile_employee_detail(employee_id, user):
     employee = unwrap_repository_result(employee_repository.get_by_identifier(employee_id))
 
     return {
         **_build_employee_payload(employee),
         "addresses": [_build_address_payload(address) for address in employee.addresses.all()],
+        "permissions": _build_employee_detail_permissions(user, employee),
     }
 
 
@@ -322,9 +337,12 @@ def get_mobile_checklist_items(search_query=""):
     return [_build_checklist_item_payload(item) for item in items]
 
 
-def get_mobile_checklist_item_detail(item_id):
+def get_mobile_checklist_item_detail(item_id, user):
     item = unwrap_repository_result(checklist_item_repository.get_by_id(item_id))
-    return _build_checklist_item_payload(item)
+    return {
+        **_build_checklist_item_payload(item),
+        "permissions": _build_checklist_item_detail_permissions(user),
+    }
 
 
 def toggle_mobile_checklist_item_status(item_id):
