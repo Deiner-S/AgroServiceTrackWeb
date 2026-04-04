@@ -14,10 +14,13 @@ from checklist.utils.data_processing import prepare_image
 from checklist.utils.logging_utils import save_mobile_log
 from checklist.permissions import (
     can_create_service_order,
+    can_edit_employee,
     can_manage_client,
     can_manage_client_addresses,
+    can_manage_employee_addresses,
     can_manage_checklist_item,
     can_toggle_employee_status,
+    get_allowed_employee_positions,
     get_access_context,
 )
 
@@ -199,6 +202,8 @@ def _build_client_detail_permissions(user):
 
 def _build_employee_detail_permissions(user, employee):
     return {
+        "canEditEmployee": can_edit_employee(user, employee),
+        "canManageAddresses": can_manage_employee_addresses(user, employee),
         "canToggleStatus": can_toggle_employee_status(user, employee),
     }
 
@@ -207,6 +212,25 @@ def _build_checklist_item_detail_permissions(user):
     return {
         "canToggleStatus": can_manage_checklist_item(user),
     }
+
+
+def _build_employee_position_options(user, employee):
+    available_positions = list(get_allowed_employee_positions(user))
+    current_position = getattr(employee, "position", None)
+
+    if current_position and all(value != current_position for value, _label in available_positions):
+        available_positions = [
+            (current_position, employee.get_position_display()),
+            *available_positions,
+        ]
+
+    return [
+        {
+            "value": value,
+            "label": label,
+        }
+        for value, label in available_positions
+    ]
 
 
 def get_mobile_dashboard(user):
@@ -321,9 +345,28 @@ def get_mobile_employee_detail(employee_id, user):
 
     return {
         **_build_employee_payload(employee),
+        "firstName": employee.first_name,
+        "lastName": employee.last_name,
         "addresses": [_build_address_payload(address) for address in employee.addresses.all()],
         "permissions": _build_employee_detail_permissions(user, employee),
+        "positionOptions": _build_employee_position_options(user, employee),
     }
+
+
+def update_mobile_employee(employee):
+    return unwrap_repository_result(employee_repository.save(employee))
+
+
+def create_mobile_employee_address(employee, address):
+    saved_address = unwrap_repository_result(address_repository.save(address))
+    unwrap_repository_result(address_repository.add_to_employee(employee, saved_address))
+    return saved_address
+
+
+def delete_mobile_employee_address(employee, address):
+    unwrap_repository_result(address_repository.remove_from_employee(employee, address))
+    unwrap_repository_result(address_repository.delete_if_orphan(address))
+    return {"ok": True}
 
 
 def toggle_mobile_employee_status(employee_id):

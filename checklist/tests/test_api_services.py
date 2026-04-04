@@ -4,7 +4,10 @@ from types import SimpleNamespace
 from checklist.services.api_services import (
     create_mobile_client_address,
     create_mobile_client_order,
+    create_mobile_employee_address,
+    delete_mobile_employee_address,
     get_mobile_client_detail,
+    get_mobile_employee_detail,
     get_pending_work_order,
     save_checklists_filleds,
     save_mobile_logs,
@@ -154,3 +157,37 @@ def test_create_mobile_client_order_links_order_to_client(client_obj):
     saved = create_mobile_client_order(client_obj, order)
 
     assert saved.client == client_obj
+
+
+@pytest.mark.django_db
+def test_get_mobile_employee_detail_includes_permissions_and_position_options(
+    technical_employee,
+    manager_user,
+):
+    detail = get_mobile_employee_detail(str(technical_employee.id), manager_user)
+
+    assert detail["id"] == str(technical_employee.id)
+    assert detail["permissions"]["canEditEmployee"] is True
+    assert detail["permissions"]["canManageAddresses"] is True
+    assert detail["permissions"]["canToggleStatus"] is True
+    assert [option["value"] for option in detail["positionOptions"]] == ["2", "3"]
+
+
+@pytest.mark.django_db
+def test_create_mobile_employee_address_links_address_to_employee(technical_employee, address_obj):
+    create_mobile_employee_address(technical_employee, address_obj)
+
+    technical_employee.refresh_from_db()
+
+    assert technical_employee.addresses.count() == 1
+    assert str(technical_employee.addresses.first()) == "Rua Projetada 12, 10 - Sao Paulo/Sao Paulo"
+
+
+@pytest.mark.django_db
+def test_delete_mobile_employee_address_unlinks_address_from_employee(technical_employee, address_obj):
+    technical_employee.addresses.add(address_obj)
+
+    delete_mobile_employee_address(technical_employee, address_obj)
+    technical_employee.refresh_from_db()
+
+    assert technical_employee.addresses.count() == 0

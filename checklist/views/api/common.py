@@ -17,3 +17,11 @@ def validation_error_response(error, request):
         {"ok": False, "error": get_validation_error_message(error)},
         status=status.HTTP_400_BAD_REQUEST,
     )
+
+
+def system_error_response(error, request):
+    save_log(error, request)
+    return Response(
+        {"ok": False, "error": "Erro interno."},
+        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    )

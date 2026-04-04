@@ -4,10 +4,12 @@ from django.core.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from checklist.views.api.mobile_management_api import (
+    mobile_add_employee_address_api,
     mobile_checklist_item_detail_api,
     mobile_checklist_items_api,
     mobile_client_detail_api,
     mobile_clients_api,
+    mobile_delete_employee_address_api,
     mobile_dashboard_api,
     mobile_employee_detail_api,
     mobile_employees_api,
@@ -105,7 +107,20 @@ def test_mobile_employee_detail_api_returns_service_payload(db, django_user_mode
     request = factory.get(f"/gerenciador/mobile/employees_api/{employee_id}/detail/")
     force_authenticate(request, user=user)
 
-    service_mock = Mock(return_value={"id": employee_id, "permissions": {"canToggleStatus": True}})
+    employee = type("Employee", (), {"position": "3"})()
+    monkeypatch.setattr(
+        "checklist.views.api.mobile_management_api.employee_repository.get_by_identifier",
+        Mock(return_value=employee),
+    )
+    service_mock = Mock(return_value={
+        "id": employee_id,
+        "permissions": {
+            "canEditEmployee": True,
+            "canManageAddresses": True,
+            "canToggleStatus": True,
+        },
+        "positionOptions": [{"value": "3", "label": "Tecnico"}],
+    })
     monkeypatch.setattr("checklist.views.api.mobile_management_api.api_services.get_mobile_employee_detail", service_mock)
 
     response = mobile_employee_detail_api(request, employee_id)
@@ -113,6 +128,120 @@ def test_mobile_employee_detail_api_returns_service_payload(db, django_user_mode
     assert response.status_code == 200
     assert response.data["permissions"]["canToggleStatus"] is True
     service_mock.assert_called_once_with(employee_id, user)
+
+
+def test_mobile_employee_detail_api_updates_employee_and_returns_detail(db, django_user_model, monkeypatch):
+    user = create_user(django_user_model, "director6", "0")
+    employee_id = "11111111-1111-4111-8111-111111111111"
+    factory = APIRequestFactory()
+    request = factory.patch(
+        f"/gerenciador/mobile/employees_api/{employee_id}/detail/",
+        {
+            "first_name": "Deiner",
+            "last_name": "Silva",
+            "cpf": "123.456.789-00",
+            "phone": "(11) 98765-4321",
+            "email": "deiner@example.com",
+            "position": "3",
+            "username": "deiner",
+            "password": "",
+        },
+        format="json",
+    )
+    force_authenticate(request, user=user)
+
+    employee = type("Employee", (), {"id": employee_id, "position": "3", "set_password": lambda self, value: None})()
+    form_instance = Mock()
+    form_instance.is_valid.return_value = True
+    form_instance.cleaned_data = {"password": ""}
+    form_instance.save.return_value = employee
+
+    monkeypatch.setattr(
+        "checklist.views.api.mobile_management_api.employee_repository.get_by_identifier",
+        Mock(return_value=employee),
+    )
+    monkeypatch.setattr("checklist.views.api.mobile_management_api.EmployeeDetailForm", Mock(return_value=form_instance))
+    update_mock = Mock(return_value=employee)
+    detail_mock = Mock(return_value={"id": employee_id})
+    monkeypatch.setattr("checklist.views.api.mobile_management_api.api_services.update_mobile_employee", update_mock)
+    monkeypatch.setattr("checklist.views.api.mobile_management_api.api_services.get_mobile_employee_detail", detail_mock)
+
+    response = mobile_employee_detail_api(request, employee_id)
+
+    assert response.status_code == 200
+    update_mock.assert_called_once_with(employee)
+    detail_mock.assert_called_once_with(employee_id, user)
+
+
+def test_mobile_add_employee_address_api_returns_updated_detail(db, django_user_model, monkeypatch):
+    user = create_user(django_user_model, "director7", "0")
+    employee_id = "11111111-1111-4111-8111-111111111111"
+    factory = APIRequestFactory()
+    request = factory.post(
+        f"/gerenciador/mobile/employees_api/{employee_id}/addresses/",
+        {
+            "street": "Rua A",
+            "number": "10",
+            "complement": "",
+            "city": "Sao Paulo",
+            "state": "Sao Paulo",
+            "zip_code": "12345-678",
+        },
+        format="json",
+    )
+    force_authenticate(request, user=user)
+
+    employee = type("Employee", (), {"position": "3"})()
+    form_instance = Mock()
+    form_instance.is_valid.return_value = True
+    form_instance.save.return_value = object()
+
+    monkeypatch.setattr(
+        "checklist.views.api.mobile_management_api.employee_repository.get_by_identifier",
+        Mock(return_value=employee),
+    )
+    monkeypatch.setattr("checklist.views.api.mobile_management_api.AddressForm", Mock(return_value=form_instance))
+    create_mock = Mock()
+    detail_mock = Mock(return_value={"id": employee_id, "addresses": []})
+    monkeypatch.setattr("checklist.views.api.mobile_management_api.api_services.create_mobile_employee_address", create_mock)
+    monkeypatch.setattr("checklist.views.api.mobile_management_api.api_services.get_mobile_employee_detail", detail_mock)
+
+    response = mobile_add_employee_address_api(request, employee_id)
+
+    assert response.status_code == 201
+    create_mock.assert_called_once()
+    detail_mock.assert_called_once_with(employee_id, user)
+
+
+def test_mobile_delete_employee_address_api_returns_updated_detail(db, django_user_model, monkeypatch):
+    user = create_user(django_user_model, "director8", "0")
+    employee_id = "11111111-1111-4111-8111-111111111111"
+    address_id = "22222222-2222-4222-8222-222222222222"
+    factory = APIRequestFactory()
+    request = factory.delete(f"/gerenciador/mobile/employees_api/{employee_id}/addresses/{address_id}/")
+    force_authenticate(request, user=user)
+
+    employee = type("Employee", (), {"position": "3"})()
+    address = object()
+
+    monkeypatch.setattr(
+        "checklist.views.api.mobile_management_api.employee_repository.get_by_identifier",
+        Mock(return_value=employee),
+    )
+    monkeypatch.setattr(
+        "checklist.views.api.mobile_management_api.address_repository.get_by_id",
+        Mock(return_value=address),
+    )
+    delete_mock = Mock(return_value={"ok": True})
+    detail_mock = Mock(return_value={"id": employee_id, "addresses": []})
+    monkeypatch.setattr("checklist.views.api.mobile_management_api.api_services.delete_mobile_employee_address", delete_mock)
+    monkeypatch.setattr("checklist.views.api.mobile_management_api.api_services.get_mobile_employee_detail", detail_mock)
+
+    response = mobile_delete_employee_address_api(request, employee_id, address_id)
+
+    assert response.status_code == 200
+    delete_mock.assert_called_once_with(employee, address)
+    detail_mock.assert_called_once_with(employee_id, user)
 
 
 def test_mobile_toggle_employee_status_api_handles_missing_employee(db, django_user_model, monkeypatch):
