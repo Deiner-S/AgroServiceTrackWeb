@@ -599,4 +599,9 @@
   html[data-theme="light"] .auth-card select:focus {
     @apply border-sky-300/70 ring-sky-200/60;
   }
+
+  select[data-option-text-black="true"] option {
+    color: #000;
+    background-color: #fff;
+  }
 }

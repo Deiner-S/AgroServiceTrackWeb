@@ -9,7 +9,8 @@ from checklist.api_payload_validation import (
     validate_mobile_identifier,
     validate_mobile_search_query,
 )
-from checklist.forms import AddressForm, ClientDetailForm, ClientForm, DataSheetCreateForm, EmployeeDetailForm
+from checklist.exception_handler import RepositoryOperationError
+from checklist.forms import AddressForm, ChecklistItemForm, ClientDetailForm, ClientForm, DataSheetCreateForm, EmployeeDetailForm
 from checklist.permissions import (
     can_edit_employee,
     can_manage_checklist_item,
@@ -26,13 +27,19 @@ from checklist.permissions import (
 from checklist.repository import address_repository, client_repository, employee_repository
 from checklist.services import api_services
 from checklist.throttling import SyncReadRateThrottle, SyncWriteRateThrottle
-from checklist.views.api.common import forbid_if, system_error_response, validation_error_response
+from checklist.views.api.common import (
+    forbid_if,
+    repository_error_response,
+    system_error_response,
+    validation_error_response,
+)
 
 
 CLIENT_CREATE_ALLOWED_KEYS = {"cnpj", "name", "email", "phone"}
 CLIENT_UPDATE_ALLOWED_KEYS = {"cpf", "cnpj", "name", "email", "phone"}
 CLIENT_ADDRESS_ALLOWED_KEYS = {"street", "number", "complement", "city", "state", "zip_code"}
 CLIENT_SERVICE_ALLOWED_KEYS = {"operation_code", "symptoms"}
+CHECKLIST_ITEM_ALLOWED_KEYS = {"name"}
 EMPLOYEE_UPDATE_ALLOWED_KEYS = {
     "first_name",
     "last_name",
@@ -362,41 +369,75 @@ def mobile_toggle_employee_status_api(request, employee_id):
         return system_error_response(error, request)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 @throttle_classes([SyncReadRateThrottle])
 def mobile_checklist_items_api(request):
     try:
+        if request.method == 'GET':
+            forbid_if(
+                not can_view_checklist_item_module(request.user),
+                "Usuario sem permissao para consultar itens de checklist.",
+            )
+            search_query = validate_mobile_search_query(request.query_params.get("search"))
+            return Response(api_services.get_mobile_checklist_items(search_query), status=status.HTTP_200_OK)
+
         forbid_if(
-            not can_view_checklist_item_module(request.user),
-            "Usuario sem permissao para consultar itens de checklist.",
+            not can_manage_checklist_item(request.user),
+            "Usuario sem permissao para cadastrar item de checklist.",
         )
-        search_query = validate_mobile_search_query(request.query_params.get("search"))
-        return Response(api_services.get_mobile_checklist_items(search_query), status=status.HTTP_200_OK)
+        payload = validate_mobile_payload_object(
+            request.data,
+            "checklist_item_payload",
+            CHECKLIST_ITEM_ALLOWED_KEYS,
+        )
+        form = ChecklistItemForm(payload)
+
+        if not form.is_valid():
+            _raise_form_validation_error(form)
+
+        checklist_item = api_services.create_mobile_checklist_item(form.save(commit=False))
+        return Response(
+            api_services.get_mobile_checklist_item_detail(str(checklist_item.id), request.user),
+            status=status.HTTP_201_CREATED,
+        )
     except ValidationError as error:
         return validation_error_response(error, request)
+    except RepositoryOperationError as error:
+        return repository_error_response(error, request)
     except PermissionDenied:
         raise
     except Exception as error:
         return system_error_response(error, request)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'DELETE'])
 @permission_classes([IsAuthenticated])
 @throttle_classes([SyncReadRateThrottle])
 def mobile_checklist_item_detail_api(request, item_id):
     try:
-        forbid_if(
-            not can_view_checklist_item_module(request.user),
-            "Usuario sem permissao para consultar item de checklist.",
-        )
         validated_item_id = validate_mobile_identifier(item_id, "item_id")
-        return Response(
-            api_services.get_mobile_checklist_item_detail(validated_item_id, request.user),
-            status=status.HTTP_200_OK,
+
+        if request.method == 'GET':
+            forbid_if(
+                not can_view_checklist_item_module(request.user),
+                "Usuario sem permissao para consultar item de checklist.",
+            )
+            return Response(
+                api_services.get_mobile_checklist_item_detail(validated_item_id, request.user),
+                status=status.HTTP_200_OK,
+            )
+
+        forbid_if(
+            not can_manage_checklist_item(request.user),
+            "Usuario sem permissao para excluir item de checklist.",
         )
+        api_services.delete_mobile_checklist_item(validated_item_id)
+        return Response({"ok": True}, status=status.HTTP_200_OK)
     except ValidationError as error:
         return validation_error_response(error, request)
+    except RepositoryOperationError as error:
+        return repository_error_response(error, request)
     except PermissionDenied:
         raise
     except Exception as error:
@@ -419,3 +460,5 @@ def mobile_toggle_checklist_item_status_api(request, item_id):
         )
     except ValidationError as error:
         return validation_error_response(error, request)
+    except RepositoryOperationError as error:
+        return repository_error_response(error, request)

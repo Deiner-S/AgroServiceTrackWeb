@@ -2288,6 +2288,10 @@
       --tw-ring-color: color-mix(in oklab, var(--color-sky-200) 60%, transparent);
     }
   }
+  select[data-option-text-black="true"] option {
+    color: #000;
+    background-color: #fff;
+  }
 }
 @property --tw-space-y-reverse {
   syntax: "*";

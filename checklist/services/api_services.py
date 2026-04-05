@@ -210,6 +210,7 @@ def _build_employee_detail_permissions(user, employee):
 
 def _build_checklist_item_detail_permissions(user):
     return {
+        "canDeleteChecklistItem": can_manage_checklist_item(user),
         "canToggleStatus": can_manage_checklist_item(user),
     }
 
@@ -251,7 +252,7 @@ def get_mobile_dashboard(user):
             "title": "Clientes",
             "description": "Consulte cadastros e relacoes de atendimento.",
             "icon": "groups",
-            "route": "clientsScreen",
+            "route": "clients/clientsScreen",
             "count": Client.objects.count(),
             "enabled": access_context["can_view_client_list"],
         },
@@ -260,7 +261,7 @@ def get_mobile_dashboard(user):
             "title": "Funcionarios",
             "description": "Gerencie equipe, status e acessos.",
             "icon": "badge",
-            "route": "employeesScreen",
+            "route": "employees/employeesScreen",
             "count": Employee.objects.count(),
             "enabled": access_context["can_view_employee_module"],
         },
@@ -269,7 +270,7 @@ def get_mobile_dashboard(user):
             "title": "Checklist",
             "description": "Acompanhe os itens usados nas inspeções.",
             "icon": "fact-check",
-            "route": "checklistItemsScreen",
+            "route": "checklistItems/checklistItemsScreen",
             "count": ChecklistItem.objects.count(),
             "enabled": access_context["can_view_checklist_item_module"],
         },
@@ -380,12 +381,22 @@ def get_mobile_checklist_items(search_query=""):
     return [_build_checklist_item_payload(item) for item in items]
 
 
+def create_mobile_checklist_item(checklist_item):
+    return unwrap_repository_result(checklist_item_repository.save(checklist_item))
+
+
 def get_mobile_checklist_item_detail(item_id, user):
     item = unwrap_repository_result(checklist_item_repository.get_by_id(item_id))
     return {
         **_build_checklist_item_payload(item),
         "permissions": _build_checklist_item_detail_permissions(user),
     }
+
+
+def delete_mobile_checklist_item(item_id):
+    item = unwrap_repository_result(checklist_item_repository.get_by_id(item_id))
+    unwrap_repository_result(checklist_item_repository.delete(item))
+    return {"ok": True}
 
 
 def toggle_mobile_checklist_item_status(item_id):

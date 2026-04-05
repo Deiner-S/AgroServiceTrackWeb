@@ -2,10 +2,13 @@ import pytest
 from types import SimpleNamespace
 
 from checklist.services.api_services import (
+    create_mobile_checklist_item,
     create_mobile_client_address,
     create_mobile_client_order,
     create_mobile_employee_address,
+    delete_mobile_checklist_item,
     delete_mobile_employee_address,
+    get_mobile_checklist_item_detail,
     get_mobile_client_detail,
     get_mobile_employee_detail,
     get_pending_work_order,
@@ -191,3 +194,45 @@ def test_delete_mobile_employee_address_unlinks_address_from_employee(technical_
     technical_employee.refresh_from_db()
 
     assert technical_employee.addresses.count() == 0
+
+
+@pytest.mark.django_db
+def test_create_mobile_checklist_item_persists_item():
+    checklist_item = SimpleNamespace(
+        name="Freio",
+        save=lambda *args, **kwargs: None,
+    )
+
+    saved = create_mobile_checklist_item(checklist_item)
+
+    assert saved.name == "Freio"
+
+
+@pytest.mark.django_db
+def test_get_mobile_checklist_item_detail_includes_delete_permission(checklist_item, db):
+    from checklist.models import Employee
+
+    manager_user = Employee.objects.create_user(
+        username="gerente_checklist",
+        password="senha123",
+        position="1",
+        cpf="123.456.789-11",
+        phone="(11) 91234-5678",
+        email="gerente.checklist@empresa.com",
+        first_name="Gerente",
+        last_name="Checklist",
+    )
+
+    detail = get_mobile_checklist_item_detail(str(checklist_item.id), manager_user)
+
+    assert detail["id"] == str(checklist_item.id)
+    assert detail["permissions"]["canToggleStatus"] is True
+    assert detail["permissions"]["canDeleteChecklistItem"] is True
+
+
+@pytest.mark.django_db
+def test_delete_mobile_checklist_item_removes_record(checklist_item):
+    delete_mobile_checklist_item(str(checklist_item.id))
+
+    with pytest.raises(Exception):
+        checklist_item.refresh_from_db()

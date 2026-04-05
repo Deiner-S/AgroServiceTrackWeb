@@ -2,7 +2,7 @@ from django.core.exceptions import PermissionDenied
 from rest_framework import status
 from rest_framework.response import Response
 
-from checklist.exception_handler import get_validation_error_message
+from checklist.exception_handler import RepositoryOperationError, get_validation_error_message
 from checklist.utils.logging_utils import save_log
 
 
@@ -24,4 +24,12 @@ def system_error_response(error, request):
     return Response(
         {"ok": False, "error": "Erro interno."},
         status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    )
+
+
+def repository_error_response(error: RepositoryOperationError, request):
+    save_log(error, request)
+    return Response(
+        {"ok": False, "error": str(error)},
+        status=error.status_code,
     )

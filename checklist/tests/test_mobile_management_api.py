@@ -300,6 +300,34 @@ def test_mobile_checklist_items_api_returns_service_payload(db, django_user_mode
     service_mock.assert_called_once_with("freio")
 
 
+def test_mobile_checklist_items_api_creates_item_and_returns_detail(db, django_user_model, monkeypatch):
+    user = create_user(django_user_model, "director9", "0")
+    factory = APIRequestFactory()
+    request = factory.post(
+        "/gerenciador/mobile/checklist_items_api/",
+        {"name": "Freio"},
+        format="json",
+    )
+    force_authenticate(request, user=user)
+
+    checklist_item = type("ChecklistItem", (), {"id": "11111111-1111-4111-8111-111111111111"})()
+    form_instance = Mock()
+    form_instance.is_valid.return_value = True
+    form_instance.save.return_value = checklist_item
+
+    monkeypatch.setattr("checklist.views.api.mobile_management_api.ChecklistItemForm", Mock(return_value=form_instance))
+    create_mock = Mock(return_value=checklist_item)
+    detail_mock = Mock(return_value={"id": str(checklist_item.id)})
+    monkeypatch.setattr("checklist.views.api.mobile_management_api.api_services.create_mobile_checklist_item", create_mock)
+    monkeypatch.setattr("checklist.views.api.mobile_management_api.api_services.get_mobile_checklist_item_detail", detail_mock)
+
+    response = mobile_checklist_items_api(request)
+
+    assert response.status_code == 201
+    create_mock.assert_called_once_with(checklist_item)
+    detail_mock.assert_called_once_with(str(checklist_item.id), user)
+
+
 def test_mobile_checklist_item_detail_api_blocks_user_without_permission(db, django_user_model):
     user = create_user(django_user_model, "admin2", "2")
     item_id = "11111111-1111-4111-8111-111111111111"
@@ -320,7 +348,7 @@ def test_mobile_checklist_item_detail_api_passes_authenticated_user_to_service(d
     request = factory.get(f"/gerenciador/mobile/checklist_items_api/{item_id}/detail/")
     force_authenticate(request, user=user)
 
-    service_mock = Mock(return_value={"id": item_id, "permissions": {"canToggleStatus": True}})
+    service_mock = Mock(return_value={"id": item_id, "permissions": {"canToggleStatus": True, "canDeleteChecklistItem": True}})
     monkeypatch.setattr(
         "checklist.views.api.mobile_management_api.api_services.get_mobile_checklist_item_detail",
         service_mock,
@@ -331,6 +359,23 @@ def test_mobile_checklist_item_detail_api_passes_authenticated_user_to_service(d
     assert response.status_code == 200
     assert response.data["permissions"]["canToggleStatus"] is True
     service_mock.assert_called_once_with(item_id, user)
+
+
+def test_mobile_checklist_item_detail_api_deletes_item(db, django_user_model, monkeypatch):
+    user = create_user(django_user_model, "director10", "0")
+    item_id = "11111111-1111-4111-8111-111111111111"
+    factory = APIRequestFactory()
+    request = factory.delete(f"/gerenciador/mobile/checklist_items_api/{item_id}/detail/")
+    force_authenticate(request, user=user)
+
+    delete_mock = Mock(return_value={"ok": True})
+    monkeypatch.setattr("checklist.views.api.mobile_management_api.api_services.delete_mobile_checklist_item", delete_mock)
+
+    response = mobile_checklist_item_detail_api(request, item_id)
+
+    assert response.status_code == 200
+    assert response.data == {"ok": True}
+    delete_mock.assert_called_once_with(item_id)
 
 
 def test_mobile_toggle_checklist_item_status_api_returns_validation_error(db, django_user_model, monkeypatch):

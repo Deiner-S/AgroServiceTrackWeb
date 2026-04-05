@@ -44,7 +44,12 @@ BRAZILIAN_STATE_CHOICES = [
 class AddressForm(forms.ModelForm):
     state = forms.ChoiceField(
         choices=[("", "Selecione um estado"), *BRAZILIAN_STATE_CHOICES],
-        widget=forms.Select(attrs={"class": INPUT_TW_CLASS}),
+        widget=forms.Select(
+            attrs={
+                "class": INPUT_TW_CLASS,
+                "data-option-text-black": "true",
+            }
+        ),
     )
 
     def __init__(self, *args, **kwargs):
