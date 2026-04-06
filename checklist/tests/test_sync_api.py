@@ -96,7 +96,9 @@ def test_receive_mobile_logs_api_returns_ok_on_success(api_user, monkeypatch):
 
     assert response.status_code == 200
     assert response.data == {"ok": True}
-    save_logs_mock.assert_called_once_with([{"id": "1"}], request=request)
+    save_logs_mock.assert_called_once()
+    assert save_logs_mock.call_args.args == ([{"id": "1"}],)
+    assert save_logs_mock.call_args.kwargs["request"].path == request.path
 
 
 def test_receive_mobile_logs_api_returns_false_on_persistence_failure(api_user, monkeypatch):

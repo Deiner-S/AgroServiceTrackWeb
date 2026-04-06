@@ -197,6 +197,7 @@ def test_validate_mobile_log_entries_returns_normalized_payload():
             "id": str(uuid.uuid4()),
             "osVersion": "35",
             "deviceModel": "Pixel 9",
+            "connectionStatus": "offline",
             "user": "deiner",
             "erro": "Falha ao salvar checklist",
             "stacktrace": "trace",
@@ -208,6 +209,7 @@ def test_validate_mobile_log_entries_returns_normalized_payload():
     validated = validate_mobile_log_entries(payload)
 
     assert validated[0]["osVersion"] == "35"
+    assert validated[0]["connectionStatus"] == "offline"
     assert validated[0]["status_sync"] == 0
 
 
@@ -217,6 +219,7 @@ def test_validate_mobile_log_entries_rejects_unexpected_keys():
             "id": str(uuid.uuid4()),
             "osVersion": "35",
             "deviceModel": "Pixel 9",
+            "connectionStatus": "offline",
             "user": "deiner",
             "erro": "Falha ao salvar checklist",
             "stacktrace": "trace",
@@ -236,6 +239,7 @@ def test_validate_mobile_log_entries_rejects_invalid_status_sync():
             "id": str(uuid.uuid4()),
             "osVersion": "35",
             "deviceModel": "Pixel 9",
+            "connectionStatus": "offline",
             "user": "deiner",
             "erro": "Falha ao salvar checklist",
             "stacktrace": "trace",
@@ -245,6 +249,25 @@ def test_validate_mobile_log_entries_rejects_invalid_status_sync():
     ]
 
     with pytest.raises(ValidationError, match="status_sync invalido"):
+        validate_mobile_log_entries(payload)
+
+
+def test_validate_mobile_log_entries_rejects_invalid_connection_status():
+    payload = [
+        {
+            "id": str(uuid.uuid4()),
+            "osVersion": "35",
+            "deviceModel": "Pixel 9",
+            "connectionStatus": "wifi",
+            "user": "deiner",
+            "erro": "Falha ao salvar checklist",
+            "stacktrace": "trace",
+            "horario": "2026-03-31T12:00:00",
+            "status_sync": 0,
+        }
+    ]
+
+    with pytest.raises(ValidationError, match="connectionStatus invalido"):
         validate_mobile_log_entries(payload)
 
 
@@ -286,7 +309,7 @@ def test_validate_work_order_entries_raises_for_non_list_payload():
 def test_validate_work_order_entries_raises_for_missing_required_keys():
     payload = [{"operation_code": "000001"}]
 
-    with pytest.raises(ValidationError, match="sem chaves obrigatorias"):
+    with pytest.raises(ValidationError, match="status invalido"):
         validate_work_order_entries(payload)
 
 

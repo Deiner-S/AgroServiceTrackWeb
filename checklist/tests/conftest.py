@@ -40,6 +40,34 @@ def administrative_user(db):
 
 
 @pytest.fixture
+def manager_user(db):
+    return Employee.objects.create_user(
+        username="gerente",
+        password="senha123",
+        position="1",
+        cpf="123.456.789-12",
+        phone="(11) 92345-6789",
+        email="gerente@empresa.com",
+        first_name="Gerente",
+        last_name="Teste",
+    )
+
+
+@pytest.fixture
+def technical_employee(db):
+    return Employee.objects.create_user(
+        username="tecnico",
+        password="senha123",
+        position="3",
+        cpf="123.456.789-13",
+        phone="(11) 93456-7890",
+        email="tecnico@empresa.com",
+        first_name="Tecnico",
+        last_name="Campo",
+    )
+
+
+@pytest.fixture
 def work_order(client_obj):
     return WorkOrder.objects.create(
         operation_code="000001",

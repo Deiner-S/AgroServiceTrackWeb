@@ -44,6 +44,7 @@ MOBILE_LOG_REQUIRED_KEYS = {
     "id",
     "osVersion",
     "deviceModel",
+    "connectionStatus",
     "user",
     "erro",
     "stacktrace",
@@ -291,6 +292,7 @@ def validate_checklist_entries(payload):
 
 def validate_mobile_log_entries(payload):
     validated_entries = []
+    valid_connection_status = {"online", "offline", "unknown"}
 
     for index, raw_entry in enumerate(_ensure_list(payload, "mobile_logs"), start=1):
         entry = _ensure_dict(raw_entry, f"mobile_log[{index}]")
@@ -302,6 +304,11 @@ def validate_mobile_log_entries(payload):
                 "id": str(_parse_uuid(entry.get("id"), "id")),
                 "osVersion": _validate_required_string(entry.get("osVersion"), "osVersion"),
                 "deviceModel": _validate_required_string(entry.get("deviceModel"), "deviceModel"),
+                "connectionStatus": _validate_status(
+                    entry.get("connectionStatus"),
+                    valid_connection_status,
+                    "connectionStatus",
+                ),
                 "user": _validate_required_string(entry.get("user"), "user"),
                 "erro": _validate_required_string(entry.get("erro"), "erro"),
                 "stacktrace": (
