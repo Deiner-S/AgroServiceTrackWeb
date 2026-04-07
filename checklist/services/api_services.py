@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from checklist.models import Checklist, ChecklistItem, Client, WorkOrder
 from checklist.repository import (
@@ -26,6 +29,8 @@ from checklist.permissions import (
 
 
 Employee = get_user_model()
+OFFLINE_SESSION_WINDOW_DAYS = 7
+PERMISSION_VERSION = "mobile-management-v1"
 
 
 def get_pending_work_order():
@@ -236,6 +241,8 @@ def _build_employee_position_options(user, employee):
 
 def get_mobile_dashboard(user):
     access_context = get_access_context(user)
+    validated_at = timezone.now()
+    offline_session_expires_at = validated_at + timedelta(days=OFFLINE_SESSION_WINDOW_DAYS)
 
     modules = [
         {
@@ -295,6 +302,12 @@ def get_mobile_dashboard(user):
         },
         "modules": modules,
         "access": access_context,
+        "session": {
+            "validatedAt": validated_at.isoformat(),
+            "offlineSessionExpiresAt": offline_session_expires_at.isoformat(),
+            "permissionVersion": PERMISSION_VERSION,
+            "scope": ["mobile:management"],
+        },
     }
 
 

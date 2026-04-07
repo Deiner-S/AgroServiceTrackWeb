@@ -8,6 +8,7 @@ from checklist.services.api_services import (
     create_mobile_employee_address,
     delete_mobile_checklist_item,
     delete_mobile_employee_address,
+    get_mobile_dashboard,
     get_mobile_checklist_item_detail,
     get_mobile_client_detail,
     get_mobile_employee_detail,
@@ -236,3 +237,13 @@ def test_delete_mobile_checklist_item_removes_record(checklist_item):
 
     with pytest.raises(Exception):
         checklist_item.refresh_from_db()
+
+
+@pytest.mark.django_db
+def test_get_mobile_dashboard_includes_offline_session_metadata(manager_user):
+    payload = get_mobile_dashboard(manager_user)
+
+    assert payload["user"]["username"] == manager_user.username
+    assert payload["session"]["permissionVersion"] == "mobile-management-v1"
+    assert payload["session"]["scope"] == ["mobile:management"]
+    assert payload["session"]["validatedAt"] < payload["session"]["offlineSessionExpiresAt"]

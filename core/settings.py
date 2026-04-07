@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 
@@ -87,6 +88,18 @@ REST_FRAMEWORK = {
         'sync_write': os.getenv('DRF_THROTTLE_SYNC_WRITE', '15/min'),
     },
     'EXCEPTION_HANDLER': 'checklist.exception_handler.api_exception_handler',
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(
+        minutes=int(os.getenv('JWT_ACCESS_TOKEN_LIFETIME_MINUTES', '15'))
+    ),
+    'REFRESH_TOKEN_LIFETIME': timedelta(
+        days=int(os.getenv('JWT_REFRESH_TOKEN_LIFETIME_DAYS', '30'))
+    ),
+    'ROTATE_REFRESH_TOKENS': get_bool_env('JWT_ROTATE_REFRESH_TOKENS', False),
+    'BLACKLIST_AFTER_ROTATION': get_bool_env('JWT_BLACKLIST_AFTER_ROTATION', False),
+    'UPDATE_LAST_LOGIN': get_bool_env('JWT_UPDATE_LAST_LOGIN', True),
 }
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
