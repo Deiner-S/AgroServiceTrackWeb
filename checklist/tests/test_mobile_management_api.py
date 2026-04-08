@@ -11,6 +11,7 @@ from checklist.views.api.mobile_management_api import (
     mobile_clients_api,
     mobile_delete_employee_address_api,
     mobile_dashboard_api,
+    mobile_employee_create_form_api,
     mobile_employee_detail_api,
     mobile_employees_api,
     mobile_toggle_checklist_item_status_api,
@@ -98,6 +99,102 @@ def test_mobile_employees_api_returns_service_payload(db, django_user_model, mon
 
     assert response.status_code == 200
     assert response.data == [{"id": "emp-1"}]
+
+
+def test_mobile_employee_create_form_api_returns_position_options(db, django_user_model, monkeypatch):
+    user = create_user(django_user_model, "director_create", "0")
+    factory = APIRequestFactory()
+    request = factory.get("/gerenciador/mobile/employees_api/create/")
+    force_authenticate(request, user=user)
+
+    service_mock = Mock(return_value={"positionOptions": [{"value": "3", "label": "Tecnico"}]})
+    monkeypatch.setattr(
+        "checklist.views.api.management_employee_api.api_services.get_mobile_employee_create_options",
+        service_mock,
+    )
+
+    response = mobile_employee_create_form_api(request)
+
+    assert response.status_code == 200
+    assert response.data == {"positionOptions": [{"value": "3", "label": "Tecnico"}]}
+    service_mock.assert_called_once_with(user)
+
+
+def test_mobile_employee_create_form_api_blocks_user_without_permission(db, django_user_model):
+    user = create_user(django_user_model, "tech_create", "3")
+    factory = APIRequestFactory()
+    request = factory.get("/gerenciador/mobile/employees_api/create/")
+    force_authenticate(request, user=user)
+
+    response = mobile_employee_create_form_api(request)
+
+    assert response.status_code == 403
+
+
+def test_mobile_employees_api_creates_employee_and_returns_detail(db, django_user_model, monkeypatch):
+    user = create_user(django_user_model, "director_create_post", "0")
+    factory = APIRequestFactory()
+    request = factory.post(
+        "/gerenciador/mobile/employees_api/",
+        {
+            "first_name": "Maria",
+            "last_name": "Silva",
+            "cpf": "123.456.789-00",
+            "phone": "(11) 98765-4321",
+            "email": "maria@example.com",
+            "position": "3",
+            "username": "maria",
+            "password": "secret123",
+        },
+        format="json",
+    )
+    force_authenticate(request, user=user)
+
+    employee = type(
+        "Employee",
+        (),
+        {"id": "11111111-1111-4111-8111-111111111111", "position": "3"},
+    )()
+    form_instance = Mock()
+    form_instance.is_valid.return_value = True
+    form_instance.cleaned_data = {"password": "secret123"}
+    form_instance.save.return_value = employee
+
+    monkeypatch.setattr("checklist.views.api.management_employee_api.EmployeeForm", Mock(return_value=form_instance))
+    create_mock = Mock(return_value=employee)
+    detail_mock = Mock(return_value={"id": str(employee.id)})
+    monkeypatch.setattr("checklist.views.api.management_employee_api.api_services.create_mobile_employee", create_mock)
+    monkeypatch.setattr("checklist.views.api.management_employee_api.api_services.get_mobile_employee_detail", detail_mock)
+
+    response = mobile_employees_api(request)
+
+    assert response.status_code == 201
+    assert create_mock.call_args.args[1] == "secret123"
+    detail_mock.assert_called_once_with(str(employee.id), user)
+
+
+def test_mobile_employees_api_blocks_create_for_user_without_permission(db, django_user_model):
+    user = create_user(django_user_model, "admin_create", "2")
+    factory = APIRequestFactory()
+    request = factory.post(
+        "/gerenciador/mobile/employees_api/",
+        {
+            "first_name": "Maria",
+            "last_name": "Silva",
+            "cpf": "123.456.789-00",
+            "phone": "(11) 98765-4321",
+            "email": "maria@example.com",
+            "position": "3",
+            "username": "maria",
+            "password": "secret123",
+        },
+        format="json",
+    )
+    force_authenticate(request, user=user)
+
+    response = mobile_employees_api(request)
+
+    assert response.status_code == 403
 
 
 def test_mobile_employee_detail_api_returns_service_payload(db, django_user_model, monkeypatch):

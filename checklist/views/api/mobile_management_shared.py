@@ -6,6 +6,7 @@ from checklist.forms import (
     ClientDetailForm,
     ClientForm,
     DataSheetCreateForm,
+    EmployeeForm,
     EmployeeDetailForm,
 )
 
@@ -25,6 +26,7 @@ EMPLOYEE_UPDATE_ALLOWED_KEYS = {
     "username",
     "password",
 }
+EMPLOYEE_CREATE_ALLOWED_KEYS = EMPLOYEE_UPDATE_ALLOWED_KEYS
 EMPLOYEE_ADDRESS_ALLOWED_KEYS = {"street", "number", "complement", "city", "state", "zip_code"}
 
 

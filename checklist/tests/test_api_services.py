@@ -5,11 +5,13 @@ from checklist.services.api_services import (
     create_mobile_checklist_item,
     create_mobile_client_address,
     create_mobile_client_order,
+    create_mobile_employee,
     create_mobile_employee_address,
     delete_mobile_checklist_item,
     delete_mobile_employee_address,
     get_mobile_dashboard,
     get_mobile_checklist_item_detail,
+    get_mobile_employee_create_options,
     get_mobile_client_detail,
     get_mobile_employee_detail,
     get_pending_work_order,
@@ -175,6 +177,37 @@ def test_get_mobile_employee_detail_includes_permissions_and_position_options(
     assert detail["permissions"]["canManageAddresses"] is True
     assert detail["permissions"]["canToggleStatus"] is True
     assert [option["value"] for option in detail["positionOptions"]] == ["2", "3"]
+
+
+@pytest.mark.django_db
+def test_get_mobile_employee_create_options_respects_actor_permissions(manager_user):
+    payload = get_mobile_employee_create_options(manager_user)
+
+    assert [option["value"] for option in payload["positionOptions"]] == ["2", "3"]
+
+
+def test_create_mobile_employee_sets_password_and_saves(monkeypatch):
+    saved = []
+
+    class EmployeeStub:
+        def __init__(self):
+            self.password_value = None
+
+        def set_password(self, value):
+            self.password_value = value
+
+    employee = EmployeeStub()
+
+    monkeypatch.setattr(
+        "checklist.services.api_services.employee_repository.save",
+        lambda instance: saved.append(instance) or instance,
+    )
+
+    result = create_mobile_employee(employee, "secret123")
+
+    assert result is employee
+    assert employee.password_value == "secret123"
+    assert saved == [employee]
 
 
 @pytest.mark.django_db

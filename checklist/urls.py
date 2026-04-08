@@ -40,6 +40,7 @@ urlpatterns = [
     path("mobile/clients_api/<uuid:client_id>/addresses/", mobile_add_client_address_api, name="mobile_add_client_address_api"),
     path("mobile/clients_api/<uuid:client_id>/services/", mobile_add_client_service_order_api, name="mobile_add_client_service_order_api"),
     path("mobile/employees_api/", mobile_employees_api, name="mobile_employees_api"),
+    path("mobile/employees_api/create/", mobile_employee_create_form_api, name="mobile_employee_create_form_api"),
     path("mobile/employees_api/<uuid:employee_id>/detail/", mobile_employee_detail_api, name="mobile_employee_detail_api"),
     path("mobile/employees_api/<uuid:employee_id>/addresses/", mobile_add_employee_address_api, name="mobile_add_employee_address_api"),
     path("mobile/employees_api/<uuid:employee_id>/addresses/<uuid:address_id>/", mobile_delete_employee_address_api, name="mobile_delete_employee_address_api"),

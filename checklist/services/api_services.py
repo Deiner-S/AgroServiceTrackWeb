@@ -239,6 +239,16 @@ def _build_employee_position_options(user, employee):
     ]
 
 
+def _serialize_employee_position_options(position_choices):
+    return [
+        {
+            "value": value,
+            "label": label,
+        }
+        for value, label in position_choices
+    ]
+
+
 def get_mobile_dashboard(user):
     access_context = get_access_context(user)
     validated_at = timezone.now()
@@ -365,6 +375,17 @@ def get_mobile_employee_detail(employee_id, user):
         "permissions": _build_employee_detail_permissions(user, employee),
         "positionOptions": _build_employee_position_options(user, employee),
     }
+
+
+def get_mobile_employee_create_options(user):
+    return {
+        "positionOptions": _serialize_employee_position_options(get_allowed_employee_positions(user)),
+    }
+
+
+def create_mobile_employee(employee, password):
+    employee.set_password(password)
+    return unwrap_repository_result(employee_repository.save(employee))
 
 
 def update_mobile_employee(employee):
