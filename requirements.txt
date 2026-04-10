@@ -1,8 +1,10 @@
 Django==5.2.8
 djangorestframework==3.16.1
 djangorestframework-simplejwt==5.5.1
+dj-database-url==2.3.0
 django-tailwind==4.4.2
 gunicorn==23.0.0
 Pillow==11.0.0
 pytest==8.4.2
 pytest-django==4.11.1
+whitenoise==6.8.2

@@ -14,6 +14,8 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+import dj_database_url
+
 
 def get_bool_env(name: str, default: bool) -> bool:
     value = os.getenv(name)
@@ -30,7 +32,7 @@ def get_list_env(name: str, default: list[str]) -> list[str]:
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECURE_SSL_REDIRECT = False
+SECURE_SSL_REDIRECT = get_bool_env("DJANGO_SECURE_SSL_REDIRECT", False)
 
 AUTH_USER_MODEL = 'checklist.Employee'
 
@@ -47,9 +49,16 @@ SECRET_KEY = os.getenv(
 DEBUG = get_bool_env('DJANGO_DEBUG', True)
 
 ALLOWED_HOSTS = get_list_env(
-    'DJANGO_ALLOWED_HOSTS',
-    ['127.0.0.1', 'localhost', 'ringless-equivalently-alijah.ngrok-free.dev'],
+    'ALLOWED_HOSTS',
+    ['127.0.0.1', 'localhost'],
 )
+
+render_external_url = os.getenv("RENDER_EXTERNAL_URL")
+CSRF_TRUSTED_ORIGINS = get_list_env("CSRF_TRUSTED_ORIGINS", [])
+if render_external_url and render_external_url not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(render_external_url)
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 
 
@@ -103,6 +112,7 @@ SIMPLE_JWT = {
 }
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'checklist.middleware.GlobalExceptionMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -136,10 +146,10 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+    )
 }
 
 
@@ -178,6 +188,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR
 
