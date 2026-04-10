@@ -49,8 +49,8 @@ SECRET_KEY = os.getenv(
 DEBUG = get_bool_env('DJANGO_DEBUG', True)
 
 ALLOWED_HOSTS = get_list_env(
-    'ALLOWED_HOSTS',
-    ['127.0.0.1', 'localhost'],
+    'DJANGO_ALLOWED_HOSTS',
+    get_list_env('ALLOWED_HOSTS', ['127.0.0.1', 'localhost']),
 )
 
 render_external_url = os.getenv("RENDER_EXTERNAL_URL")
