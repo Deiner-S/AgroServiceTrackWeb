@@ -21,7 +21,7 @@ from django.contrib import admin
 from checklist.views import *
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    #path('admin/', admin.site.urls),
     path('gerenciador/', include('checklist.urls')),
     
     

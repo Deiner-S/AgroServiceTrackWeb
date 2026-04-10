@@ -82,7 +82,12 @@ class EmployeeForm(forms.ModelForm):
             "cpf": forms.TextInput(attrs={"class": INPUT_TW_CLASS, **CPF_INPUT_ATTRS}),
             "phone": forms.TextInput(attrs={"class": INPUT_TW_CLASS, **PHONE_INPUT_ATTRS}),
             "email": forms.EmailInput(attrs={"class": INPUT_TW_CLASS}),
-            "position": forms.Select(attrs={"class": INPUT_TW_CLASS}),
+            "position": forms.Select(
+                attrs={
+                    "class": INPUT_TW_CLASS,
+                    "data-option-text-black": "true",
+                }
+            ),
             "username": forms.TextInput(attrs={"class": INPUT_TW_CLASS}),
         }
 
@@ -163,6 +168,11 @@ class EmployeeDetailForm(forms.ModelForm):
             "cpf": forms.TextInput(attrs={"class": INPUT_TW_CLASS, **CPF_INPUT_ATTRS}),
             "phone": forms.TextInput(attrs={"class": INPUT_TW_CLASS, **PHONE_INPUT_ATTRS}),
             "email": forms.EmailInput(attrs={"class": INPUT_TW_CLASS}),
-            "position": forms.Select(attrs={"class": INPUT_TW_CLASS}),
+            "position": forms.Select(
+                attrs={
+                    "class": INPUT_TW_CLASS,
+                    "data-option-text-black": "true",
+                }
+            ),
             "username": forms.TextInput(attrs={"class": INPUT_TW_CLASS}),
         }

@@ -44,5 +44,10 @@ class DataSheetUpdateForm(forms.ModelForm):
             "date_in": forms.DateTimeInput(attrs={"type": "datetime-local", "class": INPUT_TW_CLASS}),
             "date_out": forms.DateTimeInput(attrs={"type": "datetime-local", "class": INPUT_TW_CLASS}),
             "service": forms.Textarea(attrs={"class": INPUT_TW_CLASS, "rows": 3}),
-            "status": forms.Select(attrs={"class": INPUT_TW_CLASS}),
+            "status": forms.Select(
+                attrs={
+                    "class": INPUT_TW_CLASS,
+                    "data-option-text-black": "true",
+                }
+            ),
         }

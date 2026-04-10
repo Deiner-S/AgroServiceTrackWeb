@@ -5,11 +5,12 @@ services:
     container_name: agroservicetrack-web
     command: >
       sh -c "python manage.py migrate &&
-      python manage.py runserver 0.0.0.0:8000"
+      gunicorn core.wsgi:application --bind 0.0.0.0:${PORT:-8000}"
     environment:
       DJANGO_DEBUG: ${DJANGO_DEBUG:-1}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-django-insecure-r8)i2hz+6f5#*f@dc19n)hg-=(fpzc9_ryvlsp4esfk%mma=d0}
-      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-127.0.0.1,localhost}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-127.0.0.1,localhost}
+      PORT: ${PORT:-8000}
     ports:
       - "8000:8000"
     volumes:
