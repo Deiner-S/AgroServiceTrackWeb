@@ -19,6 +19,9 @@ def _get_log_dir():
 
 
 def _serialize_for_log(value):
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+
     if isinstance(value, uuid.UUID):
         return str(value)
 
@@ -40,7 +43,14 @@ def _serialize_for_log(value):
             "message": str(value),
         }
 
-    return value
+    if hasattr(value, "__dict__"):
+        return {
+            str(key): _serialize_for_log(item)
+            for key, item in vars(value).items()
+            if not key.startswith("_")
+        }
+
+    return str(value)
 
 
 def _resolve_stacktrace(error):

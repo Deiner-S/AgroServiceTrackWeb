@@ -1,5 +1,6 @@
 import json
 import uuid
+from types import SimpleNamespace
 
 from django.test import RequestFactory
 
@@ -59,6 +60,24 @@ def test_save_mobile_log_serializes_uuid_and_request_metadata(tmp_path, monkeypa
 
     assert payload["user_id"] == str(request.user.id)
     assert payload["user_uuid"] == str(log_entry["user_uuid"])
+
+
+def test_save_mobile_log_serializes_nested_objects_with_uuid(tmp_path, monkeypatch):
+    monkeypatch.setattr("checklist.utils.logging_utils._get_log_dir", lambda: tmp_path)
+
+    request = _build_authenticated_request()
+    log_entry = {
+        "id": str(uuid.uuid4()),
+        "payload": SimpleNamespace(user_uuid=uuid.uuid4(), attempt=2),
+    }
+
+    assert save_mobile_log(log_entry, request=request) is True
+
+    lines = (tmp_path / "mobile_app_logs.jsonl").read_text(encoding="utf-8").strip().splitlines()
+    payload = json.loads(lines[-1])
+
+    assert payload["payload"]["attempt"] == 2
+    assert isinstance(payload["payload"]["user_uuid"], str)
 
 
 def test_save_mobile_log_raises_when_primary_writer_breaks(tmp_path, monkeypatch):
